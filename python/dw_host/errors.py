@@ -8,6 +8,9 @@ class ErrorCode:
     InvalidParams = -32602
     DatasetNotFound = 1001
     ColumnOrValidation = 1002
+    NodeTypeNotFound = 2001
+    DagCycle = 2002
+    WorkflowExecute = 2003
     FileIo = 3001
     Internal = 9001
 

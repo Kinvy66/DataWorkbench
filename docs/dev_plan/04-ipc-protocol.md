@@ -63,23 +63,23 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 
 | 方法 | 参数 | 说明 |
 |------|------|------|
-| `workflow.create` | `{name}` | 空 DAG |
-| `workflow.addNode` | `{qualifiedName, nodeId?, position?}` | 工厂 `create_node`；`nodeId` 省略则 Python 生成 |
-| `workflow.removeNode` | `{nodeId}` | |
-| `workflow.setParam` | `{nodeId, name, value}` | value 为 JSON 可序列化 |
-| `workflow.connect` | `{fromId, fromPort, toId, toPort}` | 重复端口对返回 error |
-| `workflow.disconnect` | `{connectionId}` 或四元组 | |
-| `workflow.execute` | `{workflowId}` | 异步；立即返回 `{accepted:true}` |
-| `workflow.pause` / `resume` / `stop` | `{workflowId}` | 映射 executor API |
-| `workflow.dumpLogic` | `{workflowId}` | 返回 serializer dict 或 xml 字符串 |
-| `workflow.loadLogic` | `{payload, format: json\|xml}` | 只建模型，不创建 UI |
+| `workflow.create` | `{name?}` | `{workflowId, name}` 空 DAG |
+| `workflow.addNode` | `{workflowId, qualifiedName, nodeId?, position?}` | 工厂 `create_node`；`nodeId` 省略则 Python 生成。`position` 仅会话缓存，不进逻辑 dump |
+| `workflow.removeNode` | `{workflowId, nodeId}` | |
+| `workflow.setParam` | `{workflowId, nodeId, name, value}` | value 为 JSON 可序列化 |
+| `workflow.connect` | `{workflowId, fromId, fromPort, toId, toPort}` | 重复端口对 → error（`workflow.duplicateConnection`） |
+| `workflow.disconnect` | `{workflowId, connectionId}` 或同字段四元组 | |
+| `workflow.execute` | `{workflowId}` | 异步；先回 `{accepted:true, workflowId}`，再发通知。有环立即 `2002`，不启动线程 |
+| `workflow.pause` / `resume` / `stop` | `{workflowId}` | 映射 executor `pause`/`resume`/`terminate` |
+| `workflow.dumpLogic` | `{workflowId, format?: json\|xml}` | `{format, payload}`：json 为 serializer dict，xml 为字符串 |
+| `workflow.loadLogic` | `{payload, format: json\|xml, workflowId?}` | **只** `serializer.from_dict`/`from_xml` 建模型，返回 `{workflowId, name}`。禁止随后再走 `addNode` 复制同一批节点 |
 
 通知：
 
 | 方法 | payload |
 |------|---------|
-| `workflow.nodeState` | `{nodeId, state: idle\|running\|ok\|error, message?}` |
-| `workflow.finished` | `{ok, error?}` |
+| `workflow.nodeState` | `{workflowId, nodeId, state: idle\|running\|ok\|error}`（引擎 `success` 映射为 `ok`） |
+| `workflow.finished` | `{workflowId, ok, error?}` |
 | `workflow.log` | `{level, message}` |
 
 ## chart 域（P4）
@@ -110,7 +110,7 @@ ZIP 的压缩/解压在 **Electron 主进程**（Node `yazl`/`yauzl` 或 `adm-zi
 | `1002` | 列不存在 |
 | `2001` | 节点类型未注册 |
 | `2002` | DAG 有环 |
-| `2003` | 执行失败（data 带 nodeId） |
+| `2003` | 工作流忙或执行失败（异步失败走 `workflow.finished`，不占用 RPC error） |
 | `3001` | 文件 IO |
 | `9001` | sidecar 内部未捕获 |
 

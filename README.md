@@ -51,7 +51,7 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**P0 完成，P1 自动验收完成，P2 引擎已 vendor**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export。虚表块走 Arrow IPC。工作流画布尚未接入。50 万行 csv 可用 `python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成（不要提交该文件）后 Import 滚动确认。
+**P0 完成，P1 自动验收完成，P2 引擎与 workflow RPC 已落地**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export。虚表块走 Arrow IPC。工作流画布尚未接入。
 
 阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 

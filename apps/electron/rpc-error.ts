@@ -43,5 +43,8 @@ export function rpcTimeoutMs(method: string): number {
   if (method === 'data.import') {
     return 120_000
   }
+  if (method === 'workflow.execute') {
+    return 0
+  }
   return 30_000
 }

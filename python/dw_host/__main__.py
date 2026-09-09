@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+import threading
 import traceback
 from typing import Any
 
@@ -13,8 +14,11 @@ from dw_host.arrow_block import ArrowBlock
 from dw_host.data_manager import DataManager
 from dw_host.errors import ErrorCode, HostError
 from dw_host.rpc_data import dispatch as dispatch_data
+from dw_host.rpc_workflow import dispatch as dispatch_workflow
+from dw_host.workflow_runtime import DeferredStart, WorkflowRuntime
 
 log = logging.getLogger("dw_host")
+_emit_lock = threading.Lock()
 
 
 class HostHelloParams(BaseModel):
@@ -48,24 +52,35 @@ def _configure_stdout() -> None:
 
 def _emit(obj: dict[str, Any]) -> None:
     payload = (json.dumps(obj, ensure_ascii=False) + "\n").encode("utf-8")
-    sys.stdout.buffer.write(payload)
-    sys.stdout.buffer.flush()
+    with _emit_lock:
+        sys.stdout.buffer.write(payload)
+        sys.stdout.buffer.flush()
+
+
+def _notify(method: str, params: dict[str, Any]) -> None:
+    _emit({"jsonrpc": "2.0", "method": method, "params": params})
 
 
 def _emit_arrow(req_id: Any, block: ArrowBlock) -> None:
-    _emit(
-        {
-            "jsonrpc": "2.0",
-            "id": req_id,
-            "result": {
-                "encoding": "arrow-v1",
-                "bytes": len(block.payload),
-                "meta": {"rows": block.rows, "startRow": block.start_row},
+    header = (
+        json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {
+                    "encoding": "arrow-v1",
+                    "bytes": len(block.payload),
+                    "meta": {"rows": block.rows, "startRow": block.start_row},
+                },
             },
-        }
-    )
-    sys.stdout.buffer.write(block.payload)
-    sys.stdout.buffer.flush()
+            ensure_ascii=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+    with _emit_lock:
+        sys.stdout.buffer.write(header)
+        sys.stdout.buffer.write(block.payload)
+        sys.stdout.buffer.flush()
 
 
 def _error(req_id: Any, code: int, message: str, i18n_key: str | None = None) -> None:
@@ -85,7 +100,7 @@ def _pandas_available() -> bool:
         return False
 
 
-def _handle(req: dict[str, Any], pandas_ok: bool, manager: DataManager) -> bool:
+def _handle(req: dict[str, Any], pandas_ok: bool, manager: DataManager, runtime: WorkflowRuntime) -> bool:
     """Return False to stop the process after the response is written."""
     req_id = req.get("id")
     method = req.get("method")
@@ -127,6 +142,21 @@ def _handle(req: dict[str, Any], pandas_ok: bool, manager: DataManager) -> bool:
         else:
             _emit({"jsonrpc": "2.0", "id": req_id, "result": result})
         return True
+    if method.startswith("workflow."):
+        try:
+            result = dispatch_workflow(method, params, runtime)
+        except ValidationError as exc:
+            _error(req_id, ErrorCode.InvalidParams, str(exc), "rpc.invalidParams")
+            return True
+        except HostError as exc:
+            _error(req_id, exc.code, str(exc), exc.i18n_key)
+            return True
+        if isinstance(result, DeferredStart):
+            _emit({"jsonrpc": "2.0", "id": req_id, "result": result.result})
+            result.start()
+        else:
+            _emit({"jsonrpc": "2.0", "id": req_id, "result": result})
+        return True
     _error(req_id, ErrorCode.MethodNotFound, f"Method not found: {method}")
     return True
 
@@ -149,6 +179,7 @@ def main() -> int:
         sys.stdout.buffer.flush()
 
     manager = DataManager()
+    runtime = WorkflowRuntime(notify=_notify)
     for raw in sys.stdin:
         line = raw[:-1] if raw.endswith("\n") else raw
         if line.endswith("\r"):
@@ -164,7 +195,7 @@ def main() -> int:
             _error(req.get("id") if isinstance(req, dict) else None, ErrorCode.InvalidRequest, "Invalid Request")
             continue
         try:
-            keep = _handle(req, pandas_ok, manager)
+            keep = _handle(req, pandas_ok, manager, runtime)
         except Exception:
             log.exception("unhandled error in RPC handler")
             _error(req.get("id"), ErrorCode.Internal, traceback.format_exc().splitlines()[-1])

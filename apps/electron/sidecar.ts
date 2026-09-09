@@ -51,7 +51,7 @@ export class SidecarBridge {
   private nextId = 1
   private pending = new Map<
     number,
-    { resolve: (v: unknown) => void; reject: (e: Error) => void; timer: NodeJS.Timeout }
+    { resolve: (v: unknown) => void; reject: (e: Error) => void; timer?: NodeJS.Timeout }
   >()
   private notifyHandlers = new Set<(method: string, params: unknown) => void>()
   private logHandlers = new Set<(entry: SidecarLog) => void>()
@@ -139,10 +139,13 @@ export class SidecarBridge {
     const id = this.nextId++
     const payload = JSON.stringify({ jsonrpc: '2.0', id, method, params: params ?? {} })
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.pending.delete(id)
-        reject(new Error(`RPC timeout: ${method}`))
-      }, timeoutMs)
+      const timer =
+        timeoutMs > 0
+          ? setTimeout(() => {
+              this.pending.delete(id)
+              reject(new Error(`RPC timeout: ${method}`))
+            }, timeoutMs)
+          : undefined
       this.pending.set(id, { resolve, reject, timer })
       child.stdin.write(payload + '\n')
     })

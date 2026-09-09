@@ -9,6 +9,9 @@ export const JsonRpcErrorCode = {
   InvalidParams: -32602,
   DatasetNotFound: 1001,
   ColumnOrValidation: 1002,
+  NodeTypeNotFound: 2001,
+  DagCycle: 2002,
+  WorkflowExecute: 2003,
   FileIo: 3001,
   Internal: 9001
 } as const
@@ -27,7 +30,19 @@ export const RpcMethod = {
   DataRename: 'data.rename',
   DataRemove: 'data.remove',
   DataExport: 'data.export',
-  DataRegister: 'data.register'
+  DataRegister: 'data.register',
+  WorkflowCreate: 'workflow.create',
+  WorkflowAddNode: 'workflow.addNode',
+  WorkflowRemoveNode: 'workflow.removeNode',
+  WorkflowSetParam: 'workflow.setParam',
+  WorkflowConnect: 'workflow.connect',
+  WorkflowDisconnect: 'workflow.disconnect',
+  WorkflowExecute: 'workflow.execute',
+  WorkflowPause: 'workflow.pause',
+  WorkflowResume: 'workflow.resume',
+  WorkflowStop: 'workflow.stop',
+  WorkflowDumpLogic: 'workflow.dumpLogic',
+  WorkflowLoadLogic: 'workflow.loadLogic'
 } as const
 
 export type JsonRpcId = number | string
@@ -178,4 +193,101 @@ export interface OkResult {
 
 export interface DialogCancelled {
   cancelled: true
+}
+
+export interface WorkflowCreateParams {
+  name?: string
+}
+
+export interface WorkflowCreateResult {
+  workflowId: string
+  name: string
+}
+
+export interface WorkflowIdParams {
+  workflowId: string
+}
+
+export interface WorkflowAddNodeParams {
+  workflowId: string
+  qualifiedName: string
+  nodeId?: string
+  position?: { x: number; y: number }
+}
+
+export interface WorkflowAddNodeResult {
+  nodeId: string
+  qualifiedName: string
+}
+
+export interface WorkflowRemoveNodeParams {
+  workflowId: string
+  nodeId: string
+}
+
+export interface WorkflowSetParamParams {
+  workflowId: string
+  nodeId: string
+  name: string
+  value: unknown
+}
+
+export interface WorkflowConnectParams {
+  workflowId: string
+  fromId: string
+  fromPort: string
+  toId: string
+  toPort: string
+}
+
+export interface WorkflowConnectResult {
+  connectionId: string
+}
+
+export interface WorkflowDisconnectParams {
+  workflowId: string
+  connectionId?: string
+  fromId?: string
+  fromPort?: string
+  toId?: string
+  toPort?: string
+}
+
+export interface WorkflowDumpLogicParams {
+  workflowId: string
+  format?: 'json' | 'xml'
+}
+
+export interface WorkflowDumpLogicResult {
+  format: 'json' | 'xml'
+  payload: unknown
+}
+
+export interface WorkflowLoadLogicParams {
+  payload: unknown
+  format?: 'json' | 'xml'
+  workflowId?: string
+}
+
+export interface WorkflowLoadLogicResult {
+  workflowId: string
+  name: string
+}
+
+export interface WorkflowExecuteResult {
+  accepted: true
+  workflowId: string
+}
+
+export interface WorkflowNodeStateParams {
+  workflowId: string
+  nodeId: string
+  state: 'idle' | 'running' | 'ok' | 'error'
+  message?: string
+}
+
+export interface WorkflowFinishedParams {
+  workflowId: string
+  ok: boolean
+  error?: string
 }

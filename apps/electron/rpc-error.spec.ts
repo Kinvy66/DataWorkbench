@@ -6,6 +6,10 @@ describe('rpcTimeoutMs', () => {
     expect(rpcTimeoutMs('data.import')).toBe(120_000)
     expect(rpcTimeoutMs('data.list')).toBe(30_000)
   })
+
+  it('does not time out workflow.execute (stop instead)', () => {
+    expect(rpcTimeoutMs('workflow.execute')).toBe(0)
+  })
 })
 
 describe('encodeRpcErrorMessage', () => {

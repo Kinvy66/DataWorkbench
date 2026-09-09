@@ -78,8 +78,6 @@ gantt
 - **自动（vitest）**：虚表只预取当前块 ±1（最多 3×512），`retainCachedBlocks` 丢掉窗外缓存。
 - **手工**：`scripts/gen_large_csv.py` 生成 csv，Data → Import 后滚动不卡死；Chrome 任务管理器中 renderer 堆远小于整表 CSV。无 Electron E2E，此项不进 CI。
 
-**任务 1 已完成**（vendor + Constant/roundtrip pytest）。任务 2–8（RPC、Vue Flow、DataToManager、属性面板）未做。
-
 ## P2 — 工作流（5 周）
 
 **任务**
@@ -100,6 +98,8 @@ gantt
 - Delay 节点执行时可 Stop。
 
 **移植 DataToManager**：`import da_app` 改为 `dw_host.api.publish_dataframe(name, obj)`，在 RPC 线程执行。
+
+任务 1（引擎 vendor + pytest）与任务 2（`workflow.*` RPC + execute 通知）已完成。任务 3–8（Vue Flow、工具箱、属性面板、DataToManager）未做。
 
 ## P3 — 分析节点与清洗 GUI（4 周）
 

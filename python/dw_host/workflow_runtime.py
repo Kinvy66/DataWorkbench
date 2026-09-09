@@ -1,0 +1,294 @@
+from __future__ import annotations
+
+import json
+import threading
+import uuid
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
+
+from dw_host.errors import ErrorCode, HostError
+from dw_nodes_system import register_system_nodes
+from dw_workflow import (
+    DAConnection,
+    DANodeFactory,
+    DAWorkflow,
+    DAWorkflowExecutor,
+    DAWorkflowSerializer,
+)
+
+Notify = Callable[[str, dict[str, Any]], None]
+
+
+@dataclass
+class DeferredStart:
+    result: dict[str, Any]
+    start: Callable[[], None]
+
+
+_STATE_WIRE = {
+    "idle": "idle",
+    "waiting": "idle",
+    "running": "running",
+    "success": "ok",
+    "error": "error",
+    "skipped": "idle",
+}
+
+
+class _Session:
+    def __init__(self, workflow: DAWorkflow) -> None:
+        self.workflow = workflow
+        self.executor: DAWorkflowExecutor | None = None
+        self.thread: threading.Thread | None = None
+        self.positions: dict[str, dict[str, float]] = {}
+
+
+class WorkflowRuntime:
+    """In-process workflow sessions for JSON-RPC. Layout stays out of the DAG."""
+
+    def __init__(self, notify: Notify, factory: DANodeFactory | None = None) -> None:
+        self._notify = notify
+        self._factory = factory or DANodeFactory()
+        register_system_nodes(self._factory)
+        self._serializer = DAWorkflowSerializer(self._factory)
+        self._sessions: dict[str, _Session] = {}
+        self._lock = threading.Lock()
+
+    def create(self, name: str) -> dict[str, Any]:
+        workflow_id = str(uuid.uuid4())
+        session = _Session(DAWorkflow(name=name))
+        with self._lock:
+            self._sessions[workflow_id] = session
+        return {"workflowId": workflow_id, "name": name}
+
+    def add_node(
+        self,
+        workflow_id: str,
+        qualified_name: str,
+        node_id: str | None = None,
+        position: dict[str, float] | None = None,
+    ) -> dict[str, Any]:
+        session = self._session(workflow_id)
+        self._ensure_idle(session)
+        try:
+            node = self._factory.create_node(qualified_name)
+        except KeyError as exc:
+            raise HostError(ErrorCode.NodeTypeNotFound, str(exc), "workflow.unknownType") from exc
+        if node_id:
+            node.node_id = node_id
+        try:
+            assigned = session.workflow.add_node(node)
+        except (KeyError, ValueError) as exc:
+            raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.invalidNode") from exc
+        self._hook_node(node, workflow_id)
+        if position:
+            session.positions[assigned] = position
+        return {"nodeId": assigned, "qualifiedName": qualified_name}
+
+    def remove_node(self, workflow_id: str, node_id: str) -> dict[str, Any]:
+        session = self._session(workflow_id)
+        self._ensure_idle(session)
+        try:
+            session.workflow.remove_node(node_id)
+        except (KeyError, ValueError) as exc:
+            raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.nodeNotFound") from exc
+        session.positions.pop(node_id, None)
+        return {"ok": True}
+
+    def set_param(self, workflow_id: str, node_id: str, name: str, value: Any) -> dict[str, Any]:
+        session = self._session(workflow_id)
+        self._ensure_idle(session)
+        try:
+            node = session.workflow.get_node_by_id(node_id)
+        except KeyError as exc:
+            raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.nodeNotFound") from exc
+        parameters = getattr(node, "parameters", {})
+        if name not in parameters:
+            raise HostError(ErrorCode.InvalidParams, f"Unknown parameter '{name}'", "workflow.unknownParam")
+        setattr(node, name, value)
+        return {"ok": True}
+
+    def connect(
+        self,
+        workflow_id: str,
+        from_id: str,
+        from_port: str,
+        to_id: str,
+        to_port: str,
+    ) -> dict[str, Any]:
+        session = self._session(workflow_id)
+        self._ensure_idle(session)
+        try:
+            conn = DAConnection(from_id, from_port, to_id, to_port)
+            connection_id = session.workflow.add_connection(conn)
+        except ValueError as exc:
+            raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.duplicateConnection") from exc
+        except KeyError as exc:
+            raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.nodeNotFound") from exc
+        return {"connectionId": connection_id}
+
+    def disconnect(
+        self,
+        workflow_id: str,
+        connection_id: str | None = None,
+        from_id: str | None = None,
+        from_port: str | None = None,
+        to_id: str | None = None,
+        to_port: str | None = None,
+    ) -> dict[str, Any]:
+        session = self._session(workflow_id)
+        self._ensure_idle(session)
+        resolved = connection_id
+        if not resolved:
+            if not all((from_id, from_port, to_id, to_port)):
+                raise HostError(
+                    ErrorCode.InvalidParams,
+                    "disconnect requires connectionId or a port quadruple",
+                    "workflow.invalidDisconnect",
+                )
+            for conn in session.workflow.get_connections():
+                if (
+                    conn.source_node_id == from_id
+                    and conn.source_output_channel == from_port
+                    and conn.target_node_id == to_id
+                    and conn.target_input_channel == to_port
+                ):
+                    resolved = conn.connection_id
+                    break
+            if not resolved:
+                raise HostError(ErrorCode.InvalidParams, "Connection not found", "workflow.connectionNotFound")
+        try:
+            session.workflow.remove_connection(resolved)
+        except KeyError as exc:
+            raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.connectionNotFound") from exc
+        return {"ok": True}
+
+    def dump_logic(self, workflow_id: str, fmt: str = "json") -> dict[str, Any]:
+        session = self._session(workflow_id)
+        kind = (fmt or "json").strip().lower()
+        if kind == "xml":
+            return {"format": "xml", "payload": self._serializer.to_xml(session.workflow)}
+        if kind != "json":
+            raise HostError(ErrorCode.InvalidParams, f"Unsupported dump format '{fmt}'", "workflow.invalidFormat")
+        return {"format": "json", "payload": self._serializer.to_dict(session.workflow)}
+
+    def load_logic(self, payload: Any, fmt: str = "json", workflow_id: str | None = None) -> dict[str, Any]:
+        kind = (fmt or "json").strip().lower()
+        try:
+            if kind == "xml":
+                if not isinstance(payload, str):
+                    raise HostError(ErrorCode.InvalidParams, "XML payload must be a string", "workflow.invalidFormat")
+                workflow = self._serializer.from_xml(payload, self._factory)
+            elif kind == "json":
+                data = payload
+                if isinstance(payload, str):
+                    data = json.loads(payload)
+                if not isinstance(data, dict):
+                    raise HostError(ErrorCode.InvalidParams, "JSON payload must be an object", "workflow.invalidFormat")
+                workflow = self._serializer.from_dict(data, self._factory)
+            else:
+                raise HostError(ErrorCode.InvalidParams, f"Unsupported load format '{fmt}'", "workflow.invalidFormat")
+        except HostError:
+            raise
+        except KeyError as exc:
+            raise HostError(ErrorCode.NodeTypeNotFound, str(exc), "workflow.unknownType") from exc
+        except Exception as exc:
+            raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.invalidFormat") from exc
+
+        assigned = workflow_id or str(uuid.uuid4())
+        session = _Session(workflow)
+        for node in workflow.get_nodes():
+            self._hook_node(node, assigned)
+        with self._lock:
+            self._sessions[assigned] = session
+        return {"workflowId": assigned, "name": workflow.name}
+
+    def schedule_execute(self, workflow_id: str) -> DeferredStart:
+        run = self.begin_execute(workflow_id)
+        session = self._session(workflow_id)
+
+        def kick() -> None:
+            thread = threading.Thread(target=run, name=f"dw-wf-{workflow_id[:8]}", daemon=True)
+            session.thread = thread
+            thread.start()
+
+        return DeferredStart(result={"accepted": True, "workflowId": workflow_id}, start=kick)
+
+    def begin_execute(self, workflow_id: str) -> Callable[[], None]:
+        session = self._session(workflow_id)
+        self._ensure_idle(session)
+        if not session.workflow.is_valid_dag():
+            raise HostError(ErrorCode.DagCycle, "Workflow contains a cycle", "workflow.cycle")
+        executor = DAWorkflowExecutor(session.workflow)
+        session.executor = executor
+
+        def run() -> None:
+            ok = False
+            error: str | None = None
+            try:
+                ok = bool(executor.execute())
+                if not ok:
+                    msgs = list(getattr(executor, "_error_messages", []) or [])
+                    error = msgs[0] if msgs else "Workflow execution failed"
+            except Exception as exc:
+                error = str(exc)
+                ok = False
+            params: dict[str, Any] = {"workflowId": workflow_id, "ok": ok}
+            if error:
+                params["error"] = error
+            self._notify("workflow.finished", params)
+
+        return run
+
+    def pause(self, workflow_id: str) -> dict[str, Any]:
+        session = self._session(workflow_id)
+        if session.executor is not None:
+            session.executor.pause()
+        return {"ok": True}
+
+    def resume(self, workflow_id: str) -> dict[str, Any]:
+        session = self._session(workflow_id)
+        if session.executor is not None:
+            session.executor.resume()
+        return {"ok": True}
+
+    def stop(self, workflow_id: str) -> dict[str, Any]:
+        session = self._session(workflow_id)
+        if session.executor is not None:
+            session.executor.terminate()
+        return {"ok": True}
+
+    def _session(self, workflow_id: str) -> _Session:
+        with self._lock:
+            session = self._sessions.get(workflow_id)
+        if session is None:
+            raise HostError(ErrorCode.InvalidParams, f"Workflow '{workflow_id}' is not found", "workflow.notFound")
+        return session
+
+    def _ensure_idle(self, session: _Session) -> None:
+        thread = session.thread
+        if thread is not None and thread.is_alive():
+            raise HostError(ErrorCode.WorkflowExecute, "Workflow is running", "workflow.busy")
+
+    def _hook_node(self, node: Any, workflow_id: str) -> None:
+        if getattr(node, "_dw_state_hooked", False):
+            return
+        original = node.set_node_state
+
+        def hooked(state: str) -> None:
+            original(state)
+            node_id = getattr(node, "node_id", None)
+            if not node_id:
+                return
+            self._notify(
+                "workflow.nodeState",
+                {
+                    "workflowId": workflow_id,
+                    "nodeId": node_id,
+                    "state": _STATE_WIRE.get(state, state),
+                },
+            )
+
+        node.set_node_state = hooked
+        node._dw_state_hooked = True
