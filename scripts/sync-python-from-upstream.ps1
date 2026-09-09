@@ -1,5 +1,6 @@
 # Sync vendored Python from the upstream Qt data-workbench repo.
 # Skips files whose first 40 lines contain "# dw:adapted".
+# Copies DAWorkFlowPy → dw_workflow and DADataAnalysisCore → dw_nodes_analysis/core.
 # Usage:
 #   $env:DAWB_UPSTREAM = "F:\Rep\CAE_Code\data-workbench"
 #   .\scripts\sync-python-from-upstream.ps1
@@ -64,6 +65,28 @@ foreach ($name in @("start.svg", "end.svg", "constant.svg", "delay.svg")) {
         }
         Copy-Item -LiteralPath $from -Destination (Join-Path $iconDst $name) -Force
         Write-Host "copy icon $name"
+        $copied++
+    }
+}
+
+$coreSrc = Join-Path $upstream "plugins\DataAnalysis\PyScripts\DADataAnalysisCore"
+$coreDst = Join-Path $repoRoot "python\dw_nodes_analysis\core"
+if (Test-Path $coreSrc) {
+    Get-ChildItem -LiteralPath $coreSrc -File | ForEach-Object {
+        if ($_.Name -eq "__pycache__") {
+            return
+        }
+        $dest = Join-Path $coreDst $_.Name
+        if (Test-Adapted $dest) {
+            Write-Host "skip adapted core/$($_.Name)"
+            $skipped++
+            return
+        }
+        if (-not (Test-Path $coreDst)) {
+            New-Item -ItemType Directory -Path $coreDst | Out-Null
+        }
+        Copy-Item -LiteralPath $_.FullName -Destination $dest -Force
+        Write-Host "copy core/$($_.Name)"
         $copied++
     }
 }

@@ -120,6 +120,8 @@ gantt
 
 上游 `data_plot_node` 依赖 C++ 图，P3 **不要**移植；出图走 P4 前端。
 
+**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query（`query_dataframe`）。其余批次 A 节点与 Ribbon Query/DropNA 对话框未做。
+
 **验收**
 
 - 导入表 → 工作流 data_source → query → DataToManager → 虚表看到筛选结果。

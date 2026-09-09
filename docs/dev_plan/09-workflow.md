@@ -85,7 +85,7 @@ If/Else：P2 末期可用菱形 CSS `clip-path`，非必须。
 
 ## 测试
 
-- Python：roundtrip、有环 `execute` 失败、Constant `literal_eval`；`loadLogic` 后 `getGraph` 的 `nodeId`/端口与 dump 一致；Delay 执行中 `stop` 在超时前结束并带 `cancelled`
+- Python：roundtrip、有环 `execute` 失败、Constant `literal_eval`；`loadLogic` 后 `getGraph` 的 `nodeId`/端口与 dump 一致；Delay 执行中 `stop` 在超时前结束并带 `cancelled`；导入表 → Data Source → Query → DataToManager 后 `data.list` 有筛选结果
 - 前端：Vitest 测 RPC mock 失败时不插入节点；`loadAndWrap` 只调 `loadLogic`+`getGraph`；undo/redo 走反向 RPC 且不插入额外历史
 
 ## 和上游文档的对应阅读

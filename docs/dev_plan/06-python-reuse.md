@@ -10,9 +10,9 @@
 |----------|------|------|
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/*.py` | `python/dw_workflow/` | 包 import 路径；**不要改** serializer 字段名 |
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/nodes/style_demo_nodes.py` | 可选，仅开发 | 可不上生产 |
-| `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n |
+| `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n。`io.py` 已改为 charset-normalizer（`# dw:adapted`），不要无提示覆盖 |
 
-`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地：`python/dw_workflow` vendor 自上游 `9dd298fe`，`python/dw_nodes_system` 含 Start/End/Constant/Delay/DataToManager；`workflow.*` 经 stdio 可 create/addNode/connect/`listNodeTypes`/`dumpLogic`/`loadLogic`/`getGraph`/`execute`/`stop`。Vue Flow 经 `loadAndWrap` 按 `nodeId` wrap，load 路径禁止 `addNode`。Delay 用会话 cancel Event 可中断等待。尚未做 If/Else、TextViewer。
+`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地。P3 已 vendor `dw_nodes_analysis/core`（`9dd298fe`），并接入 **Data Source**（从 DataManager 按名/id 取 df，不是上游读文件节点）与 **Query**（`query_dataframe`）。尚未做 If/Else、TextViewer、其余清洗节点与 Ribbon Query/DropNA 对话框。
 
 ## 移植并改 Host（必须改）
 
@@ -47,6 +47,8 @@ def get_data_manager():
 | `nodes/condition_if.py` | P2 末期 | 菱形样式可用 CSS |
 | `nodes/text_viewer.py` | 延期 | 依赖 paint |
 
+P2 必做五项已落地。If/Else、TextViewer 仍可延后。
+
 图标 SVG：可拷贝 `icon/`，注意上游图标规范（200×200）。Vue 工具箱用同一份 SVG。窗口 / Ribbon 按钮已拷到 `apps/src/assets/icons/`，用法见 [07-ui-shell.md](./07-ui-shell.md)。
 
 ## 节点文件白名单（Analysis）
@@ -60,6 +62,8 @@ def get_data_manager():
 5. 删除任何 `da_app` 导入。
 
 `data_plot_node.py`：**不移植到工作流出图**；注释标明由前端 Chart 模块替代。
+
+**Data Source**：不要移植上游读文件的 `data_source_node.py`。本产品入口是 DataManager 已导入的表（`dataset_name` / `dataset_id`）；读文件继续走 `data.import`。Query 节点包装 `core.operations.query_dataframe`。
 
 ## 不要 vendor
 

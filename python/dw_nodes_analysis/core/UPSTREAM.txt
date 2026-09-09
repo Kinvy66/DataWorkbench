@@ -1,0 +1,5 @@
+Vendored from https://github.com/czyt1988/data-workbench
+plugins/DataAnalysis/PyScripts/DADataAnalysisCore
+upstream commit 9dd298fe
+License: GNU Lesser General Public License v3.0 (see python/dw_workflow/LICENSE.LGPL)
+io.py is marked # dw:adapted (chardet → charset-normalizer).

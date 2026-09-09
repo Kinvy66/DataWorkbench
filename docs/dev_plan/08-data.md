@@ -41,7 +41,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 
 ## 与工作流衔接
 
-- **data_source 节点**：参数 `dataset_name` 或 `dataset_id`，`execute` 时从 DataManager 取 df 写入 `_output_data`。
+- **data_source 节点**：参数 `dataset_name` 或 `dataset_id`，`execute` 时从 DataManager 取 df 的**副本**写入 `_output_data`。不是上游那个读文件的 Data Source。
 - **Output to DataManager**：见 [06-python-reuse.md](./06-python-reuse.md)。
 - 执行结束后前端 `data.list` 刷新。不要靠猜测 df 是否变化。
 

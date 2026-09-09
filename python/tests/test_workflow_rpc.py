@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import json
 import time
+from pathlib import Path
 
+from dw_nodes_analysis import DataQueryNode, DataSourceNode
 from dw_nodes_system import ConstantNode, DataToManagerNode, DelayNode, EndNode, StartNode
 from rpc_client import popen, read_rpc, readline, send
 
 START = StartNode.qualified_name
 CONSTANT = ConstantNode.qualified_name
 DATAMGR = DataToManagerNode.qualified_name
+SOURCE = DataSourceNode.qualified_name
+QUERY = DataQueryNode.qualified_name
 END = EndNode.qualified_name
 DELAY = DelayNode.qualified_name
 
@@ -206,6 +210,8 @@ def test_list_node_types_includes_system_set() -> None:
         assert CONSTANT in names
         assert DATAMGR in names
         assert DELAY in names
+        assert SOURCE in names
+        assert QUERY in names
         constant = next(item for item in listed["result"]["types"] if item["qualifiedName"] == CONSTANT)
         assert any(p["name"] == "value" for p in constant["outputs"])
         assert any(p["name"] == "value" and p["type"] == "code" for p in constant["parameters"])
@@ -259,6 +265,47 @@ def test_constant_to_datamanager_appears_in_data_list() -> None:
         names = {item["name"] for item in listed["result"]["datasets"]}
         assert "from_workflow" in names
         send(proc, {"jsonrpc": "2.0", "id": 9, "method": "host.shutdown", "params": {}})
+        assert proc.wait(timeout=5) == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
+def test_import_source_query_to_manager(tmp_path: Path) -> None:
+    csv_path = tmp_path / "people.csv"
+    csv_path.write_text("age,name\n10,a\n30,b\n", encoding="utf-8")
+    proc = popen()
+    try:
+        _ready(proc)
+        imported = _rpc(proc, 1, "data.import", {"path": str(csv_path)})
+        table_name = imported["result"]["name"]
+        wf = _rpc(proc, 2, "workflow.create", {"name": "query"})["result"]["workflowId"]
+        src_id = _rpc(proc, 3, "workflow.addNode", {"workflowId": wf, "qualifiedName": SOURCE})["result"]["nodeId"]
+        query_id = _rpc(proc, 4, "workflow.addNode", {"workflowId": wf, "qualifiedName": QUERY})["result"]["nodeId"]
+        dst_id = _rpc(proc, 5, "workflow.addNode", {"workflowId": wf, "qualifiedName": DATAMGR})["result"]["nodeId"]
+        _rpc(proc, 6, "workflow.setParam", {"workflowId": wf, "nodeId": src_id, "name": "dataset_name", "value": table_name})
+        _rpc(proc, 7, "workflow.setParam", {"workflowId": wf, "nodeId": query_id, "name": "query_string", "value": "age > 20"})
+        _rpc(proc, 8, "workflow.setParam", {"workflowId": wf, "nodeId": dst_id, "name": "data_name", "value": "filtered"})
+        _rpc(
+            proc,
+            9,
+            "workflow.connect",
+            {"workflowId": wf, "fromId": src_id, "fromPort": "data", "toId": query_id, "toPort": "data"},
+        )
+        _rpc(
+            proc,
+            10,
+            "workflow.connect",
+            {"workflowId": wf, "fromId": query_id, "fromPort": "result", "toId": dst_id, "toPort": "data"},
+        )
+        accepted = _rpc(proc, 11, "workflow.execute", {"workflowId": wf})
+        assert accepted["result"]["accepted"] is True
+        notes = _drain_until_finished(proc, wf)
+        assert notes[-1]["params"]["ok"] is True
+        listed = _rpc(proc, 12, "data.list", {})
+        by_name = {item["name"]: item for item in listed["result"]["datasets"]}
+        assert by_name["filtered"]["rows"] == 1
+        send(proc, {"jsonrpc": "2.0", "id": 13, "method": "host.shutdown", "params": {}})
         assert proc.wait(timeout=5) == 0
     finally:
         if proc.poll() is None:

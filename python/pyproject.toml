@@ -22,7 +22,7 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["dw_host*", "dw_workflow*", "dw_nodes_system*"]
+include = ["dw_host*", "dw_workflow*", "dw_nodes_system*", "dw_nodes_analysis*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

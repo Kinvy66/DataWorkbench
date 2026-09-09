@@ -227,6 +227,13 @@ class DataManager:
             raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
         return ds
 
+    def find_by_name(self, name: str) -> Dataset:
+        with self._lock:
+            matches = [ds for ds in self._items.values() if ds.name == name]
+        if not matches:
+            raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {name}", "data.notFound")
+        return matches[0]
+
     def list_datasets(self) -> list[dict[str, Any]]:
         with self._lock:
             items = list(self._items.values())

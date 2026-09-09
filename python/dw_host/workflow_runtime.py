@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from dw_host.errors import ErrorCode, HostError
+from dw_nodes_analysis import register_analysis_nodes
 from dw_nodes_system import register_system_nodes
 from dw_workflow import (
     DAConnection,
@@ -85,6 +86,7 @@ class WorkflowRuntime:
         self._notify = notify
         self._factory = factory or DANodeFactory()
         register_system_nodes(self._factory)
+        register_analysis_nodes(self._factory)
         self._serializer = DAWorkflowSerializer(self._factory)
         self._sessions: dict[str, _Session] = {}
         self._lock = threading.Lock()

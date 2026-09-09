@@ -13,9 +13,12 @@ This application’s own source is MIT; the copied icons are not re-licensed.
 
 python/dw_workflow
 python/dw_nodes_system/icon/*.svg
+python/dw_nodes_analysis/core
+python/dw_nodes_analysis/icon/*.svg
 
-Vendored from the same upstream (`src/PyScripts/DAWorkbench/DAWorkFlowPy` at
-commit `9dd298fe`, and selected DASystemNodes SVGs). Engine code and those
+Vendored from the same upstream (`src/PyScripts/DAWorkbench/DAWorkFlowPy` and
+`plugins/DataAnalysis/PyScripts/DADataAnalysisCore` at commit `9dd298fe`, plus
+selected DASystemNodes / DADataAnalysisNodes SVGs). Engine, Core, and those
 SVGs remain LGPL-3.0; see `python/dw_workflow/LICENSE.LGPL`. Adapted node
-files in `python/dw_nodes_system/` (marked `# dw:adapted`) are derived works
-of the upstream System nodes.
+files in `python/dw_nodes_system/` and `python/dw_nodes_analysis/` (marked
+`# dw:adapted`) are derived works of the upstream System / Analysis nodes.
