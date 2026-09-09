@@ -4,7 +4,12 @@ import type {
   WorkflowAddNodeResult,
   WorkflowConnectResult,
   WorkflowCreateResult,
+  WorkflowDumpLogicResult,
+  WorkflowGetGraphResult,
+  WorkflowGraphConnection,
+  WorkflowGraphNode,
   WorkflowListNodeTypesResult,
+  WorkflowLoadLogicResult,
   WorkflowNodeType,
   WorkflowParamSpec
 } from '@dw/rpc-types'
@@ -33,6 +38,14 @@ function busyError(): Error {
   const err = new Error('Workflow is running [@@workflow.busy]')
   ;(err as Error & { i18nKey: string }).i18nKey = 'workflow.busy'
   return err
+}
+
+function layoutFromNodes(nodes: Node[]): Record<string, { x: number; y: number }> {
+  const layout: Record<string, { x: number; y: number }> = {}
+  for (const node of nodes) {
+    layout[node.id] = { x: node.position.x, y: node.position.y }
+  }
+  return layout
 }
 
 export const useWorkflowStore = defineStore('workflow', {
@@ -206,6 +219,80 @@ export const useWorkflowStore = defineStore('workflow', {
       })
       const current = this.paramValues[nodeId] ?? {}
       this.paramValues[nodeId] = { ...current, [name]: value }
+    },
+    async dumpLogic(): Promise<WorkflowDumpLogicResult> {
+      if (!this.workflowId) {
+        throw new Error('Failed to create workflow')
+      }
+      return (await rpc().invoke('workflow.dumpLogic', {
+        workflowId: this.workflowId,
+        format: 'json'
+      })) as WorkflowDumpLogicResult
+    },
+    async loadAndWrap(payload: unknown, format: 'json' | 'xml' = 'json'): Promise<void> {
+      if (this.running) {
+        throw busyError()
+      }
+      if (!this.types.length) {
+        const listed = (await rpc().invoke('workflow.listNodeTypes', {})) as WorkflowListNodeTypesResult
+        this.types = listed.types
+      }
+      const layout = layoutFromNodes(this.nodes)
+      const params: { payload: unknown; format: 'json' | 'xml'; workflowId?: string } = {
+        payload,
+        format
+      }
+      if (this.workflowId) {
+        params.workflowId = this.workflowId
+      }
+      const loaded = (await rpc().invoke('workflow.loadLogic', params)) as WorkflowLoadLogicResult
+      const graph = (await rpc().invoke('workflow.getGraph', {
+        workflowId: loaded.workflowId
+      })) as WorkflowGetGraphResult
+      this.applyWrappedGraph(graph, layout)
+    },
+    applyWrappedGraph(graph: WorkflowGetGraphResult, layout?: Record<string, { x: number; y: number }>): void {
+      const positions = layout ?? layoutFromNodes(this.nodes)
+      this.workflowId = graph.workflowId
+      this.running = false
+      this.selectedNodeId = null
+      const paramValues: Record<string, Record<string, unknown>> = {}
+      const nodes: Node[] = graph.nodes.map((item: WorkflowGraphNode, index: number) => {
+        const spec = this.typeByName.get(item.qualifiedName)
+        const params: Record<string, unknown> = {}
+        for (const p of spec?.parameters ?? []) {
+          params[p.name] = defaultParamValue(p)
+        }
+        Object.assign(params, item.parameters ?? {})
+        paramValues[item.nodeId] = params
+        const pos = positions[item.nodeId] ?? { x: 80 + index * 36, y: 80 + index * 36 }
+        return {
+          id: item.nodeId,
+          type: 'dw',
+          position: pos,
+          data: {
+            label: spec?.name ?? item.qualifiedName,
+            qualifiedName: item.qualifiedName,
+            state: 'idle' as NodeRunState,
+            inputs: spec?.inputs ?? [],
+            outputs: spec?.outputs ?? []
+          }
+        }
+      })
+      this.nodes = nodes
+      this.edges = graph.connections.map((conn: WorkflowGraphConnection) => ({
+        id: conn.connectionId,
+        source: conn.fromId,
+        target: conn.toId,
+        sourceHandle: conn.fromPort,
+        targetHandle: conn.toPort
+      }))
+      this.paramValues = paramValues
+      const last = nodes[nodes.length - 1]
+      if (last) {
+        this.nextPlace = { x: last.position.x + 36, y: last.position.y + 36 }
+      }
+      this.centerTab = 'workflow'
     },
     async run(): Promise<void> {
       if (!this.workflowId) {

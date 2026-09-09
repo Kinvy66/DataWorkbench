@@ -26,6 +26,17 @@ class DeferredStart:
     start: Callable[[], None]
 
 
+def _node_params(node: Any) -> dict[str, Any]:
+    params: dict[str, Any] = {}
+    for name in getattr(node, "parameters", {}) or {}:
+        if not name:
+            continue
+        value = getattr(node, name, None)
+        if value is not None:
+            params[name] = value
+    return params
+
+
 _STATE_WIRE = {
     "idle": "idle",
     "waiting": "idle",
@@ -250,12 +261,47 @@ class WorkflowRuntime:
             raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.invalidFormat") from exc
 
         assigned = workflow_id or str(uuid.uuid4())
+        with self._lock:
+            existing = self._sessions.get(assigned)
+        if existing is not None:
+            self._ensure_idle(existing)
         session = _Session(workflow)
         for node in workflow.get_nodes():
             self._hook_node(node, assigned)
         with self._lock:
             self._sessions[assigned] = session
         return {"workflowId": assigned, "name": workflow.name}
+
+    def get_graph(self, workflow_id: str) -> dict[str, Any]:
+        """View snapshot for wrap. Positions stay on the frontend."""
+        session = self._session(workflow_id)
+        nodes: list[dict[str, Any]] = []
+        for node in session.workflow.get_nodes():
+            node_id = getattr(node, "node_id", "")
+            nodes.append(
+                {
+                    "nodeId": node_id,
+                    "qualifiedName": getattr(node, "qualified_name", ""),
+                    "parameters": _node_params(node),
+                }
+            )
+        connections: list[dict[str, Any]] = []
+        for conn in session.workflow.get_connections():
+            connections.append(
+                {
+                    "connectionId": conn.connection_id,
+                    "fromId": conn.source_node_id,
+                    "fromPort": conn.source_output_channel,
+                    "toId": conn.target_node_id,
+                    "toPort": conn.target_input_channel,
+                }
+            )
+        return {
+            "workflowId": workflow_id,
+            "name": session.workflow.name,
+            "nodes": nodes,
+            "connections": connections,
+        }
 
     def schedule_execute(self, workflow_id: str) -> DeferredStart:
         run = self.begin_execute(workflow_id)

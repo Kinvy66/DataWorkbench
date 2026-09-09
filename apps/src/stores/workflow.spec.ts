@@ -111,6 +111,126 @@ describe('useWorkflowStore', () => {
     expect(store.edges[0]?.id).toBe('conn-1')
   })
 
+  it('wraps loadLogic via getGraph and never calls addNode', async () => {
+    const store = useWorkflowStore()
+    await store.bootstrap()
+    invoke.mockClear()
+    const graph = {
+      workflowId: 'wf-loaded',
+      name: 'logic',
+      nodes: [
+        {
+          nodeId: 'const-1',
+          qualifiedName: constantType.qualifiedName,
+          parameters: { value: '[10, 20]' }
+        },
+        {
+          nodeId: 'out-1',
+          qualifiedName: dataMgrType.qualifiedName,
+          parameters: { data_name: 'from_workflow' }
+        }
+      ],
+      connections: [
+        {
+          connectionId: 'edge-1',
+          fromId: 'const-1',
+          fromPort: 'value',
+          toId: 'out-1',
+          toPort: 'data'
+        }
+      ]
+    }
+    invoke.mockImplementation(async (method: string) => {
+      if (method === 'workflow.loadLogic') {
+        return { workflowId: 'wf-loaded', name: 'logic' }
+      }
+      if (method === 'workflow.getGraph') {
+        return graph
+      }
+      throw new Error(`unexpected ${method}`)
+    })
+    await store.loadAndWrap({ name: 'logic' })
+    const methods = invoke.mock.calls.map((call) => call[0])
+    expect(methods).toEqual(['workflow.loadLogic', 'workflow.getGraph'])
+    expect(store.workflowId).toBe('wf-loaded')
+    expect(store.nodes.map((item) => item.id)).toEqual(['const-1', 'out-1'])
+    expect(store.edges).toHaveLength(1)
+    expect(store.edges[0]?.id).toBe('edge-1')
+    expect(store.paramValues['const-1']?.value).toBe('[10, 20]')
+    expect(invoke).toHaveBeenCalledWith('workflow.loadLogic', {
+      payload: { name: 'logic' },
+      format: 'json',
+      workflowId: 'wf-1'
+    })
+  })
+
+  it('loadAndWrap lists types then wraps without create or addNode', async () => {
+    const store = useWorkflowStore()
+    invoke.mockImplementation(async (method: string) => {
+      if (method === 'workflow.listNodeTypes') {
+        return { types: [constantType, dataMgrType] }
+      }
+      if (method === 'workflow.loadLogic') {
+        return { workflowId: 'wf-fresh', name: 'logic' }
+      }
+      if (method === 'workflow.getGraph') {
+        return {
+          workflowId: 'wf-fresh',
+          name: 'logic',
+          nodes: [
+            {
+              nodeId: 'const-1',
+              qualifiedName: constantType.qualifiedName,
+              parameters: { value: '1' }
+            }
+          ],
+          connections: []
+        }
+      }
+      throw new Error(`unexpected ${method}`)
+    })
+    await store.loadAndWrap({ name: 'logic' })
+    expect(invoke.mock.calls.map((call) => call[0])).toEqual([
+      'workflow.listNodeTypes',
+      'workflow.loadLogic',
+      'workflow.getGraph'
+    ])
+    expect(store.workflowId).toBe('wf-fresh')
+    expect(store.nodes).toHaveLength(1)
+  })
+
+  it('keeps canvas positions when wrapping the same node ids', async () => {
+    const store = useWorkflowStore()
+    store.types = [constantType]
+    store.nodes = [
+      {
+        id: 'const-1',
+        type: 'dw',
+        position: { x: 240, y: 160 },
+        data: {
+          label: 'Constant',
+          qualifiedName: constantType.qualifiedName,
+          state: 'idle',
+          inputs: [],
+          outputs: constantType.outputs
+        }
+      }
+    ]
+    store.applyWrappedGraph({
+      workflowId: 'wf-2',
+      name: 'logic',
+      nodes: [
+        {
+          nodeId: 'const-1',
+          qualifiedName: constantType.qualifiedName,
+          parameters: { value: '1' }
+        }
+      ],
+      connections: []
+    })
+    expect(store.nodes[0]?.position).toEqual({ x: 240, y: 160 })
+  })
+
   it('clears running when the sidecar reports finished', async () => {
     const store = useWorkflowStore()
     await store.addNode(constantType.qualifiedName)

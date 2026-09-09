@@ -43,7 +43,8 @@ export const RpcMethod = {
   WorkflowResume: 'workflow.resume',
   WorkflowStop: 'workflow.stop',
   WorkflowDumpLogic: 'workflow.dumpLogic',
-  WorkflowLoadLogic: 'workflow.loadLogic'
+  WorkflowLoadLogic: 'workflow.loadLogic',
+  WorkflowGetGraph: 'workflow.getGraph'
 } as const
 
 export type JsonRpcId = number | string
@@ -306,6 +307,27 @@ export interface WorkflowLoadLogicParams {
 export interface WorkflowLoadLogicResult {
   workflowId: string
   name: string
+}
+
+export interface WorkflowGraphNode {
+  nodeId: string
+  qualifiedName: string
+  parameters: Record<string, unknown>
+}
+
+export interface WorkflowGraphConnection {
+  connectionId: string
+  fromId: string
+  fromPort: string
+  toId: string
+  toPort: string
+}
+
+export interface WorkflowGetGraphResult {
+  workflowId: string
+  name: string
+  nodes: WorkflowGraphNode[]
+  connections: WorkflowGraphConnection[]
 }
 
 export interface WorkflowExecuteResult {

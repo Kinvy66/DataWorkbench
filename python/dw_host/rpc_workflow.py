@@ -109,6 +109,9 @@ def dispatch(method: str, params: dict[str, Any], runtime: WorkflowRuntime) -> A
     if method == "workflow.loadLogic":
         parsed = LoadParams.model_validate(params)
         return runtime.load_logic(parsed.payload, parsed.format, parsed.workflowId)
+    if method == "workflow.getGraph":
+        parsed = WorkflowIdParams.model_validate(params)
+        return runtime.get_graph(parsed.workflowId)
     if method == "workflow.execute":
         parsed = ExecuteParams.model_validate(params)
         return runtime.schedule_execute(parsed.workflowId)

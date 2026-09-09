@@ -78,16 +78,36 @@ def test_workflow_create_add_dump_load_without_addnode() -> None:
         assert dumped2["result"]["payload"]["nodes"] == payload["nodes"]
         assert dumped2["result"]["payload"]["connections"] == payload["connections"]
 
+        graph = _rpc(proc, 9, "workflow.getGraph", {"workflowId": wf2})
+        assert graph["result"]["workflowId"] == wf2
+        node_ids = {item["nodeId"] for item in graph["result"]["nodes"]}
+        assert node_ids == {item["node_id"] for item in payload["nodes"]}
+        assert len(graph["result"]["connections"]) == 1
+        conn = graph["result"]["connections"][0]
+        assert conn["fromPort"] == "value"
+        assert conn["toPort"] == "done"
+        assert "connectionId" in conn
+
+        inplace = _rpc(
+            proc,
+            10,
+            "workflow.loadLogic",
+            {"payload": payload, "format": "json", "workflowId": wf2},
+        )
+        assert inplace["result"]["workflowId"] == wf2
+        graph2 = _rpc(proc, 11, "workflow.getGraph", {"workflowId": wf2})
+        assert {item["nodeId"] for item in graph2["result"]["nodes"]} == node_ids
+
         missing = _rpc(
             proc,
-            9,
+            12,
             "workflow.addNode",
             {"workflowId": wf2, "qualifiedName": "no.such.Node"},
         )
         assert missing["error"]["code"] == 2001
         assert missing["error"]["data"]["i18nKey"] == "workflow.unknownType"
 
-        send(proc, {"jsonrpc": "2.0", "id": 10, "method": "host.shutdown", "params": {}})
+        send(proc, {"jsonrpc": "2.0", "id": 13, "method": "host.shutdown", "params": {}})
         assert proc.wait(timeout=5) == 0
     finally:
         if proc.poll() is None:

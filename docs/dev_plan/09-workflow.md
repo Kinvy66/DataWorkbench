@@ -37,13 +37,13 @@
 
 例外：拖动位置只改前端，不打 RPC（避免拖一次发几十次）。位置在 `nodeDragStop` 写 store。保存工程时前端提交 `ui-layout.json`。
 
-加载：
+加载（线协议字段一律 camelCase）：
 
-1. `workflow.loadLogic`
-2. `workflow.getGraph` 返回 nodes/connections（无坐标）
-3. 用 layout 文件里的坐标 wrap；缺坐标则自动排列
+1. `workflow.loadLogic` `{payload, format, workflowId?}` —— 有当前 `workflowId` 则原地替换会话，不要先 `workflow.create` 再灌图
+2. `workflow.getGraph` `{workflowId}` 返回 `nodes`/`connections`（无坐标）
+3. 前端按 `nodeId` wrap Vue Flow；Pinia 已有布局则复用 `{x,y}`，缺坐标则自动排列（`80+i*36`）
 
-**禁止** load 路径调用 `workflow.addNode`。
+**禁止** load 路径调用 `workflow.addNode`（会工厂再建一份 Python 节点）。P5 工程打开时 layout 来自 `ui-layout.json`；当前 `loadAndWrap` 用画布现有节点位置。
 
 ## Vue Flow 节点外观
 
@@ -85,8 +85,8 @@ If/Else：P2 末期可用菱形 CSS `clip-path`，非必须。
 
 ## 测试
 
-- Python：roundtrip、有环 `execute` 失败、Constant `literal_eval`
-- 前端：可用 Vitest 测 command 在 RPC mock 失败时不插入节点
+- Python：roundtrip、有环 `execute` 失败、Constant `literal_eval`；`loadLogic` 后 `getGraph` 的 `nodeId`/端口与 dump 一致
+- 前端：Vitest 测 RPC mock 失败时不插入节点；`loadAndWrap` 只调 `loadLogic`+`getGraph`（类型未缓存时再加 `listNodeTypes`），不调 `addNode`/`create`
 
 ## 和上游文档的对应阅读
 

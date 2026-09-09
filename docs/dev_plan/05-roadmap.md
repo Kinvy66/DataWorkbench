@@ -99,7 +99,7 @@ gantt
 
 **移植 DataToManager**：`import da_app` 改为 `dw_host.api.publish_dataframe(name, obj)`，在 RPC 线程执行。
 
-任务 1（引擎 vendor + pytest）与任务 2（`workflow.*` RPC + execute 通知）已完成。任务 3–7（Vue Flow 画布、System 工具箱、属性表单、Ribbon 运行/停止、DataToManager）已落地。任务 8 Undo、dump/load wrap 画布、Delay Stop 仍属后续。
+任务 1–7 与 dump/load wrap（`getGraph` + `loadAndWrap`，load 路径不走 `addNode`）已落地。File 菜单打开工程仍属 P5。任务 8 Undo、Delay 执行中 Stop（Delay 现用阻塞 `sleep`）仍属后续。
 
 ## P3 — 分析节点与清洗 GUI（4 周）
 

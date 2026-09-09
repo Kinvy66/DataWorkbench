@@ -73,7 +73,8 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `workflow.execute` | `{workflowId}` | 异步；先回 `{accepted:true, workflowId}`，再发通知。有环立即 `2002`，不启动线程 |
 | `workflow.pause` / `resume` / `stop` | `{workflowId}` | 映射 executor `pause`/`resume`/`terminate` |
 | `workflow.dumpLogic` | `{workflowId, format?: json\|xml}` | `{format, payload}`：json 为 serializer dict，xml 为字符串 |
-| `workflow.loadLogic` | `{payload, format: json\|xml, workflowId?}` | **只** `serializer.from_dict`/`from_xml` 建模型，返回 `{workflowId, name}`。禁止随后再走 `addNode` 复制同一批节点 |
+| `workflow.loadLogic` | `{payload, format: json\|xml, workflowId?}` | **只** `serializer.from_dict`/`from_xml` 建模型，返回 `{workflowId, name}`。已有 `workflowId` 且空闲则原地替换会话。禁止随后再走 `addNode` 复制同一批节点 |
+| `workflow.getGraph` | `{workflowId}` | wrap 用快照：`{workflowId, name, nodes:[{nodeId, qualifiedName, parameters}], connections:[{connectionId, fromId, fromPort, toId, toPort}]}`。无坐标 |
 
 通知：
 
