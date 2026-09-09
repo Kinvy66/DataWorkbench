@@ -70,7 +70,7 @@ Ribbon item `@click` 只 `dispatch(item.id)`。`can()` 根据 Pinia：无数据�
 
 ## 开发者工具
 
-Electron 开发态开 DevTools。Vue Flow 与表格性能问题用 Performance 面板，不要猜。
+开发态**默认不**自动弹出 DevTools（`detach` 会多出一个独立窗口）。需要时在窗口内按 `Ctrl+Shift+I` 或 `F12`；或启动前设 `DW_DEVTOOLS=1`。Vue Flow 与表格性能问题用 Performance 面板，不要猜。
 
 ## 二期（不在 MVP）
 

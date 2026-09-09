@@ -35,10 +35,24 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
-    if (!app.isPackaged) {
+    if (!app.isPackaged && process.env.DW_DEVTOOLS === '1') {
       mainWindow?.webContents.openDevTools({ mode: 'detach' })
     }
   })
+
+  if (!app.isPackaged) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.type !== 'keyDown') {
+        return
+      }
+      const toggle =
+        input.key === 'F12' || (input.key === 'I' && input.control && input.shift)
+      if (toggle) {
+        event.preventDefault()
+        mainWindow?.webContents.toggleDevTools()
+      }
+    })
+  }
 
   mainWindow.webContents.once('did-finish-load', () => {
     sidecar.start()
