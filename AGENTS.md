@@ -170,6 +170,7 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 | `python/` | `py -3.12 -m pytest python/tests`（或 venv 内 pytest；Windows 可加 `--junitxml=python/pytest.xml` 再读文件） |
 | `packages/` 或 renderer TS | `pnpm` workspace 内 vitest |
 | RPC 协议 | 契约测试（stdio 或同进程 Host），两端各一正一反 |
+| Electron 壳 / sidecar | `pnpm dev`：日志出现 `[window] show` 与 `host.ready` 后关闭窗口（或停掉 Electron 进程） |
 | 仅文档 | 打开改过的 md、检查相对链接；不跑应用测试 |
 | UI 可见行为 | 已有自动测试全绿；无 E2E 时按该阶段验收做一次手工/脚本冒烟，并在 commit body 写明结果 |
 
@@ -230,7 +231,7 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 
 ```bash
 pnpm install
-pnpm dev                 # main spawn sidecar，不要手动先起两套
+pnpm dev                 # main spawn sidecar；确认窗口起来后关闭，不要手动先起两套
 pnpm --filter @dw/app test   # vitest
 
 cd python

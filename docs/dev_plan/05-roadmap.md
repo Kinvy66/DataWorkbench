@@ -53,6 +53,7 @@ gantt
 **验收**
 
 - 冷启动后 10s 内日志出现 `host.ready`。
+- `pnpm dev` 窗口能起来（`[window] show`），然后可关闭。
 - 故意在 Python 里 `print("oops")` 到 stdout 时，主进程能报协议污染而不是死等。
 - `host.shutdown` 后进程退出码 0。
 

@@ -21,6 +21,7 @@ Windows 上 pytest 输出若被吞，用 `--junitxml=pytest.xml` 再读文件，
 
 - 一个可独立验收的功能，或一个 P0–P5 阶段结束 → 自测绿 → `git commit` → `git push`。
 - AI 必须**实际执行**对应测试命令，把结果写进 commit body（如 `自测：uv run pytest … 通过`），不得只声称「应该能过」。
+- 触及窗口 / Electron / sidecar 时加一条：`pnpm dev` 能起来（`[window] show` + `host.ready`），然后关闭。
 - 无测试框架的文档改动：核对链接后提交，body 注明「仅文档」。
 - 测试失败：修复后重新跑；**禁止**带红测试推送。
 
