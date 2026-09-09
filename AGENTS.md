@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（进行中） → P3 分析节点 → P4 图表 → P5 工程文件**
 
-P1 任务 1–6 与 Arrow `fetchBlock` 已落地。P2：`python/dw_workflow` + `dw_nodes_system`（Start/End/Constant/Delay/DataToManager）已 vendor；sidecar 已实现 `workflow.*` RPC；Vue Flow 画布、节点工具箱、属性表单、Ribbon 运行/停止、dump/load wrap（`getGraph` + `loadAndWrap`）、Delay 执行中 Stop 已接入。下一步是 undo。不要做图表、自由停靠或 Agent。Home 剪贴板 undo/redo 仍属 P2 后期。File 保存/打开仍属 P5。
+P1 任务 1–6 与 Arrow `fetchBlock` 已落地。P2：`python/dw_workflow` + `dw_nodes_system` 已 vendor；sidecar `workflow.*` RPC、Vue Flow 画布、dump/load wrap、Delay Stop、工作流 undo/redo（Home `edit.undo`/`edit.redo`）已接入。不要做图表、自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。
 
 ## STRUCTURE
 

@@ -14,6 +14,12 @@ import type {
   WorkflowParamSpec
 } from '@dw/rpc-types'
 import { getDesktopBridge } from '@/rpc/bridge'
+import {
+  HISTORY_LIMIT,
+  samePoint,
+  type HistoryCommand,
+  type HistoryEdge
+} from './workflowHistory'
 
 export type NodeRunState = 'idle' | 'running' | 'ok' | 'error'
 
@@ -59,7 +65,10 @@ export const useWorkflowStore = defineStore('workflow', {
     paramValues: {} as Record<string, Record<string, unknown>>,
     centerTab: 'table' as 'table' | 'workflow',
     leftTab: 'datasets' as 'datasets' | 'nodes',
-    nextPlace: { x: 80, y: 80 }
+    nextPlace: { x: 80, y: 80 },
+    undoStack: [] as HistoryCommand[],
+    redoStack: [] as HistoryCommand[],
+    historyLock: 0
   }),
   getters: {
     typeByName: (state) => {
@@ -85,6 +94,12 @@ export const useWorkflowStore = defineStore('workflow', {
     },
     canEditGraph(): boolean {
       return !this.running
+    },
+    canUndo(): boolean {
+      return !this.running && this.undoStack.length > 0
+    },
+    canRedo(): boolean {
+      return !this.running && this.redoStack.length > 0
     }
   },
   actions: {
@@ -106,18 +121,26 @@ export const useWorkflowStore = defineStore('workflow', {
       }
       return this.workflowId
     },
-    async addNode(qualifiedName: string, position?: { x: number; y: number }): Promise<void> {
+    async addNode(
+      qualifiedName: string,
+      position?: { x: number; y: number },
+      options?: { nodeId?: string; record?: boolean }
+    ): Promise<string> {
       if (this.running) {
         throw busyError()
       }
       const workflowId = await this.ensureWorkflow()
       const spec = this.typeByName.get(qualifiedName)
       const pos = position ?? { x: this.nextPlace.x, y: this.nextPlace.y }
-      const added = (await rpc().invoke('workflow.addNode', {
+      const payload: Record<string, unknown> = {
         workflowId,
         qualifiedName,
         position: pos
-      })) as WorkflowAddNodeResult
+      }
+      if (options?.nodeId) {
+        payload.nodeId = options.nodeId
+      }
+      const added = (await rpc().invoke('workflow.addNode', payload)) as WorkflowAddNodeResult
       const params: Record<string, unknown> = {}
       for (const p of spec?.parameters ?? []) {
         params[p.name] = defaultParamValue(p)
@@ -142,8 +165,21 @@ export const useWorkflowStore = defineStore('workflow', {
       this.selectedNodeId = added.nodeId
       this.centerTab = 'workflow'
       this.leftTab = 'nodes'
+      if (this.shouldRecord(options?.record)) {
+        this.pushHistory({
+          kind: 'addNode',
+          nodeId: added.nodeId,
+          qualifiedName: added.qualifiedName,
+          position: { ...pos },
+          params: { ...params }
+        })
+      }
+      return added.nodeId
     },
-    async connectPorts(connection: Connection): Promise<void> {
+    async connectPorts(
+      connection: Connection,
+      options?: { record?: boolean; connectionId?: string }
+    ): Promise<string | undefined> {
       if (this.running) {
         throw busyError()
       }
@@ -161,13 +197,17 @@ export const useWorkflowStore = defineStore('workflow', {
       if (!fromPort || !toPort) {
         return
       }
-      const result = (await rpc().invoke('workflow.connect', {
+      const payload: Record<string, unknown> = {
         workflowId: this.workflowId,
         fromId: connection.source,
         fromPort,
         toId: connection.target,
         toPort
-      })) as WorkflowConnectResult
+      }
+      if (options?.connectionId) {
+        payload.connectionId = options.connectionId
+      }
+      const result = (await rpc().invoke('workflow.connect', payload)) as WorkflowConnectResult
       this.edges = [
         ...this.edges,
         {
@@ -178,13 +218,44 @@ export const useWorkflowStore = defineStore('workflow', {
           targetHandle: toPort
         }
       ]
+      if (this.shouldRecord(options?.record)) {
+        this.pushHistory({
+          kind: 'connect',
+          connectionId: result.connectionId,
+          fromId: connection.source,
+          fromPort,
+          toId: connection.target,
+          toPort
+        })
+      }
+      return result.connectionId
     },
-    async removeNode(nodeId: string): Promise<void> {
+    async removeNode(nodeId: string, options?: { record?: boolean }): Promise<void> {
       if (this.running) {
         throw busyError()
       }
       if (!this.workflowId) {
         return
+      }
+      const node = this.nodes.find((item) => item.id === nodeId)
+      if (!node) {
+        return
+      }
+      const snapshot: HistoryCommand = {
+        kind: 'removeNode',
+        nodeId,
+        qualifiedName: String((node.data as { qualifiedName?: string })?.qualifiedName ?? ''),
+        position: { x: node.position.x, y: node.position.y },
+        params: { ...(this.paramValues[nodeId] ?? {}) },
+        edges: this.edges
+          .filter((edge) => edge.source === nodeId || edge.target === nodeId)
+          .map((edge) => ({
+            connectionId: edge.id,
+            fromId: edge.source,
+            fromPort: String(edge.sourceHandle ?? ''),
+            toId: edge.target,
+            toPort: String(edge.targetHandle ?? '')
+          }))
       }
       await rpc().invoke('workflow.removeNode', { workflowId: this.workflowId, nodeId })
       this.nodes = this.nodes.filter((item) => item.id !== nodeId)
@@ -193,22 +264,44 @@ export const useWorkflowStore = defineStore('workflow', {
       if (this.selectedNodeId === nodeId) {
         this.selectedNodeId = null
       }
+      if (this.shouldRecord(options?.record)) {
+        this.pushHistory(snapshot)
+      }
     },
-    async removeEdge(edgeId: string): Promise<void> {
+    async removeEdge(edgeId: string, options?: { record?: boolean }): Promise<void> {
       if (this.running) {
         throw busyError()
       }
       if (!this.workflowId) {
         return
       }
+      const edge = this.edges.find((item) => item.id === edgeId)
+      if (!edge) {
+        return
+      }
+      const snapshot: HistoryCommand = {
+        kind: 'disconnect',
+        connectionId: edge.id,
+        fromId: edge.source,
+        fromPort: String(edge.sourceHandle ?? ''),
+        toId: edge.target,
+        toPort: String(edge.targetHandle ?? '')
+      }
       await rpc().invoke('workflow.disconnect', { workflowId: this.workflowId, connectionId: edgeId })
       this.edges = this.edges.filter((item) => item.id !== edgeId)
+      if (this.shouldRecord(options?.record)) {
+        this.pushHistory(snapshot)
+      }
     },
-    async setParam(nodeId: string, name: string, value: unknown): Promise<void> {
+    async setParam(nodeId: string, name: string, value: unknown, options?: { record?: boolean }): Promise<void> {
       if (this.running) {
         throw busyError()
       }
       if (!this.workflowId) {
+        return
+      }
+      const oldValue = this.paramValues[nodeId]?.[name]
+      if (oldValue === value) {
         return
       }
       await rpc().invoke('workflow.setParam', {
@@ -219,6 +312,15 @@ export const useWorkflowStore = defineStore('workflow', {
       })
       const current = this.paramValues[nodeId] ?? {}
       this.paramValues[nodeId] = { ...current, [name]: value }
+      if (this.shouldRecord(options?.record)) {
+        this.pushHistory({
+          kind: 'setParam',
+          nodeId,
+          name,
+          oldValue,
+          newValue: value
+        })
+      }
     },
     async dumpLogic(): Promise<WorkflowDumpLogicResult> {
       if (!this.workflowId) {
@@ -288,6 +390,8 @@ export const useWorkflowStore = defineStore('workflow', {
         targetHandle: conn.toPort
       }))
       this.paramValues = paramValues
+      this.undoStack = []
+      this.redoStack = []
       const last = nodes[nodes.length - 1]
       if (last) {
         this.nextPlace = { x: last.position.x + 36, y: last.position.y + 36 }
@@ -330,6 +434,134 @@ export const useWorkflowStore = defineStore('workflow', {
       this.running = false
       if (!ok) {
         return
+      }
+    },
+    recordMove(nodeId: string, from: { x: number; y: number }, to: { x: number; y: number }): void {
+      if (this.running || samePoint(from, to) || !this.shouldRecord(true)) {
+        return
+      }
+      this.pushHistory({
+        kind: 'move',
+        nodeId,
+        from: { ...from },
+        to: { ...to }
+      })
+    },
+    async undo(): Promise<void> {
+      if (this.running) {
+        throw busyError()
+      }
+      const cmd = this.undoStack[this.undoStack.length - 1]
+      if (!cmd) {
+        return
+      }
+      this.historyLock += 1
+      try {
+        await this.playHistory(cmd, 'undo')
+        this.undoStack.pop()
+        this.redoStack.push(cmd)
+      } finally {
+        this.historyLock -= 1
+      }
+    },
+    async redo(): Promise<void> {
+      if (this.running) {
+        throw busyError()
+      }
+      const cmd = this.redoStack[this.redoStack.length - 1]
+      if (!cmd) {
+        return
+      }
+      this.historyLock += 1
+      try {
+        await this.playHistory(cmd, 'redo')
+        this.redoStack.pop()
+        this.undoStack.push(cmd)
+      } finally {
+        this.historyLock -= 1
+      }
+    },
+    shouldRecord(record?: boolean): boolean {
+      return record !== false && this.historyLock === 0 && !this.running
+    },
+    pushHistory(cmd: HistoryCommand): void {
+      this.undoStack = [...this.undoStack, cmd].slice(-HISTORY_LIMIT)
+      this.redoStack = []
+    },
+    async playHistory(cmd: HistoryCommand, direction: 'undo' | 'redo'): Promise<void> {
+      const reverse = direction === 'undo'
+      if (cmd.kind === 'addNode') {
+        if (reverse) {
+          await this.removeNode(cmd.nodeId, { record: false })
+        } else {
+          await this.restoreNode(cmd)
+        }
+        return
+      }
+      if (cmd.kind === 'removeNode') {
+        if (reverse) {
+          await this.restoreNode(cmd)
+        } else {
+          await this.removeNode(cmd.nodeId, { record: false })
+        }
+        return
+      }
+      if (cmd.kind === 'connect') {
+        if (reverse) {
+          await this.removeEdge(cmd.connectionId, { record: false })
+        } else {
+          await this.restoreEdge(cmd)
+        }
+        return
+      }
+      if (cmd.kind === 'disconnect') {
+        if (reverse) {
+          await this.restoreEdge(cmd)
+        } else {
+          await this.removeEdge(cmd.connectionId, { record: false })
+        }
+        return
+      }
+      if (cmd.kind === 'setParam') {
+        await this.setParam(cmd.nodeId, cmd.name, reverse ? cmd.oldValue : cmd.newValue, { record: false })
+        return
+      }
+      const pos = reverse ? cmd.from : cmd.to
+      this.nodes = this.nodes.map((item) => {
+        if (item.id !== cmd.nodeId) {
+          return item
+        }
+        return { ...item, position: { x: pos.x, y: pos.y } }
+      })
+    },
+    async restoreNode(cmd: Extract<HistoryCommand, { kind: 'addNode' | 'removeNode' }>): Promise<void> {
+      await this.addNode(cmd.qualifiedName, cmd.position, { nodeId: cmd.nodeId, record: false })
+      for (const [name, value] of Object.entries(cmd.params)) {
+        await this.setParam(cmd.nodeId, name, value, { record: false })
+      }
+      if (cmd.kind !== 'removeNode') {
+        return
+      }
+      for (const edge of cmd.edges) {
+        const other = edge.fromId === cmd.nodeId ? edge.toId : edge.fromId
+        if (!this.nodes.some((item) => item.id === other)) {
+          continue
+        }
+        await this.restoreEdge(edge)
+      }
+    },
+    async restoreEdge(edge: HistoryEdge): Promise<void> {
+      const connectionId = await this.connectPorts(
+        {
+          source: edge.fromId,
+          target: edge.toId,
+          sourceHandle: edge.fromPort,
+          targetHandle: edge.toPort
+        },
+        { record: false, connectionId: edge.connectionId }
+      )
+      if (connectionId) {
+        edge.connectionId = connectionId
       }
     },
     setNodes(nodes: Node[]): void {

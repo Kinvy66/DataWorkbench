@@ -68,7 +68,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `workflow.addNode` | `{workflowId, qualifiedName, nodeId?, position?}` | 工厂 `create_node`；`nodeId` 省略则 Python 生成。`position` 仅会话缓存，不进逻辑 dump |
 | `workflow.removeNode` | `{workflowId, nodeId}` | |
 | `workflow.setParam` | `{workflowId, nodeId, name, value}` | value 为 JSON 可序列化 |
-| `workflow.connect` | `{workflowId, fromId, fromPort, toId, toPort}` | 重复端口对 → error（`workflow.duplicateConnection`） |
+| `workflow.connect` | `{workflowId, fromId, fromPort, toId, toPort, connectionId?}` | 重复端口对 → error（`workflow.duplicateConnection`）。`connectionId` 供 undo 恢复同一条边 |
 | `workflow.disconnect` | `{workflowId, connectionId}` 或同字段四元组 | |
 | `workflow.execute` | `{workflowId}` | 异步；先回 `{accepted:true, workflowId}`，再发通知。有环立即 `2002`，不启动线程 |
 | `workflow.pause` / `resume` / `stop` | `{workflowId}` | 映射 executor `pause`/`resume`/`terminate` |

@@ -6,6 +6,7 @@ import enLocale from 'element-plus/es/locale/lang/en'
 import { useI18n } from 'vue-i18n'
 import AppRibbon from '@/ribbon/AppRibbon.vue'
 import WorkbenchLayout from '@/layout/WorkbenchLayout.vue'
+import { commandBus } from '@/commands/commandBus'
 import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
 import { useWorkflowStore } from '@/stores/workflow'
@@ -21,6 +22,31 @@ const workflow = useWorkflowStore()
 const offs: Array<() => void> = []
 
 onMounted(() => {
+  const onKey = (event: KeyboardEvent): void => {
+    if (!(event.ctrlKey || event.metaKey)) {
+      return
+    }
+    const target = event.target
+    if (target instanceof HTMLElement) {
+      const tag = target.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) {
+        return
+      }
+    }
+    const key = event.key.toLowerCase()
+    if (key === 'z' && !event.shiftKey) {
+      event.preventDefault()
+      void commandBus.dispatch('edit.undo')
+      return
+    }
+    if (key === 'y' || (key === 'z' && event.shiftKey)) {
+      event.preventDefault()
+      void commandBus.dispatch('edit.redo')
+    }
+  }
+  window.addEventListener('keydown', onKey)
+  offs.push(() => window.removeEventListener('keydown', onKey))
+
   let rpc: NonNullable<Window['dw']>['rpc']
   try {
     rpc = getDesktopBridge().rpc

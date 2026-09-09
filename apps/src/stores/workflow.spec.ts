@@ -34,6 +34,7 @@ describe('useWorkflowStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     let nodeSeq = 0
+    let connSeq = 0
     invoke.mockReset()
     invoke.mockImplementation(async (method: string, params: Record<string, unknown> = {}) => {
       if (method === 'workflow.listNodeTypes') {
@@ -43,11 +44,15 @@ describe('useWorkflowStore', () => {
         return { workflowId: 'wf-1', name: 'untitle' }
       }
       if (method === 'workflow.addNode') {
+        if (typeof params.nodeId === 'string' && params.nodeId) {
+          return { nodeId: params.nodeId, qualifiedName: params.qualifiedName }
+        }
         nodeSeq += 1
         return { nodeId: `node-${nodeSeq}`, qualifiedName: params.qualifiedName }
       }
       if (method === 'workflow.connect') {
-        return { connectionId: 'conn-1' }
+        connSeq += 1
+        return { connectionId: params.connectionId ?? `conn-${connSeq}` }
       }
       if (method === 'workflow.execute') {
         return { accepted: true, workflowId: 'wf-1' }
@@ -240,5 +245,109 @@ describe('useWorkflowStore', () => {
     store.applyFinished('wf-1', true)
     expect(store.running).toBe(false)
     expect(store.canRun).toBe(true)
+  })
+
+  it('undoes addNode via removeNode and restores the same id on redo', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(constantType.qualifiedName, { x: 40, y: 80 })
+    expect(store.canUndo).toBe(true)
+    await store.undo()
+    expect(store.nodes).toEqual([])
+    expect(invoke).toHaveBeenCalledWith('workflow.removeNode', { workflowId: 'wf-1', nodeId: 'node-1' })
+    await store.redo()
+    expect(store.nodes[0]?.id).toBe('node-1')
+    expect(invoke).toHaveBeenCalledWith(
+      'workflow.addNode',
+      expect.objectContaining({
+        workflowId: 'wf-1',
+        qualifiedName: constantType.qualifiedName,
+        nodeId: 'node-1'
+      })
+    )
+  })
+
+  it('undoes connect via disconnect', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(constantType.qualifiedName)
+    await store.addNode(dataMgrType.qualifiedName)
+    await store.connectPorts({
+      source: 'node-1',
+      target: 'node-2',
+      sourceHandle: 'value',
+      targetHandle: 'data'
+    })
+    expect(store.edges).toHaveLength(1)
+    await store.undo()
+    expect(store.edges).toEqual([])
+    expect(invoke).toHaveBeenCalledWith('workflow.disconnect', {
+      workflowId: 'wf-1',
+      connectionId: 'conn-1'
+    })
+  })
+
+  it('restores a deleted node and its edge without recording extra history', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(constantType.qualifiedName)
+    await store.addNode(dataMgrType.qualifiedName)
+    await store.connectPorts({
+      source: 'node-1',
+      target: 'node-2',
+      sourceHandle: 'value',
+      targetHandle: 'data'
+    })
+    await store.removeNode('node-1')
+    expect(store.nodes.map((item) => item.id)).toEqual(['node-2'])
+    expect(store.edges).toEqual([])
+    await store.undo()
+    expect(store.nodes.map((item) => item.id)).toEqual(['node-2', 'node-1'])
+    expect(store.edges).toHaveLength(1)
+    expect(store.edges[0]?.id).toBe('conn-1')
+    expect(store.canRedo).toBe(true)
+    expect(store.undoStack.length).toBe(3)
+  })
+
+  it('undoes setParam back to the previous value', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(constantType.qualifiedName)
+    await store.setParam('node-1', 'value', '[9]')
+    await store.undo()
+    expect(store.paramValues['node-1']?.value).toBe('1')
+    expect(invoke).toHaveBeenCalledWith('workflow.setParam', {
+      workflowId: 'wf-1',
+      nodeId: 'node-1',
+      name: 'value',
+      value: '1'
+    })
+  })
+
+  it('undoes a node move locally without RPC', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(constantType.qualifiedName, { x: 40, y: 80 })
+    store.setNodes([{ ...store.nodes[0]!, position: { x: 120, y: 160 } }])
+    store.recordMove('node-1', { x: 40, y: 80 }, { x: 120, y: 160 })
+    invoke.mockClear()
+    await store.undo()
+    expect(store.nodes[0]?.position).toEqual({ x: 40, y: 80 })
+    expect(invoke).not.toHaveBeenCalled()
+  })
+
+  it('clears undo history when wrapping a loaded graph', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(constantType.qualifiedName)
+    expect(store.canUndo).toBe(true)
+    store.applyWrappedGraph({
+      workflowId: 'wf-2',
+      name: 'logic',
+      nodes: [
+        {
+          nodeId: 'const-1',
+          qualifiedName: constantType.qualifiedName,
+          parameters: { value: '1' }
+        }
+      ],
+      connections: []
+    })
+    expect(store.canUndo).toBe(false)
+    expect(store.canRedo).toBe(false)
   })
 })

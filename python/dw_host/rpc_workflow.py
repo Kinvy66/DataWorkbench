@@ -41,6 +41,7 @@ class ConnectParams(BaseModel):
     fromPort: str
     toId: str
     toPort: str
+    connectionId: str | None = None
 
 
 class DisconnectParams(BaseModel):
@@ -92,7 +93,14 @@ def dispatch(method: str, params: dict[str, Any], runtime: WorkflowRuntime) -> A
         return runtime.set_param(parsed.workflowId, parsed.nodeId, parsed.name, parsed.value)
     if method == "workflow.connect":
         parsed = ConnectParams.model_validate(params)
-        return runtime.connect(parsed.workflowId, parsed.fromId, parsed.fromPort, parsed.toId, parsed.toPort)
+        return runtime.connect(
+            parsed.workflowId,
+            parsed.fromId,
+            parsed.fromPort,
+            parsed.toId,
+            parsed.toPort,
+            parsed.connectionId,
+        )
     if method == "workflow.disconnect":
         parsed = DisconnectParams.model_validate(params)
         return runtime.disconnect(

@@ -34,6 +34,21 @@ def test_get_graph_after_load_keeps_ids_and_ports() -> None:
     assert {item["nodeId"] for item in graph2["nodes"]} == {item["nodeId"] for item in graph["nodes"]}
 
 
+def test_add_node_and_connect_reuse_ids() -> None:
+    runtime = WorkflowRuntime(notify=lambda _method, _params: None)
+    workflow_id = runtime.create("ids")["workflowId"]
+    src = runtime.add_node(workflow_id, ConstantNode.qualified_name, node_id="keep-src")
+    dst = runtime.add_node(workflow_id, EndNode.qualified_name, node_id="keep-dst")
+    assert src["nodeId"] == "keep-src"
+    connected = runtime.connect(workflow_id, src["nodeId"], "value", dst["nodeId"], "done", "keep-edge")
+    assert connected["connectionId"] == "keep-edge"
+    runtime.remove_node(workflow_id, "keep-src")
+    restored = runtime.add_node(workflow_id, ConstantNode.qualified_name, node_id="keep-src")
+    assert restored["nodeId"] == "keep-src"
+    again = runtime.connect(workflow_id, "keep-src", "value", "keep-dst", "done", "keep-edge")
+    assert again["connectionId"] == "keep-edge"
+
+
 def test_stop_interrupts_delay_wait() -> None:
     notes: list[tuple[str, dict]] = []
     runtime = WorkflowRuntime(notify=lambda method, params: notes.append((method, params)))

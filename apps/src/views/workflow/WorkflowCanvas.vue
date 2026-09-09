@@ -83,6 +83,21 @@ function onPaneClick(): void {
   store.selectedNodeId = null
 }
 
+const dragOrigin = new Map<string, { x: number; y: number }>()
+
+function onNodeDragStart(_event: MouseEvent, node: { id: string; position: { x: number; y: number } }): void {
+  dragOrigin.set(node.id, { x: node.position.x, y: node.position.y })
+}
+
+function onNodeDragStop(_event: MouseEvent, node: { id: string; position: { x: number; y: number } }): void {
+  const from = dragOrigin.get(node.id)
+  dragOrigin.delete(node.id)
+  if (!from) {
+    return
+  }
+  store.recordMove(node.id, from, { x: node.position.x, y: node.position.y })
+}
+
 function onDragOver(event: DragEvent): void {
   event.preventDefault()
   if (event.dataTransfer) {
@@ -118,6 +133,8 @@ function onDrop(event: DragEvent): void {
       @connect="onConnect"
       @node-click="onNodeClick"
       @pane-click="onPaneClick"
+      @node-drag-start="onNodeDragStart"
+      @node-drag-stop="onNodeDragStop"
     >
       <Background />
     </VueFlow>

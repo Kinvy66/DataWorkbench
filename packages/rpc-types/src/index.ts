@@ -273,6 +273,7 @@ export interface WorkflowConnectParams {
   fromPort: string
   toId: string
   toPort: string
+  connectionId?: string
 }
 
 export interface WorkflowConnectResult {

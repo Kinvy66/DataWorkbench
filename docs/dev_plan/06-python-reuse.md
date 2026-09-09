@@ -12,7 +12,7 @@
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/nodes/style_demo_nodes.py` | 可选，仅开发 | 可不上生产 |
 | `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n |
 
-`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap 与 Delay Stop 已落地：`python/dw_workflow` vendor 自上游 `9dd298fe`，`python/dw_nodes_system` 含 Start/End/Constant/Delay/DataToManager；`workflow.*` 经 stdio 可 create/addNode/connect/`listNodeTypes`/`dumpLogic`/`loadLogic`/`getGraph`/`execute`/`stop`。Vue Flow 经 `loadAndWrap` 按 `nodeId` wrap，load 路径禁止 `addNode`。Delay 用会话 cancel Event 可中断等待。尚未做 If/Else、TextViewer、undo。
+`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地：`python/dw_workflow` vendor 自上游 `9dd298fe`，`python/dw_nodes_system` 含 Start/End/Constant/Delay/DataToManager；`workflow.*` 经 stdio 可 create/addNode/connect/`listNodeTypes`/`dumpLogic`/`loadLogic`/`getGraph`/`execute`/`stop`。Vue Flow 经 `loadAndWrap` 按 `nodeId` wrap，load 路径禁止 `addNode`。Delay 用会话 cancel Event 可中断等待。尚未做 If/Else、TextViewer。
 
 ## 移植并改 Host（必须改）
 

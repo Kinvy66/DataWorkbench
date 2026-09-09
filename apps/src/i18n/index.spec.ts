@@ -24,8 +24,10 @@ describe('i18n', () => {
     expect(String(i18n.global.t('workflow.busy'))).toContain('running')
     expect(String(i18n.global.t('log.workflowStopped'))).toBe('Workflow stopped.')
     expect(String(i18n.global.t('layout.fitView'))).toBe('Fit view')
+    expect(String(i18n.global.t('ribbon.undo'))).toBe('Undo')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('layout.fitView'))).toBe('适应画布')
     expect(String(i18n.global.t('log.workflowStopped'))).toBe('工作流已停止。')
+    expect(String(i18n.global.t('ribbon.undo'))).toBe('撤销')
   })
 })

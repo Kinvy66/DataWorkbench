@@ -17,6 +17,8 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/renameColumns')).toMatch(/renameColumns\.svg/)
     expect(resolveIconUrl('app/run')).toMatch(/run\.svg/)
     expect(resolveIconUrl('app/stop')).toMatch(/stop\.svg/)
+    expect(resolveIconUrl('app/undo')).toMatch(/undo\.svg/)
+    expect(resolveIconUrl('app/redo')).toMatch(/redo\.svg/)
     expect(resolveIconUrl('app/zoomIn')).toMatch(/zoomIn\.svg/)
     expect(resolveIconUrl('app/zoomOut')).toMatch(/zoomOut\.svg/)
     expect(resolveIconUrl('app/viewAll')).toMatch(/viewAll\.svg/)

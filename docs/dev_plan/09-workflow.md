@@ -75,9 +75,9 @@ If/Else：P2 末期可用菱形 CSS `clip-path`，非必须。
 
 ## 撤销（P2 最小）
 
-只覆盖：加节点、删节点、连线、断线。每条命令保存 RPC 正反方法。参数编辑可进同一栈（setParam 旧值）。**移动节点**只 undo 前端坐标。
+只覆盖：加节点、删节点、连线、断线、参数、移动。每条命令保存 RPC 正反方法（移动只改 Pinia 坐标）。Home「剪贴板」走 `edit.undo` / `edit.redo`，快捷键 Ctrl+Z / Ctrl+Y（输入框内不抢）。
 
-不与表格 patch undo 混为一条全局栈（一期两个栈，或只工作流可撤销）。
+不与表格 patch undo 混为一条全局栈（一期只工作流可撤销）。`loadAndWrap` 清空历史。
 
 ## 运行时状态
 
@@ -86,7 +86,7 @@ If/Else：P2 末期可用菱形 CSS `clip-path`，非必须。
 ## 测试
 
 - Python：roundtrip、有环 `execute` 失败、Constant `literal_eval`；`loadLogic` 后 `getGraph` 的 `nodeId`/端口与 dump 一致；Delay 执行中 `stop` 在超时前结束并带 `cancelled`
-- 前端：Vitest 测 RPC mock 失败时不插入节点；`loadAndWrap` 只调 `loadLogic`+`getGraph`（类型未缓存时再加 `listNodeTypes`），不调 `addNode`/`create`
+- 前端：Vitest 测 RPC mock 失败时不插入节点；`loadAndWrap` 只调 `loadLogic`+`getGraph`；undo/redo 走反向 RPC 且不插入额外历史
 
 ## 和上游文档的对应阅读
 

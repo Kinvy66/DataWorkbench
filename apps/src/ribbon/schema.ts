@@ -18,6 +18,35 @@ export function useRibbonSchema() {
         title: t('ribbon.home'),
         groups: [
           {
+            id: 'clipboard',
+            title: t('ribbon.clipboard'),
+            collections: [
+              {
+                id: 'clipboard-actions',
+                items: [
+                  {
+                    id: 'edit.undo',
+                    type: 'button',
+                    label: t('ribbon.undo'),
+                    tooltip: t('ribbon.undoTip'),
+                    size: 'large',
+                    disabled: !workflow.canUndo,
+                    icon: ribbonIcon('app/undo')
+                  },
+                  {
+                    id: 'edit.redo',
+                    type: 'button',
+                    label: t('ribbon.redo'),
+                    tooltip: t('ribbon.redoTip'),
+                    size: 'large',
+                    disabled: !workflow.canRedo,
+                    icon: ribbonIcon('app/redo')
+                  }
+                ]
+              }
+            ]
+          },
+          {
             id: 'sidecar',
             title: t('ribbon.sidecar'),
             collections: [

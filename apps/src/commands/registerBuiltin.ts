@@ -138,6 +138,30 @@ export function registerBuiltinCommands(): void {
   )
 
   commandBus.register(
+    'edit.undo',
+    async () => {
+      try {
+        await useWorkflowStore().undo()
+      } catch (err) {
+        reportError(err)
+      }
+    },
+    () => useWorkflowStore().canUndo
+  )
+
+  commandBus.register(
+    'edit.redo',
+    async () => {
+      try {
+        await useWorkflowStore().redo()
+      } catch (err) {
+        reportError(err)
+      }
+    },
+    () => useWorkflowStore().canRedo
+  )
+
+  commandBus.register(
     'workflow.run',
     async () => {
       try {

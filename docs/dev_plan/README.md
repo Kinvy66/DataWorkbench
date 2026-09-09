@@ -41,4 +41,4 @@ flowchart LR
 
 ## 当前状态
 
-P0 骨架已落地。P1 数据自动验收已完成。P2 已接入 Vue Flow 画布、System 节点工具箱、DataToManager、dump/load wrap（`loadLogic` → `getGraph` → wrap，不走 `addNode`）与 Delay 执行中 Stop。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。尚未做 undo。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。
+P0 骨架已落地。P1 数据自动验收已完成。P2 已接入 Vue Flow 画布、System 节点工具箱、DataToManager、dump/load wrap、Delay Stop 与工作流 undo/redo。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。P3 起为分析节点。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。

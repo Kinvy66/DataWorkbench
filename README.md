@@ -51,7 +51,7 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**P0 完成，P1 自动验收完成，P2 画布、DataToManager、dump/load wrap 与 Delay Stop 已落地**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export。虚表块走 Arrow IPC。左侧「节点」可拖 Constant / Output to DataManager，Ribbon「工作流 → 运行」执行后数据集列表会出现条目。Delay 执行中可 Stop。File 保存/打开与 undo 尚未做。
+**P0 完成，P1 自动验收完成，P2 画布、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export。虚表块走 Arrow IPC。左侧「节点」可拖 Constant / Output to DataManager，Ribbon「工作流 → 运行」执行后数据集列表会出现条目。Delay 执行中可 Stop；Home 撤销/重做可回退画布编辑。File 保存/打开尚未做。
 
 阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 

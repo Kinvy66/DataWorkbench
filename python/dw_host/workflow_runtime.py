@@ -181,17 +181,18 @@ class WorkflowRuntime:
         from_port: str,
         to_id: str,
         to_port: str,
+        connection_id: str | None = None,
     ) -> dict[str, Any]:
         session = self._session(workflow_id)
         self._ensure_idle(session)
         try:
-            conn = DAConnection(from_id, from_port, to_id, to_port)
-            connection_id = session.workflow.add_connection(conn)
+            conn = DAConnection(from_id, from_port, to_id, to_port, connection_id)
+            assigned = session.workflow.add_connection(conn)
         except ValueError as exc:
             raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.duplicateConnection") from exc
         except KeyError as exc:
             raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.nodeNotFound") from exc
-        return {"connectionId": connection_id}
+        return {"connectionId": assigned}
 
     def disconnect(
         self,
