@@ -1,0 +1,60 @@
+# 仓库目录
+
+单仓 monorepo：桌面应用、共享 TS 类型、Python sidecar 分目录。包管理 pnpm workspace + Python `uv` 或 `pip-tools`（二选一，P0 钉死 **uv**）。
+
+## 目标树
+
+```text
+DataWorkbench/
+├── apps/
+│   └── desktop/                 # Electron + Vue 入口
+│       ├── electron/            # main + preload
+│       ├── src/                 # renderer Vue
+│       │   ├── commands/        # 命令总线
+│       │   ├── layout/          # 一期固定分区
+│       │   ├── ribbon/          # ML Ribbon schema
+│       │   ├── views/
+│       │   │   ├── data/
+│       │   │   ├── workflow/
+│       │   │   └── chart/
+│       │   ├── stores/
+│       │   └── i18n/
+│       └── package.json
+├── packages/
+│   ├── rpc-types/               # TS 与 Python 共用的 RPC 方法名/payload 类型
+│   └── chart-core/              # uPlot 封装、降采样、导出（纯 TS，无 Electron）
+├── python/
+│   ├── dw_host/                 # RPC 循环、DataManager、取代 da_app
+│   ├── dw_workflow/             # vendor 自 DAWorkFlowPy，包名可保留内部 API
+│   ├── dw_nodes_system/         # 从 DASystemNodes 移植
+│   ├── dw_nodes_analysis/       # 从 DADataAnalysisNodes + Core 移植
+│   ├── pyproject.toml
+│   └── tests/
+├── docs/
+│   └── dev_plan/                # 本计划
+├── scripts/                     # 开发启动、复制上游 Python、打包
+├── pnpm-workspace.yaml
+├── package.json
+├── AGENTS.md                    # 给后续 AI 的仓库约定（P0 补写，不在本期计划范围内强制）
+└── README.md
+```
+
+## 包边界
+
+| 包 | 允许依赖 | 禁止 |
+|----|----------|------|
+| `packages/rpc-types` | 无运行时依赖（types only） | Element Plus、Electron |
+| `packages/chart-core` | uPlot | Pinia、ipcRenderer |
+| `apps/desktop` renderer | 上述 packages、Vue、Element Plus、Ribbon、Vue Flow | `child_process`、`fs`（一律 preload API） |
+| `apps/desktop` main | Electron、spawn | Vue、pandas |
+| `python/dw_host` | dw_workflow、pandas、pyarrow | 任何 frontend |
+
+## 命名
+
+- TS：文件夹 kebab-case，组件 PascalCase，Pinia `useXxxStore`。
+- Python：包 `dw_*`，模块 snake_case。节点 `@NodeDef(name=...)` **保持英文且不翻译**（与上游序列化约定一致）。
+- RPC 方法：`域.动作`，如 `data.fetchBlock`、`workflow.execute`。
+
+## 上游对照拷贝（只读参考，不进 git submodule 强制）
+
+开发机可设置环境变量 `DAWB_UPSTREAM=F:/Rep/CAE_Code/data-workbench`，`scripts/sync-python-from-upstream.ps1` 按 [06-python-reuse.md](./06-python-reuse.md) 白名单拷贝。拷贝后必须能跑 `python -m pytest python/tests`。不要 submodule 整个 C++ 仓库。

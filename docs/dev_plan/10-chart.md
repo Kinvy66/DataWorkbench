@@ -1,0 +1,89 @@
+# 图表模块
+
+对标上游 `DAFigure` + `ChartSetting` 的**产品意图**（科研出图、可改样式、矢量导出），不复刻 Qwt 实现。一期把「交互式微调」定义为**属性面板**，不是画布拖标注。
+
+## 一期范围（P4）
+
+**特性**
+
+- ✅ 类型：折线、散点、柱状、直方图
+- ✅ 绑定：当前 dataset 的 x 列 + 1..N 条 y 列
+- ✅ 样式：标题、轴标签、线色、线宽、网格开关、图例开关
+- ✅ 交互：缩放、平移（uPlot 内置）、复位
+- ✅ 导出：PNG、SVG（PDF 可用打印到 PDF 或 svg→pdf 库，一期可只 PNG+SVG）
+- ✅ 大数据：`chart.buildSeries` 在 Python 做 min-max 桶或 LTTB，默认上限 5000 点回传
+
+## 一期不做
+
+- 子图网格（matplotlib 式 Figure 多 axes）—— 可用多个主区 tab 代替
+- 文本/箭头/区域标注拖拽
+- 数据探针十字线（可做简易悬停 tooltip，非探针体系）
+- 3D、热力、箱线、谱图
+- 与 Qwt 工程 `charts.xml` 互导
+- Agent 自动绑图
+
+## 数据流
+
+```mermaid
+sequenceDiagram
+    participant UI as ChartView
+    participant M as Main
+    participant P as Python
+
+    UI->>M: chart.buildSeries {dataId,x,y,maxPoints,xMin?,xMax?}
+    M->>P: 降采样
+    P-->>UI: {x:Float64Array via Arrow或json, ys:[]}
+    UI->>UI: uPlot.setData
+```
+
+视口变化停止 150ms 后再请求（可选，P4 最后一周）。第一版可全列降采样一次，缩放只是前端放大已采样点（会失真，需在 UI 提示 “overview downsample”）。
+
+## 前端结构
+
+`packages/chart-core`：
+
+- `downsample.ts` 仅作测试对照；**生产降采样以 Python 为准**（避免双端不一致）
+- `UPlotChart.ts` 封装 setData/setSize
+- `exportSvg.ts` / `exportPng.ts`
+
+`apps/desktop/src/views/chart`：工具条 + 画布 + 绑定对话框（选列）。
+
+## Python `chart.buildSeries`
+
+- 非数值列：error 1002，提示先 query 或选数值列（对齐上游 Agent 工具的错误策略，但无 Agent）
+- NaN：断开折线或跳点，与 pandas 行为一致并在文档写死一种
+- datetime x：转 epoch ms，uPlot 用 time 轴
+
+## 样式对象（存入工程 `charts.json`）
+
+```json
+{
+  "id": "uuid",
+  "type": "line",
+  "dataId": "uuid",
+  "x": "t",
+  "y": ["ch1", "ch2"],
+  "title": "Run 01",
+  "xLabel": "Time",
+  "yLabel": "Value",
+  "series": [{"key": "ch1", "color": "#5280C1", "width": 1.5}]
+}
+```
+
+不存采样点。打开工程后按绑定重新 `buildSeries`。
+
+## 二期（单独排期，不阻塞 MVP）
+
+1. 箱线 / 直方更专业的 bin 参数  
+2. 多 subplot  
+3. 标注层（SVG overlay）  
+4. 导出 PDF  
+5. 颜色循环与色盲安全色板（可抄上游 icon 色）  
+
+## 验收对照
+
+| 检查 | 通过 |
+|------|------|
+| 小数据（<2 万点） | 无降采样提示，缩放后点位置与表一致（抽查） |
+| 100 万点 | 构建序列 < 3s；交互不掉到 5fps 以下 |
+| SVG | 在浏览器或 Inkscape 打开可见曲线与标题 |
