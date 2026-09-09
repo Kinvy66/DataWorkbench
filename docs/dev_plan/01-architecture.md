@@ -47,7 +47,7 @@ flowchart TB
 
 | 上游 | 本仓库 | 策略 |
 |------|--------|------|
-| APP + DAGui 壳（Ribbon/Dock） | `apps/desktop` Vue 壳 | 重写 |
+| APP + DAGui 壳（Ribbon/Dock） | `apps` Vue 壳（`@dw/app`） | 重写 |
 | SARibbon | `@mlightcad/ribbon` | 替换 |
 | Qt-Advanced-Docking-System | 一期固定分区，二期 Golden Layout | 降级后重写 |
 | DAPyWorkFlow C++ 代理 | 删除 | Python 引擎直连 RPC |

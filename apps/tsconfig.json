@@ -13,7 +13,7 @@
     "types": ["node"],
     "paths": {
       "@/*": ["./src/*"],
-      "@dw/rpc-types": ["../../packages/rpc-types/src/index.ts"]
+      "@dw/rpc-types": ["../packages/rpc-types/src/index.ts"]
     }
   },
   "include": ["electron/**/*.ts", "src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts"]

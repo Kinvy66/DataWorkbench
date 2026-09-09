@@ -4,7 +4,7 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
 
 const root = dirname(fileURLToPath(import.meta.url))
-const rpcTypes = resolve(root, '../../packages/rpc-types/src/index.ts')
+const rpcTypes = resolve(root, '../packages/rpc-types/src/index.ts')
 
 export default defineConfig({
   main: {

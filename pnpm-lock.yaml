@@ -8,11 +8,11 @@ importers:
 
   .: {}
 
-  apps/desktop:
+  apps:
     dependencies:
       '@dw/rpc-types':
         specifier: workspace:*
-        version: link:../../packages/rpc-types
+        version: link:../packages/rpc-types
       '@element-plus/icons-vue':
         specifier: ^2.3.2
         version: 2.3.2(vue@3.5.42(typescript@5.9.3))

@@ -1,25 +1,24 @@
 # 仓库目录
 
-单仓 monorepo：桌面应用、共享 TS 类型、Python sidecar 分目录。包管理 pnpm workspace + Python `uv` 或 `pip-tools`（二选一，P0 钉死 **uv**）。
+pnpm workspace：`apps` 是**唯一应用包**（`@dw/app`），`packages/*` 是共享库。本仓库不做 web/mobile 第二入口，因此不设 `apps/desktop` 这一层。
 
 ## 目标树
 
 ```text
 DataWorkbench/
-├── apps/
-│   └── desktop/                 # Electron + Vue 入口
-│       ├── electron/            # main + preload
-│       ├── src/                 # renderer Vue
-│       │   ├── commands/        # 命令总线
-│       │   ├── layout/          # 一期固定分区
-│       │   ├── ribbon/          # ML Ribbon schema
-│       │   ├── views/
-│       │   │   ├── data/
-│       │   │   ├── workflow/
-│       │   │   └── chart/
-│       │   ├── stores/
-│       │   └── i18n/
-│       └── package.json
+├── apps/                        # 唯一前端包 @dw/app（Electron + Vue）
+│   ├── electron/                # main + preload
+│   ├── src/                     # renderer Vue
+│   │   ├── commands/            # 命令总线
+│   │   ├── layout/              # 一期固定分区
+│   │   ├── ribbon/              # ML Ribbon schema
+│   │   ├── views/
+│   │   │   ├── data/
+│   │   │   ├── workflow/
+│   │   │   └── chart/
+│   │   ├── stores/
+│   │   └── i18n/
+│   └── package.json
 ├── packages/
 │   ├── rpc-types/               # TS 与 Python 共用的 RPC 方法名/payload 类型
 │   └── chart-core/              # uPlot 封装、降采样、导出（纯 TS，无 Electron）
@@ -45,8 +44,8 @@ DataWorkbench/
 |----|----------|------|
 | `packages/rpc-types` | 无运行时依赖（types only） | Element Plus、Electron |
 | `packages/chart-core` | uPlot | Pinia、ipcRenderer |
-| `apps/desktop` renderer | 上述 packages、Vue、Element Plus、Ribbon、Vue Flow | `child_process`、`fs`（一律 preload API） |
-| `apps/desktop` main | Electron、spawn | Vue、pandas |
+| `apps/src` renderer | 上述 packages、Vue、Element Plus、Ribbon、Vue Flow | `child_process`、`fs`（一律 preload API） |
+| `apps/electron` main | Electron、spawn | Vue、pandas |
 | `python/dw_host` | dw_workflow、pandas、pyarrow | 任何 frontend |
 
 ## 命名

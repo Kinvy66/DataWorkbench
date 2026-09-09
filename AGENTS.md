@@ -36,7 +36,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 ```
 DataWorkbench/
-├── apps/desktop/          # Electron main/preload + Vue renderer
+├── apps/                  # 唯一前端：Electron main/preload + Vue renderer
 │   ├── electron/
 │   └── src/               # commands / layout / ribbon / views / stores / i18n
 ├── packages/
@@ -62,8 +62,8 @@ DataWorkbench/
 
 | 位置 | 职责 | 禁止 |
 |------|------|------|
-| `apps/desktop/src` | Vue 视图、Pinia、命令总线、Ribbon schema | `child_process`、`fs`、跑 pandas |
-| `apps/desktop/electron` | 窗口、对话框、spawn/看护 Python、ZIP、RPC 桥 | Vue、业务 DAG |
+| `apps/src` | Vue 视图、Pinia、命令总线、Ribbon schema | `child_process`、`fs`、跑 pandas |
+| `apps/electron` | 窗口、对话框、spawn/看护 Python、ZIP、RPC 桥 | Vue、业务 DAG |
 | `packages/rpc-types` | RPC 方法名与 payload 类型 | 运行时 UI 依赖 |
 | `packages/chart-core` | 画布与导出（纯 TS） | 直接 IPC |
 | `python/dw_host` | JSON-RPC、DataManager、Host API | 依赖前端 |
@@ -228,7 +228,7 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 ```bash
 pnpm install
 pnpm dev                 # main spawn sidecar，不要手动先起两套
-pnpm --filter desktop test   # vitest（名称以实际 workspace 为准）
+pnpm --filter @dw/app test   # vitest
 
 cd python
 uv sync

@@ -12,7 +12,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(root, 'src'),
-      '@dw/rpc-types': resolve(root, '../../packages/rpc-types/src/index.ts')
+      '@dw/rpc-types': resolve(root, '../packages/rpc-types/src/index.ts')
     }
   }
 })

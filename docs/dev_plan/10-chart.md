@@ -46,7 +46,7 @@ sequenceDiagram
 - `UPlotChart.ts` 封装 setData/setSize
 - `exportSvg.ts` / `exportPng.ts`
 
-`apps/desktop/src/views/chart`：工具条 + 画布 + 绑定对话框（选列）。
+`apps/src/views/chart`：工具条 + 画布 + 绑定对话框（选列）。
 
 ## Python `chart.buildSeries`
 
