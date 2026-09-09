@@ -14,7 +14,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 
 - 持有 `id → DataFrame`
 - 导入/导出/改名/删除
-- `fetchBlock`：`iloc[start:start+n]` 转成 Arrow 或 JSON（日期转 ISO 字符串）
+- `fetchBlock`：`iloc[start:start+n]` 转成 Arrow IPC（`arrow-v1` 二进制帧）或 JSON 回退；日期先经 `json_cell` 成 ISO / null
 - `patchCells`：按列 dtype 解析字符串，失败返回 1002/校验错误且不部分提交（整批事务）
 - 发布接口给节点：`publish_dataframe(name, df)` 同名覆盖
 
@@ -59,7 +59,8 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | `test_patch_rollback` | 非法 float 写入数值列 → error 且原值不变 |
 | `test_import_csv_utf8` | 中文列名 roundtrip |
 | `test_xlsx_roundtrip` / `test_parquet_roundtrip` | 导入再导出内容一致 |
-| `test_data_import_list_fetch_via_rpc` | 每个 `data.*` 方法至少一正一反（stdio） |
+| `test_data_import_list_fetch_via_rpc` | 每个 `data.*` 方法至少一正一反（stdio）；`fetchBlock` 头为 `arrow-v1` |
+| `test_arrow_block` | IPC 往返与体积小于同内容 JSON |
 
 手工：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（**不要提交该文件**），Data → Import 后滚动虚表。
 

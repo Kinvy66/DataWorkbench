@@ -3,22 +3,23 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from test_host_rpc import _popen, _readline, _send
+from dw_host.arrow_block import decode_ipc_rows
+from rpc_client import popen, read_rpc, readexact, readline, send
 
 
 def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
     csv_path = tmp_path / "rpc.csv"
     csv_path.write_text("列,值\n甲,1\n乙,2\n", encoding="utf-8")
-    proc = _popen()
+    proc = popen()
     try:
-        ready = json.loads(_readline(proc))
+        ready = json.loads(readline(proc))
         assert ready["method"] == "host.ready"
 
-        _send(proc, {"jsonrpc": "2.0", "id": 1, "method": "data.list", "params": {}})
-        listed = json.loads(_readline(proc))
+        send(proc, {"jsonrpc": "2.0", "id": 1, "method": "data.list", "params": {}})
+        listed = read_rpc(proc)
         assert listed["result"]["datasets"] == []
 
-        _send(
+        send(
             proc,
             {
                 "jsonrpc": "2.0",
@@ -27,17 +28,17 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
                 "params": {"path": str(csv_path)},
             },
         )
-        imported = json.loads(_readline(proc))
+        imported = read_rpc(proc)
         assert "result" in imported, imported
         dataset_id = imported["result"]["id"]
         assert imported["result"]["rows"] == 2
         assert imported["result"]["columns"][0]["name"] == "列"
 
-        _send(proc, {"jsonrpc": "2.0", "id": 3, "method": "data.getSchema", "params": {"id": dataset_id}})
-        schema = json.loads(_readline(proc))
+        send(proc, {"jsonrpc": "2.0", "id": 3, "method": "data.getSchema", "params": {"id": dataset_id}})
+        schema = read_rpc(proc)
         assert schema["result"]["rowCount"] == 2
 
-        _send(
+        send(
             proc,
             {
                 "jsonrpc": "2.0",
@@ -46,15 +47,21 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
                 "params": {"id": dataset_id, "startRow": 0, "rowCount": 512},
             },
         )
-        block = json.loads(_readline(proc))
-        assert block["result"]["rows"][0][0] == "甲"
+        header = json.loads(readline(proc))
+        assert header["result"]["encoding"] == "arrow-v1"
+        assert header["result"]["bytes"] > 0
+        assert header["result"]["meta"]["startRow"] == 0
+        payload = readexact(proc, int(header["result"]["bytes"]))
+        assert b"\n" in payload or len(payload) > 0
+        rows = decode_ipc_rows(payload)
+        assert rows[0][0] == "甲"
 
-        _send(proc, {"jsonrpc": "2.0", "id": 5, "method": "data.remove", "params": {"id": "missing"}})
-        missing = json.loads(_readline(proc))
+        send(proc, {"jsonrpc": "2.0", "id": 5, "method": "data.remove", "params": {"id": "missing"}})
+        missing = read_rpc(proc)
         assert missing["error"]["code"] == 1001
         assert missing["error"]["data"]["i18nKey"] == "data.notFound"
 
-        _send(
+        send(
             proc,
             {
                 "jsonrpc": "2.0",
@@ -63,10 +70,10 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
                 "params": {"id": dataset_id, "patches": [{"row": 0, "col": 1, "value": "9"}]},
             },
         )
-        patched = json.loads(_readline(proc))
+        patched = read_rpc(proc)
         assert patched["result"]["ok"] is True
 
-        _send(
+        send(
             proc,
             {
                 "jsonrpc": "2.0",
@@ -75,11 +82,11 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
                 "params": {"id": dataset_id, "name": "renamed"},
             },
         )
-        renamed = json.loads(_readline(proc))
+        renamed = read_rpc(proc)
         assert renamed["result"]["ok"] is True
 
         export_path = tmp_path / "out.csv"
-        _send(
+        send(
             proc,
             {
                 "jsonrpc": "2.0",
@@ -88,11 +95,11 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
                 "params": {"id": dataset_id, "path": str(export_path), "format": "csv"},
             },
         )
-        exported = json.loads(_readline(proc))
+        exported = read_rpc(proc)
         assert exported["result"]["ok"] is True
         assert "9" in export_path.read_text(encoding="utf-8-sig")
 
-        _send(
+        send(
             proc,
             {
                 "jsonrpc": "2.0",
@@ -101,11 +108,11 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
                 "params": {"id": dataset_id, "patches": [{"row": 0, "col": 1, "value": "not-a-number"}]},
             },
         )
-        invalid = json.loads(_readline(proc))
+        invalid = read_rpc(proc)
         assert invalid["error"]["code"] == 1002
         assert invalid["error"]["data"]["i18nKey"] == "data.invalidValue"
 
-        _send(
+        send(
             proc,
             {
                 "jsonrpc": "2.0",
@@ -114,11 +121,11 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
                 "params": {"id": dataset_id, "name": "   "},
             },
         )
-        empty_name = json.loads(_readline(proc))
+        empty_name = read_rpc(proc)
         assert empty_name["error"]["code"] == 1002
         assert empty_name["error"]["data"]["i18nKey"] == "data.invalidValue"
 
-        _send(proc, {"jsonrpc": "2.0", "id": 11, "method": "host.shutdown", "params": {}})
+        send(proc, {"jsonrpc": "2.0", "id": 11, "method": "host.shutdown", "params": {}})
         proc.wait(timeout=5)
         assert proc.returncode == 0
     finally:

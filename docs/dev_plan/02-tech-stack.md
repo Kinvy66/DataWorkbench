@@ -43,7 +43,7 @@ AG Grid 交互更像 Excel，但 Community 对「外部窗口数据」要自己�
 ## IPC
 
 - 控制面：JSON-RPC 2.0，**按行** JSON（stdin/stdout），与上游 Agent 协议形态类似但语义不同。
-- 数据块：`data.fetchBlock` 的 cell 值优先 **Arrow RecordBatch**（base64 或 length-prefixed 二进制帧）。行数少（≤ 512）时允许 JSON 二维数组，便于调试。
+- 数据块：`data.fetchBlock` 走 **Arrow IPC stream**（JSON 头 `encoding=arrow-v1` + length-prefixed 裸字节）。空窗口或编码失败时回退 JSON 二维数组，便于调试。主进程解码，renderer 仍是 `{startRow, rows}`。
 - 禁止：WebSocket 再开端口（防火墙/多实例冲突）；禁止渲染进程直连 TCP。
 
 ## 否决项

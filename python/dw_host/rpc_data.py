@@ -4,6 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from dw_host.arrow_block import maybe_arrow
 from dw_host.data_manager import BLOCK_DEFAULT, DataManager
 from dw_host.errors import ErrorCode, HostError
 
@@ -62,7 +63,7 @@ class RegisterParams(BaseModel):
     handle: Any | None = None
 
 
-def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_ok: bool) -> dict[str, Any]:
+def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_ok: bool) -> Any:
     if method.startswith("data.") and method != "data.list" and not pandas_ok:
         raise HostError(
             ErrorCode.FileIo,
@@ -79,7 +80,7 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
         return manager.get_schema(parsed.id)
     if method == "data.fetchBlock":
         parsed = FetchBlockParams.model_validate(params)
-        return manager.fetch_block(parsed.id, parsed.startRow, parsed.rowCount)
+        return maybe_arrow(manager.fetch_block(parsed.id, parsed.startRow, parsed.rowCount))
     if method == "data.patchCells":
         parsed = PatchCellsParams.model_validate(params)
         manager.patch_cells(parsed.id, [p.model_dump() for p in parsed.patches])

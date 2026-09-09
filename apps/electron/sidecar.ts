@@ -3,6 +3,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { parseRpcLine } from './rpc-parse'
 import { RpcError, rpcTimeoutMs } from './rpc-error'
+import { arrowIpcToRows } from './arrow-decode'
+import { StdoutFramer, type StdoutFrame } from './rpc-frame'
 
 export type SidecarLog = { stream: 'stderr' | 'protocol'; text: string }
 
@@ -45,7 +47,7 @@ function resolvePython(repoRoot: string): { cmd: string; args: string[] } {
 
 export class SidecarBridge {
   private child: ChildProcessWithoutNullStreams | null = null
-  private buf = ''
+  private framer = new StdoutFramer()
   private nextId = 1
   private pending = new Map<
     number,
@@ -83,6 +85,7 @@ export class SidecarBridge {
     if (this.child) {
       return
     }
+    this.framer = new StdoutFramer()
     const repoRoot = findRepoRoot(__dirname)
     const pythonRoot = path.join(repoRoot, 'python')
     const py = resolvePython(repoRoot)
@@ -100,9 +103,12 @@ export class SidecarBridge {
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true
     })
-    this.child.stdout.setEncoding('utf8')
     this.child.stderr.setEncoding('utf8')
-    this.child.stdout.on('data', (chunk: string) => this.onStdout(chunk))
+    this.child.stdout.on('data', (chunk: Buffer) => {
+      for (const frame of this.framer.push(chunk)) {
+        this.handleFrame(frame)
+      }
+    })
     this.child.stderr.on('data', (chunk: string) => {
       for (const line of chunk.split(/\r?\n/)) {
         if (line.length > 0) {
@@ -164,20 +170,23 @@ export class SidecarBridge {
     })
   }
 
-  private onStdout(chunk: string): void {
-    this.buf += chunk
-    while (true) {
-      const nl = this.buf.indexOf('\n')
-      if (nl < 0) {
-        break
+  private handleFrame(frame: StdoutFrame): void {
+    if (frame.kind === 'arrow') {
+      const pending = this.pending.get(Number(frame.id))
+      if (!pending) {
+        this.emitLog({ stream: 'protocol', text: `Unexpected Arrow RPC id ${String(frame.id)}` })
+        return
       }
-      let line = this.buf.slice(0, nl)
-      this.buf = this.buf.slice(nl + 1)
-      if (line.endsWith('\r')) {
-        line = line.slice(0, -1)
+      this.pending.delete(Number(frame.id))
+      clearTimeout(pending.timer)
+      try {
+        pending.resolve({ startRow: frame.startRow, rows: arrowIpcToRows(frame.payload) })
+      } catch (err) {
+        pending.reject(err instanceof Error ? err : new Error(String(err)))
       }
-      this.handleLine(line)
+      return
     }
+    this.handleLine(frame.line)
   }
 
   private handleLine(line: string): void {

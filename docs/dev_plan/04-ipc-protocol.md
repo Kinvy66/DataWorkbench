@@ -23,9 +23,7 @@
 {"jsonrpc":"2.0","id":3,"result":{"encoding":"arrow-v1","bytes":12004,"meta":{"rows":512,"startRow":0}}}
 ```
 
-随后立刻写 **恰好 `bytes` 字节**的 Arrow streaming 或 IPC file buffer，再继续下一行 JSON。主进程按 `bytes` 读裸二进制，不按行切。
-
-一期实现可先全走 JSON 二维数组（`fetchBlock` 限制 512 行），P1 末期再加 Arrow；接口形状不要改。
+随后立刻写 **恰好 `bytes` 字节**的 Arrow IPC stream（不是按行切）。空窗口仍走 JSON `{startRow, rows:[]}`；编码失败时同样 JSON 回退。主进程按 `bytes` 读裸二进制并解码，渲染层只见 `{startRow, rows}`。
 
 ## 生命周期方法
 
@@ -52,7 +50,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `data.import` | `{path, format?}` | `{id, name, rows, cols, columns:[{name,dtype}]}` | format 缺省按后缀；**pickle 默认拒绝**（3001）。渲染进程可省略 `path`：主进程弹出打开对话框后再转发给 sidecar；用户取消返回 `{cancelled:true}`（不是 JSON-RPC error）。超时 120s |
 | `data.list` | `{}` | `{datasets:[{id,name,rows,cols}]}` | |
 | `data.getSchema` | `{id}` | `{columns, rowCount}` | 轻量，可频繁调 |
-| `data.fetchBlock` | `{id, startRow, rowCount}` | `{startRow, rows: any[][]}` 或 Arrow | `rowCount` 默认 512，上限 2048；一期为 JSON 二维数组 |
+| `data.fetchBlock` | `{id, startRow, rowCount}` | `{startRow, rows: any[][]}` | `rowCount` 默认 512，上限 2048。wire 为 Arrow IPC（`arrow-v1`）或 JSON 空窗/回退；主进程解码，renderer 形状不变 |
 | `data.patchCells` | `{id, patches:[{row,col,value}]}` | `{ok}` | 批量事务；非法 dtype → 1002，整批不提交 |
 | `data.rename` | `{id, name}` | `{ok}` | 重名时自动 `name (2)` |
 | `data.remove` | `{id}` | `{ok}` | |

@@ -9,6 +9,7 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
+from dw_host.arrow_block import ArrowBlock
 from dw_host.data_manager import DataManager
 from dw_host.errors import ErrorCode, HostError
 from dw_host.rpc_data import dispatch as dispatch_data
@@ -34,9 +35,37 @@ class HostReadyParams(BaseModel):
     pandasAvailable: bool
 
 
+def _configure_stdout() -> None:
+    """JSON lines use LF; Arrow payloads must not be translated on Windows."""
+    if sys.platform == "win32":
+        try:
+            import msvcrt
+
+            msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+        except Exception:
+            log.info("could not set stdout to binary mode")
+
+
 def _emit(obj: dict[str, Any]) -> None:
-    sys.stdout.write(json.dumps(obj, ensure_ascii=False) + "\n")
-    sys.stdout.flush()
+    payload = (json.dumps(obj, ensure_ascii=False) + "\n").encode("utf-8")
+    sys.stdout.buffer.write(payload)
+    sys.stdout.buffer.flush()
+
+
+def _emit_arrow(req_id: Any, block: ArrowBlock) -> None:
+    _emit(
+        {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "encoding": "arrow-v1",
+                "bytes": len(block.payload),
+                "meta": {"rows": block.rows, "startRow": block.start_row},
+            },
+        }
+    )
+    sys.stdout.buffer.write(block.payload)
+    sys.stdout.buffer.flush()
 
 
 def _error(req_id: Any, code: int, message: str, i18n_key: str | None = None) -> None:
@@ -93,7 +122,10 @@ def _handle(req: dict[str, Any], pandas_ok: bool, manager: DataManager) -> bool:
         except HostError as exc:
             _error(req_id, exc.code, str(exc), exc.i18n_key)
             return True
-        _emit({"jsonrpc": "2.0", "id": req_id, "result": result})
+        if isinstance(result, ArrowBlock):
+            _emit_arrow(req_id, result)
+        else:
+            _emit({"jsonrpc": "2.0", "id": req_id, "result": result})
         return True
     _error(req_id, ErrorCode.MethodNotFound, f"Method not found: {method}")
     return True
@@ -105,6 +137,7 @@ def main() -> int:
         level=logging.INFO,
         format="%(asctime)s dw_host %(levelname)s %(message)s",
     )
+    _configure_stdout()
     pandas_ok = _pandas_available()
     ready = HostReadyParams(pid=os.getpid(), pandasAvailable=pandas_ok)
     _emit({"jsonrpc": "2.0", "method": "host.ready", "params": ready.model_dump()})
@@ -112,8 +145,8 @@ def main() -> int:
 
     if os.environ.get("DW_POLLUTE_AFTER_READY") == "1":
         # Intentional protocol violation for tests. Never enable in production.
-        sys.stdout.write("oops\n")
-        sys.stdout.flush()
+        sys.stdout.buffer.write(b"oops\n")
+        sys.stdout.buffer.flush()
 
     manager = DataManager()
     for raw in sys.stdin:

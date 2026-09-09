@@ -130,6 +130,17 @@ export interface DataFetchBlockResult {
   rows: unknown[][]
 }
 
+export const ARROW_ENCODING = 'arrow-v1' as const
+
+export interface DataFetchBlockArrowHeader {
+  encoding: typeof ARROW_ENCODING
+  bytes: number
+  meta: {
+    rows: number
+    startRow: number
+  }
+}
+
 export interface CellPatch {
   row: number
   col: number
