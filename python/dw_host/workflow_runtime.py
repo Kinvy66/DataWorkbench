@@ -75,6 +75,7 @@ class _Session:
         self.executor: DAWorkflowExecutor | None = None
         self.thread: threading.Thread | None = None
         self.positions: dict[str, dict[str, float]] = {}
+        self.cancel: threading.Event | None = None
 
 
 class WorkflowRuntime:
@@ -321,6 +322,7 @@ class WorkflowRuntime:
             raise HostError(ErrorCode.DagCycle, "Workflow contains a cycle", "workflow.cycle")
         executor = DAWorkflowExecutor(session.workflow)
         session.executor = executor
+        self._bind_cancel(session)
 
         def run() -> None:
             ok = False
@@ -333,8 +335,12 @@ class WorkflowRuntime:
             except Exception as exc:
                 error = str(exc)
                 ok = False
+            stopped = session.cancel is not None and session.cancel.is_set()
             params: dict[str, Any] = {"workflowId": workflow_id, "ok": ok}
-            if error:
+            if stopped:
+                params["ok"] = False
+                params["cancelled"] = True
+            elif error:
                 params["error"] = error
             self._notify("workflow.finished", params)
 
@@ -354,9 +360,21 @@ class WorkflowRuntime:
 
     def stop(self, workflow_id: str) -> dict[str, Any]:
         session = self._session(workflow_id)
+        if session.cancel is not None:
+            session.cancel.set()
         if session.executor is not None:
             session.executor.terminate()
         return {"ok": True}
+
+    def _bind_cancel(self, session: _Session) -> None:
+        cancel = session.cancel
+        if cancel is None:
+            cancel = threading.Event()
+            session.cancel = cancel
+        else:
+            cancel.clear()
+        for node in session.workflow.get_nodes():
+            setattr(node, "_dw_cancel", cancel)
 
     def _session(self, workflow_id: str) -> _Session:
         with self._lock:

@@ -12,7 +12,7 @@
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/nodes/style_demo_nodes.py` | 可选，仅开发 | 可不上生产 |
 | `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n |
 
-`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager 与 dump/load wrap 已落地：`python/dw_workflow` vendor 自上游 `9dd298fe`，`python/dw_nodes_system` 含 Start/End/Constant/Delay/DataToManager；`workflow.*` 经 stdio 可 create/addNode/connect/`listNodeTypes`/`dumpLogic`/`loadLogic`/`getGraph`/`execute`。Vue Flow 经 `loadAndWrap` 按 `nodeId` wrap，load 路径禁止 `addNode`。尚未做 If/Else、TextViewer、undo。
+`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap 与 Delay Stop 已落地：`python/dw_workflow` vendor 自上游 `9dd298fe`，`python/dw_nodes_system` 含 Start/End/Constant/Delay/DataToManager；`workflow.*` 经 stdio 可 create/addNode/connect/`listNodeTypes`/`dumpLogic`/`loadLogic`/`getGraph`/`execute`/`stop`。Vue Flow 经 `loadAndWrap` 按 `nodeId` wrap，load 路径禁止 `addNode`。Delay 用会话 cancel Event 可中断等待。尚未做 If/Else、TextViewer、undo。
 
 ## 移植并改 Host（必须改）
 
@@ -42,7 +42,7 @@ def get_data_manager():
 | `nodes/start.py` | 必做 | |
 | `nodes/end.py` | 必做 | |
 | `nodes/constant.py` | 必做 | `ast.literal_eval` |
-| `nodes/delay.py` | 必做 | 验证 stop |
+| `nodes/delay.py` | 必做 | 验证 stop（`Event.wait` + 会话 cancel，禁止阻塞 `sleep`） |
 | `nodes/data_to_manager.py` | 必做 | 改 API |
 | `nodes/condition_if.py` | P2 末期 | 菱形样式可用 CSS |
 | `nodes/text_viewer.py` | 延期 | 依赖 paint |

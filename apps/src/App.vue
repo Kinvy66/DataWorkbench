@@ -53,7 +53,9 @@ onMounted(() => {
       const p = params as WorkflowFinishedParams
       workflow.applyFinished(p.workflowId, Boolean(p.ok))
       void data.refreshList().catch(() => {})
-      if (p.ok) {
+      if (p.cancelled) {
+        log.append('info', t('log.workflowStopped'))
+      } else if (p.ok) {
         log.append('info', t('log.workflowFinished'))
       } else {
         log.append('error', t('log.workflowFailed', { error: p.error ?? '' }))

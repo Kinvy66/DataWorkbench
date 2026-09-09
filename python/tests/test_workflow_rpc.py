@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import time
 
-from dw_nodes_system import ConstantNode, DataToManagerNode, DelayNode, EndNode
+from dw_nodes_system import ConstantNode, DataToManagerNode, DelayNode, EndNode, StartNode
 from rpc_client import popen, read_rpc, readline, send
 
+START = StartNode.qualified_name
 CONSTANT = ConstantNode.qualified_name
 DATAMGR = DataToManagerNode.qualified_name
 END = EndNode.qualified_name
@@ -257,6 +259,81 @@ def test_constant_to_datamanager_appears_in_data_list() -> None:
         names = {item["name"] for item in listed["result"]["datasets"]}
         assert "from_workflow" in names
         send(proc, {"jsonrpc": "2.0", "id": 9, "method": "host.shutdown", "params": {}})
+        assert proc.wait(timeout=5) == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
+def test_workflow_stop_interrupts_delay() -> None:
+    proc = popen()
+    try:
+        _ready(proc)
+        wf = _rpc(proc, 1, "workflow.create", {"name": "delay-stop"})["result"]["workflowId"]
+        start_id = _rpc(
+            proc,
+            2,
+            "workflow.addNode",
+            {"workflowId": wf, "qualifiedName": START},
+        )["result"]["nodeId"]
+        delay_id = _rpc(
+            proc,
+            3,
+            "workflow.addNode",
+            {"workflowId": wf, "qualifiedName": DELAY},
+        )["result"]["nodeId"]
+        _rpc(
+            proc,
+            4,
+            "workflow.setParam",
+            {"workflowId": wf, "nodeId": delay_id, "name": "seconds", "value": 5},
+        )
+        _rpc(
+            proc,
+            5,
+            "workflow.connect",
+            {
+                "workflowId": wf,
+                "fromId": start_id,
+                "fromPort": "trigger",
+                "toId": delay_id,
+                "toPort": "trigger",
+            },
+        )
+        accepted = _rpc(proc, 6, "workflow.execute", {"workflowId": wf})
+        assert accepted["result"]["accepted"] is True
+        running = False
+        for _ in range(40):
+            msg = read_rpc(proc)
+            if msg.get("method") != "workflow.nodeState":
+                continue
+            params = msg["params"]
+            if params["workflowId"] == wf and params["nodeId"] == delay_id and params["state"] == "running":
+                running = True
+                break
+        assert running, "Delay never reached running"
+
+        t0 = time.monotonic()
+        send(proc, {"jsonrpc": "2.0", "id": 7, "method": "workflow.stop", "params": {"workflowId": wf}})
+        stop_ok = False
+        finished = None
+        for _ in range(40):
+            msg = read_rpc(proc)
+            if msg.get("id") == 7:
+                assert msg["result"]["ok"] is True
+                stop_ok = True
+            if msg.get("method") == "workflow.finished":
+                finished = msg
+            if stop_ok and finished is not None:
+                break
+        assert stop_ok
+        assert finished is not None
+        assert finished["params"]["workflowId"] == wf
+        assert finished["params"].get("cancelled") is True
+        assert finished["params"]["ok"] is False
+        assert time.monotonic() - t0 < 1.5
+
+        send(proc, {"jsonrpc": "2.0", "id": 8, "method": "host.shutdown", "params": {}})
         assert proc.wait(timeout=5) == 0
     finally:
         if proc.poll() is None:

@@ -107,6 +107,7 @@ export default {
     renameOk: 'Dataset renamed to {name}.',
     removeOk: 'Dataset removed.',
     workflowFinished: 'Workflow finished.',
+    workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'
   }
 }

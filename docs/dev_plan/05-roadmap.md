@@ -99,7 +99,7 @@ gantt
 
 **移植 DataToManager**：`import da_app` 改为 `dw_host.api.publish_dataframe(name, obj)`，在 RPC 线程执行。
 
-任务 1–7 与 dump/load wrap（`getGraph` + `loadAndWrap`，load 路径不走 `addNode`）已落地。File 菜单打开工程仍属 P5。任务 8 Undo、Delay 执行中 Stop（Delay 现用阻塞 `sleep`）仍属后续。
+任务 1–7 与 dump/load wrap（`getGraph` + `loadAndWrap`，load 路径不走 `addNode`）、Delay 执行中 Stop 已落地。File 菜单打开工程仍属 P5。任务 8 Undo 仍属后续。
 
 ## P3 — 分析节点与清洗 GUI（4 周）
 

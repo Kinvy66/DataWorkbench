@@ -56,7 +56,7 @@ If/Else：P2 末期可用菱形 CSS `clip-path`，非必须。
 
 ## 执行
 
-映射 `DAWorkflowExecutor.execute_async`。通知 `workflow.nodeState` 更新颜色。`stop` 调 `terminate()`。
+映射 `DAWorkflowExecutor.execute()`（sidecar 后台线程）。通知 `workflow.nodeState` 更新颜色。`stop` 置位会话 `cancel` Event 并调 `terminate()`。Delay 用 `Event.wait` 而不是阻塞 `time.sleep`，因此执行中途 Stop 能立刻打断等待。停止后 `workflow.finished` 带 `{ok:false, cancelled:true}`，日志走「已停止」而不是失败。
 
 执行中禁用 `addNode`/`connect`（`commandBus.can` 返回 false），避免边跑边改图。
 
@@ -85,7 +85,7 @@ If/Else：P2 末期可用菱形 CSS `clip-path`，非必须。
 
 ## 测试
 
-- Python：roundtrip、有环 `execute` 失败、Constant `literal_eval`；`loadLogic` 后 `getGraph` 的 `nodeId`/端口与 dump 一致
+- Python：roundtrip、有环 `execute` 失败、Constant `literal_eval`；`loadLogic` 后 `getGraph` 的 `nodeId`/端口与 dump 一致；Delay 执行中 `stop` 在超时前结束并带 `cancelled`
 - 前端：Vitest 测 RPC mock 失败时不插入节点；`loadAndWrap` 只调 `loadLogic`+`getGraph`（类型未缓存时再加 `listNodeTypes`），不调 `addNode`/`create`
 
 ## 和上游文档的对应阅读

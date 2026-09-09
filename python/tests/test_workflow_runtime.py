@@ -1,5 +1,9 @@
+from __future__ import annotations
+
+import time
+
 from dw_host.workflow_runtime import WorkflowRuntime
-from dw_nodes_system import ConstantNode, EndNode
+from dw_nodes_system import ConstantNode, DelayNode, EndNode, StartNode
 
 
 def test_get_graph_after_load_keeps_ids_and_ports() -> None:
@@ -28,3 +32,44 @@ def test_get_graph_after_load_keeps_ids_and_ports() -> None:
     assert replaced["workflowId"] == workflow_id
     graph2 = runtime.get_graph(workflow_id)
     assert {item["nodeId"] for item in graph2["nodes"]} == {item["nodeId"] for item in graph["nodes"]}
+
+
+def test_stop_interrupts_delay_wait() -> None:
+    notes: list[tuple[str, dict]] = []
+    runtime = WorkflowRuntime(notify=lambda method, params: notes.append((method, params)))
+    workflow_id = runtime.create("delay-stop")["workflowId"]
+    start = runtime.add_node(workflow_id, StartNode.qualified_name)
+    delay = runtime.add_node(workflow_id, DelayNode.qualified_name)
+    runtime.set_param(workflow_id, delay["nodeId"], "seconds", 5)
+    runtime.connect(workflow_id, start["nodeId"], "trigger", delay["nodeId"], "trigger")
+
+    deferred = runtime.schedule_execute(workflow_id)
+    deferred.start()
+    deadline = time.monotonic() + 2
+    while time.monotonic() < deadline:
+        if any(
+            method == "workflow.nodeState"
+            and params.get("nodeId") == delay["nodeId"]
+            and params.get("state") == "running"
+            for method, params in notes
+        ):
+            break
+        time.sleep(0.01)
+    else:
+        raise AssertionError(f"Delay never reached running: {notes!r}")
+
+    t0 = time.monotonic()
+    assert runtime.stop(workflow_id) == {"ok": True}
+    while time.monotonic() - t0 < 2:
+        if any(method == "workflow.finished" for method, _params in notes):
+            break
+        time.sleep(0.01)
+    else:
+        raise AssertionError(f"no workflow.finished after stop: {notes!r}")
+
+    assert time.monotonic() - t0 < 1.5
+    finished = next(params for method, params in reversed(notes) if method == "workflow.finished")
+    assert finished["workflowId"] == workflow_id
+    assert finished.get("cancelled") is True
+    assert finished["ok"] is False
+

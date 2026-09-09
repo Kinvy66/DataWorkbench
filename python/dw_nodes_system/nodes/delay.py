@@ -3,6 +3,7 @@
 """Delay node: wait a specified number of seconds before passing data downstream"""
 
 import os
+import threading
 import time
 
 from dw_nodes_system.i18n import _
@@ -47,7 +48,12 @@ class DelayNode:
         seconds = max(0.0, float(seconds))
 
         if seconds > 0:
-            time.sleep(seconds)
+            cancel = getattr(self, "_dw_cancel", None)
+            if isinstance(cancel, threading.Event):
+                if cancel.wait(seconds):
+                    return False
+            else:
+                time.sleep(seconds)
 
         self._output_data["done"] = inputs.get("trigger")
         return True

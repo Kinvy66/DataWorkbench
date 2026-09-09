@@ -346,4 +346,5 @@ export interface WorkflowFinishedParams {
   workflowId: string
   ok: boolean
   error?: string
+  cancelled?: boolean
 }

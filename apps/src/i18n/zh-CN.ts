@@ -106,6 +106,7 @@ export default {
     renameOk: '数据集已重命名为 {name}。',
     removeOk: '数据集已移除。',
     workflowFinished: '工作流已完成。',
+    workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'
   }
 }

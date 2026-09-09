@@ -81,7 +81,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | 方法 | payload |
 |------|---------|
 | `workflow.nodeState` | `{workflowId, nodeId, state: idle\|running\|ok\|error}`（引擎 `success` 映射为 `ok`） |
-| `workflow.finished` | `{workflowId, ok, error?}` |
+| `workflow.finished` | `{workflowId, ok, error?, cancelled?}`。用户 Stop 时 `ok=false` 且 `cancelled=true`（无 `error`） |
 | `workflow.log` | `{level, message}` |
 
 ## chart 域（P4）
