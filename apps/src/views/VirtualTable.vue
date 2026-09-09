@@ -4,7 +4,7 @@ import { useVirtualizer } from '@tanstack/vue-virtual'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { useDataStore } from '@/stores/data'
-import { BLOCK_SIZE, blockOrigin, blocksForWindow } from '@/data/blockWindow'
+import { BLOCK_SIZE, blockOrigin, blocksForWindow, retainCachedBlocks } from '@/data/blockWindow'
 import {
   DEFAULT_COL_WIDTH,
   INDEX_COL_WIDTH,
@@ -76,13 +76,7 @@ function isLoading(row: number): boolean {
 async function ensureBlocks(visibleStart: number, visibleEnd: number): Promise<void> {
   const token = fetchGen
   const needed = blocksForWindow(visibleStart, visibleEnd, rowCount.value)
-  const next: Record<number, unknown[][]> = {}
-  for (const origin of needed) {
-    if (blocks.value[origin]) {
-      next[origin] = blocks.value[origin]
-    }
-  }
-  blocks.value = next
+  blocks.value = retainCachedBlocks(blocks.value, needed)
   for (const origin of needed) {
     if (blocks.value[origin] || inflight.has(origin)) {
       continue

@@ -6,6 +6,19 @@ export function blockOrigin(rowIndex: number, blockSize = BLOCK_SIZE): number {
   return Math.floor(Math.max(0, rowIndex) / blockSize) * blockSize
 }
 
+export function retainCachedBlocks<T>(
+  cache: Record<number, T>,
+  origins: number[]
+): Record<number, T> {
+  const next: Record<number, T> = {}
+  for (const origin of origins) {
+    if (cache[origin] !== undefined) {
+      next[origin] = cache[origin]
+    }
+  }
+  return next
+}
+
 /** Current block plus one neighbor on each side, clipped to [0, rowCount). */
 export function blocksForWindow(
   visibleStart: number,

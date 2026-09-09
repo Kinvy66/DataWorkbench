@@ -109,16 +109,42 @@ def json_cell(value: Any) -> Any:
     return str(value)
 
 
-def _detect_encoding(path: str) -> str:
-    try:
-        from charset_normalizer import from_path
+_UTF8_BOM = b"\xef\xbb\xbf"
+# Restrict detection to encodings this product actually imports. Unbounded
+# charset-normalizer often labels short GB18030 CSVs as cp949/Korean.
+_IMPORT_CODEPAGES = ("utf_8", "utf_8_sig", "gb18030", "gbk", "gb2312", "big5")
+_KR_MISDETECT = frozenset({"cp949", "euc_kr", "euc-kr", "iso2022_kr", "iso-2022-kr", "iso_2022_kr"})
 
-        best = from_path(path).best()
+
+def _detect_encoding(path: str) -> str:
+    sample = Path(path).read_bytes()[:65536]
+    if sample.startswith(_UTF8_BOM):
+        return "utf-8-sig"
+    try:
+        sample.decode("utf-8")
+        return "utf-8"
+    except UnicodeDecodeError:
+        pass
+    try:
+        from charset_normalizer import from_bytes
+
+        best = from_bytes(sample, cp_isolation=list(_IMPORT_CODEPAGES)).best()
         if best and best.encoding:
-            return str(best.encoding)
+            encoding = str(best.encoding)
+            if encoding.lower().replace("-", "_") in _KR_MISDETECT:
+                sample.decode("gb18030")
+                return "gb18030"
+            return encoding
+    except UnicodeDecodeError:
+        pass
     except Exception:
-        log.info("charset-normalizer unavailable or failed; using utf-8")
-    return "utf-8"
+        log.info("charset-normalizer unavailable or failed; trying gb18030")
+    try:
+        sample.decode("gb18030")
+        return "gb18030"
+    except UnicodeDecodeError:
+        log.info("charset detection failed; using utf-8")
+        return "utf-8"
 
 
 def _detect_sep(sample: str) -> str:

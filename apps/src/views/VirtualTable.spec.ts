@@ -8,6 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 describe('VirtualTable', () => {
   it('virtualizes rows instead of rendering the full DataFrame', () => {
     const source = readFileSync(resolve(here, 'VirtualTable.vue'), 'utf8')
+    expect(source).toContain('retainCachedBlocks')
     expect(source).toContain('useVirtualizer')
     expect(source).toContain('getVirtualItems()')
     expect(source).not.toMatch(/v-for\s*=\s*["'][^"']*rowCount/)

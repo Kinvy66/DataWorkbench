@@ -26,9 +26,9 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 以 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md) 为准。P0 骨架（窗口 + Ribbon + `host.hello`）已落地。执行顺序：
 
-**P0 骨架（完成） → P1 数据（进行中） → P2 工作流 → P3 分析节点 → P4 图表 → P5 工程文件**
+**P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流 → P3 分析节点 → P4 图表 → P5 工程文件**
 
-未完成当前阶段验收，不要开始下一阶段的可见功能。现在做 P1 收尾：Arrow `fetchBlock` 已接协议；仍需手工确认 50 万行滚动。不要做工作流画布或图表。P2 完成前禁止做图表。不要自由停靠或 Agent。Home 剪贴板 undo/redo 属 P2，不要提前做。
+P1 任务 1–6 与 Arrow `fetchBlock` 已落地；pytest 覆盖 50 万行 csv 导入 + 窗口取数（Arrow 载荷 ≪ 文件）。阶段退出还差一次手工：`scripts/gen_large_csv.py` 生成 csv 后在 GUI 里 Import 并滚动虚表。**在该项确认前不要开始 P2**（Vue Flow、DAWorkFlowPy vendor、工作流 RPC）。不要做图表、自由停靠或 Agent。Home 剪贴板 undo/redo 属 P2，不要提前做。
 
 ## STRUCTURE
 

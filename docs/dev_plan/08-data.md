@@ -24,7 +24,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 
 | 格式 | 库 | 注意 |
 |------|-----|------|
-| csv / txt | pandas `read_csv` | 编码：charset-normalizer；分隔符探测一期只逗号/制表符/分号 |
+| csv / txt | pandas `read_csv` | 编码：utf-8 优先，否则 charset-normalizer 限定 CJK 码表（避免短 GB 文件被标成 cp949）；分隔符一期只逗号/制表符/分号 |
 | xlsx | pandas + openpyxl | 只第一张 sheet；多 sheet 放 P3 对话框 |
 | parquet | pyarrow | |
 | pickle | **默认关闭** | 安全；需要时设置页显式打开 |
@@ -55,14 +55,16 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 |------|------|
 | `test_fetch_block_range` | 1000 行表取 start=512 count=512 得到 488 行 |
 | `test_fetch_block_500k_window_not_full_table` | 50 万行内存表 `fetchBlock` 只返回 512 / 末窗余数，不序列化整表 |
+| `test_import_500k_csv_arrow_payload_not_file` | 50 万行 csv 真实导入；窗口 Arrow 载荷 ≪ 文件 |
 | `test_fetch_block_caps_row_count` | `rowCount` 上限 2048 |
 | `test_patch_rollback` | 非法 float 写入数值列 → error 且原值不变 |
-| `test_import_csv_utf8` | 中文列名 roundtrip |
+| `test_import_csv_utf8` / `test_import_txt_semicolon` / `test_import_csv_gb18030` | utf-8 / txt 分号 / GB18030 |
 | `test_xlsx_roundtrip` / `test_parquet_roundtrip` | 导入再导出内容一致 |
+| `test_pickle_rejected` / `test_pickle_import_rejected_via_rpc` | pickle 关（内存路径 + stdio 3001） |
 | `test_data_import_list_fetch_via_rpc` | 每个 `data.*` 方法至少一正一反（stdio）；`fetchBlock` 头为 `arrow-v1` |
 | `test_arrow_block` | IPC 往返与体积小于同内容 JSON |
 
-手工：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（**不要提交该文件**），Data → Import 后滚动虚表。
+手工：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（**不要提交该文件**），Data → Import 后滚动虚表。确认前不要开始 P2。
 
 ## 明确延期
 

@@ -71,9 +71,13 @@ gantt
 
 **验收**
 
-- 用脚本造 50 万行 csv，滚动不卡死；Chrome 任务管理器中 renderer 堆远小于整表 CSV 体积。
-- 改一个格子，导出 csv 能看到改动。
-- 无数据集时空状态文案可切换中/英（至少用 vue-i18n 骨架）。
+- **自动（pytest）**：`test_import_500k_csv_arrow_payload_not_file` 写 50 万行 csv 再 `import_path`；首窗 / 末窗各 512（或余数）行；Arrow 载荷 ≪ 文件体积。内存表窗口见 `test_fetch_block_500k_window_not_full_table`。
+- **自动（pytest）**：`test_export_csv_sees_patch` 改格子后导出含新值。
+- **自动（vitest）**：空状态走 vue-i18n（中/英）；Ribbon extra 有 locale 切换。
+- **自动（vitest）**：虚表只预取当前块 ±1（最多 3×512），`retainCachedBlocks` 丢掉窗外缓存。
+- **手工**：`scripts/gen_large_csv.py` 生成 csv，Data → Import 后滚动不卡死；Chrome 任务管理器中 renderer 堆远小于整表 CSV。无 Electron E2E，此项不进 CI。
+
+任务 1–6 已实现。**手工滚动确认前不要开始 P2。**
 
 ## P2 — 工作流（5 周）
 

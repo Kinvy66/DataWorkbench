@@ -41,4 +41,4 @@ flowchart LR
 
 ## 当前状态
 
-P0 骨架已落地。P1 数据：导入 / 虚表 / `patchCells` / Arrow `fetchBlock` 帧。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。未完成 P1 验收前不要做工作流画布或图表。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。
+P0 骨架已落地。P1 数据自动验收已完成（导入 / 虚表 / `patchCells` / Arrow `fetchBlock`；50 万行 csv 导入走 pytest）。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。手工确认 GUI 大表滚动前不要做工作流画布或图表。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。

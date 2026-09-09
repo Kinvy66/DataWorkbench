@@ -26,4 +26,10 @@ describe('AppRibbon chrome layout', () => {
     )
     expect(source).not.toMatch(/#tabs-extra>[\s\S]*?<DwIcon name="app\/icon"/)
   })
+
+  it('toggles the UI locale from the ribbon extra slot', () => {
+    const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
+    expect(source).toContain('toggleLocale')
+    expect(source).toContain('locale-btn')
+  })
 })

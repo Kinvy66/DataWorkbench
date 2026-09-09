@@ -131,3 +131,30 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_pickle_import_rejected_via_rpc(tmp_path: Path) -> None:
+    path = tmp_path / "x.pkl"
+    path.write_bytes(b"not-a-pickle")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(path)},
+            },
+        )
+        imported = read_rpc(proc)
+        assert imported["error"]["code"] == 3001
+        assert imported["error"]["data"]["i18nKey"] == "data.pickleDisabled"
+        send(proc, {"jsonrpc": "2.0", "id": 2, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()

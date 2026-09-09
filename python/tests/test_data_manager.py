@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from dw_host.arrow_block import ArrowBlock, maybe_arrow
 from dw_host.data_manager import DataManager, json_cell
 from dw_host.errors import ErrorCode, HostError
 
@@ -43,6 +44,30 @@ def test_import_csv_utf8(tmp_path: Path) -> None:
     assert info["rows"] == 1
     block = manager.fetch_block(info["id"], 0, 512)
     assert block["rows"][0][0] == "甲"
+
+
+def test_import_txt_semicolon(tmp_path: Path) -> None:
+    path = tmp_path / "notes.txt"
+    path.write_text("a;b\n1;2\n3;4\n", encoding="utf-8")
+    manager = DataManager()
+    info = manager.import_path(str(path))
+    assert info["rows"] == 2
+    assert [c["name"] for c in info["columns"]] == ["a", "b"]
+    block = manager.fetch_block(info["id"], 0, 512)
+    assert block["rows"][0] == [1, 2]
+
+
+def test_import_csv_gb18030(tmp_path: Path) -> None:
+    path = tmp_path / "gb.csv"
+    body = "列,值\n" + "\n".join(f"甲{i},{i}" for i in range(20)) + "\n"
+    path.write_bytes(body.encode("gb18030"))
+    manager = DataManager()
+    info = manager.import_path(str(path))
+    assert info["rows"] == 20
+    assert [c["name"] for c in info["columns"]] == ["列", "值"]
+    block = manager.fetch_block(info["id"], 0, 512)
+    assert block["rows"][0][0] == "甲0"
+    assert block["rows"][-1][0] == "甲19"
 
 
 def test_duplicate_import_name(tmp_path: Path) -> None:
@@ -104,6 +129,35 @@ def test_fetch_block_500k_window_not_full_table() -> None:
     assert last["startRow"] == last_start
     assert len(last["rows"]) == n - last_start
     assert last["rows"][-1][0] == n - 1
+
+
+def test_import_500k_csv_arrow_payload_not_file(tmp_path: Path) -> None:
+    n = 500_000
+    src = tmp_path / "big_500k.csv"
+    pd.DataFrame({"id": np.arange(n), "value": np.arange(n) * 0.1}).to_csv(src, index=False)
+    file_size = src.stat().st_size
+    assert file_size > 1_000_000
+
+    manager = DataManager()
+    info = manager.import_path(str(src))
+    assert info["rows"] == n
+    first = manager.fetch_block(info["id"], 0, 512)
+    assert first["startRow"] == 0
+    assert len(first["rows"]) == 512
+    assert first["rows"][0][0] == 0
+    assert first["rows"][-1][0] == 511
+
+    wrapped = maybe_arrow(first)
+    assert isinstance(wrapped, ArrowBlock)
+    assert wrapped.rows == 512
+    assert len(wrapped.payload) * 20 < file_size
+
+    last_start = (n - 1) // 512 * 512
+    last = manager.fetch_block(info["id"], last_start, 512)
+    assert last["rows"][-1][0] == n - 1
+    last_wrapped = maybe_arrow(last)
+    assert isinstance(last_wrapped, ArrowBlock)
+    assert len(last_wrapped.payload) * 20 < file_size
 
 
 def test_fetch_block_caps_row_count() -> None:

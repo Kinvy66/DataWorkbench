@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BLOCK_SIZE, blockOrigin, blocksForWindow } from './blockWindow'
+import { BLOCK_SIZE, blockOrigin, blocksForWindow, retainCachedBlocks } from './blockWindow'
 
 describe('blockWindow', () => {
   it('aligns rows to 512-row origins', () => {
@@ -14,5 +14,14 @@ describe('blockWindow', () => {
     expect(blocksForWindow(100, 130, 1000)).toEqual([0, 512])
     expect(blocksForWindow(512, 520, 1000)).toEqual([0, 512])
     expect(blocksForWindow(0, 10, 100)).toEqual([0])
+  })
+
+  it('never prefetches more than three 512-row windows even on a 500k-row table', () => {
+    expect(blocksForWindow(250_000, 250_040, 500_000)).toEqual([249344, 249856, 250368])
+  })
+
+  it('drops cached blocks that are outside the prefetch window', () => {
+    const cache = { 0: [['a']], 512: [['b']], 1024: [['c']], 1536: [['d']] }
+    expect(retainCachedBlocks(cache, [512, 1024])).toEqual({ 512: [['b']], 1024: [['c']] })
   })
 })
