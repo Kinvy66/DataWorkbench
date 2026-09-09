@@ -39,13 +39,15 @@ function resolveWindowIcon(): string | undefined {
 
 function resolvePreload(): string {
   const dir = path.join(__dirname, '../preload')
-  for (const name of ['index.js', 'index.cjs', 'index.mjs']) {
+  // Prefer .cjs: apps/package.json has "type": "module", so a .js preload is
+  // treated as ESM and the bundled `require('electron')` never runs.
+  for (const name of ['index.cjs', 'index.js', 'index.mjs']) {
     const candidate = path.join(dir, name)
     if (fs.existsSync(candidate)) {
       return candidate
     }
   }
-  return path.join(dir, 'index.js')
+  return path.join(dir, 'index.cjs')
 }
 
 function installApplicationMenu(): void {
@@ -101,6 +103,10 @@ function createWindow(): void {
   })
 
   bindWindowState(mainWindow)
+  console.error(`[window] preload ${resolvePreload()}`)
+  mainWindow.webContents.on('preload-error', (_event, preloadPath, error) => {
+    console.error(`[window] preload-error ${preloadPath}: ${error}`)
+  })
 
   const showFallback = setTimeout(() => {
     revealWindow(mainWindow, 'timeout')

@@ -53,7 +53,8 @@ export default {
     log: '日志'
   },
   rpc: {
-    invalidParams: '参数无效。'
+    invalidParams: '参数无效。',
+    bridgeMissing: '桌面桥接未加载。请用 pnpm dev 重启应用，不要在浏览器里打开 Vite 地址。'
   },
   data: {
     remove: '移除数据集',

@@ -53,7 +53,8 @@ export default {
     log: 'Log'
   },
   rpc: {
-    invalidParams: 'Invalid parameters.'
+    invalidParams: 'Invalid parameters.',
+    bridgeMissing: 'The desktop bridge failed to load. Restart the app with pnpm dev; do not open the Vite URL in a browser.'
   },
   data: {
     remove: 'Remove dataset',

@@ -31,7 +31,9 @@ export default defineConfig({
         },
         output: {
           format: 'cjs',
-          entryFileNames: 'index.js'
+          // package.json is "type": "module"; .js preload would be ESM and
+          // require('electron') would fail, leaving window.dw undefined.
+          entryFileNames: 'index.cjs'
         }
       }
     }

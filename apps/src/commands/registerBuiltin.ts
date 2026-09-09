@@ -5,6 +5,7 @@ import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
 import { i18n } from '@/i18n'
 import { translateRpcError } from '@/rpc/rpcError'
+import { getDesktopBridge } from '@/rpc/bridge'
 
 function t(key: string, values?: Record<string, unknown>): string {
   return String(i18n.global.t(key, values as Record<string, string>))
@@ -24,7 +25,7 @@ export function registerBuiltinCommands(): void {
   commandBus.register('host.ping', async () => {
     const log = useLogStore()
     try {
-      const result = (await window.dw.rpc.invoke('host.hello', {
+      const result = (await getDesktopBridge().rpc.invoke('host.hello', {
         appVersion: APP_VERSION,
         workspaceRoot: ''
       })) as { pythonVersion?: string; pandasAvailable?: boolean }
@@ -136,7 +137,7 @@ export function registerBuiltinCommands(): void {
   )
 
   commandBus.register('file.exit', async () => {
-    await window.dw.rpc.invoke('app.quit')
+    await getDesktopBridge().rpc.invoke('app.quit')
   })
 
   const notYet = () => false

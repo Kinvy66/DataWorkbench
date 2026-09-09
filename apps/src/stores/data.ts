@@ -8,6 +8,7 @@ import type {
 } from '@dw/rpc-types'
 import { BLOCK_SIZE } from '@/data/blockWindow'
 import { isCancelled } from '@/rpc/rpcError'
+import { getDesktopBridge } from '@/rpc/bridge'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -25,7 +26,7 @@ export const useDataStore = defineStore('data', {
   },
   actions: {
     async refreshList(): Promise<void> {
-      const result = (await window.dw.rpc.invoke('data.list', {})) as DataListResult
+      const result = (await getDesktopBridge().rpc.invoke('data.list', {})) as DataListResult
       this.datasets = result.datasets
       if (this.currentId && !this.datasets.some((item) => item.id === this.currentId)) {
         this.currentId = null
@@ -38,10 +39,10 @@ export const useDataStore = defineStore('data', {
         this.schema = null
         return
       }
-      this.schema = (await window.dw.rpc.invoke('data.getSchema', { id })) as DataGetSchemaResult
+      this.schema = (await getDesktopBridge().rpc.invoke('data.getSchema', { id })) as DataGetSchemaResult
     },
     async importInteractive(): Promise<DataImportResult | null> {
-      const result = await window.dw.rpc.invoke('data.import', {})
+      const result = await getDesktopBridge().rpc.invoke('data.import', {})
       if (isCancelled(result)) {
         return null
       }
@@ -54,7 +55,7 @@ export const useDataStore = defineStore('data', {
       if (!this.currentId || !this.current) {
         return false
       }
-      const result = await window.dw.rpc.invoke('data.export', {
+      const result = await getDesktopBridge().rpc.invoke('data.export', {
         id: this.currentId,
         suggestedName: this.current.name
       })
@@ -65,13 +66,13 @@ export const useDataStore = defineStore('data', {
         return
       }
       const id = this.currentId
-      await window.dw.rpc.invoke('data.remove', { id })
+      await getDesktopBridge().rpc.invoke('data.remove', { id })
       await this.refreshList()
       const next = this.datasets[0]?.id ?? null
       await this.select(next)
     },
     async rename(id: string, name: string): Promise<void> {
-      await window.dw.rpc.invoke('data.rename', { id, name })
+      await getDesktopBridge().rpc.invoke('data.rename', { id, name })
       await this.refreshList()
       if (this.currentId === id) {
         await this.select(id)
@@ -81,7 +82,7 @@ export const useDataStore = defineStore('data', {
       if (!this.currentId) {
         return { startRow, rows: [] }
       }
-      return (await window.dw.rpc.invoke('data.fetchBlock', {
+      return (await getDesktopBridge().rpc.invoke('data.fetchBlock', {
         id: this.currentId,
         startRow,
         rowCount
@@ -91,7 +92,7 @@ export const useDataStore = defineStore('data', {
       if (!this.currentId || patches.length === 0) {
         return
       }
-      await window.dw.rpc.invoke('data.patchCells', { id: this.currentId, patches })
+      await getDesktopBridge().rpc.invoke('data.patchCells', { id: this.currentId, patches })
     }
   }
 })

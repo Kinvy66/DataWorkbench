@@ -8,8 +8,10 @@ import AppRibbon from '@/ribbon/AppRibbon.vue'
 import WorkbenchLayout from '@/layout/WorkbenchLayout.vue'
 import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
+import { translateRpcError } from '@/rpc/rpcError'
+import { getDesktopBridge } from '@/rpc/bridge'
 
-const { t, locale } = useI18n()
+const { t, locale, te } = useI18n()
 const epLocale = computed(() => (locale.value === 'zh-CN' ? zhCn : enLocale))
 const log = useLogStore()
 const data = useDataStore()
@@ -19,8 +21,15 @@ onMounted(() => {
   void data.refreshList().catch(() => {
     // Sidecar may not be ready yet; host.ready retries below.
   })
+  let rpc: NonNullable<Window['dw']>['rpc']
+  try {
+    rpc = getDesktopBridge().rpc
+  } catch (err) {
+    log.append('error', translateRpcError(err, t, te))
+    return
+  }
   offs.push(
-    window.dw.rpc.on('host.ready', (params) => {
+    rpc.on('host.ready', (params) => {
       const p = params as { pid?: number; pandasAvailable?: boolean }
       log.append(
         'info',
@@ -33,14 +42,14 @@ onMounted(() => {
     })
   )
   offs.push(
-    window.dw.rpc.on('log.line', (params) => {
+    rpc.on('log.line', (params) => {
       const p = params as { level?: string; message?: string }
       const level = p.level === 'error' || p.level === 'warning' ? p.level : 'info'
       log.append(level, p.message ?? '')
     })
   )
   offs.push(
-    window.dw.rpc.on('log.protocolPollution', (params) => {
+    rpc.on('log.protocolPollution', (params) => {
       const p = params as { raw?: string }
       log.append('warning', t('log.pollution', { raw: p.raw ?? '' }))
     })
