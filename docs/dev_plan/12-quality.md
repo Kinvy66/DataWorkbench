@@ -37,7 +37,7 @@ Windows 上 pytest 输出若被吞，用 `--junitxml=pytest.xml` 再读文件，
 
 ## i18n
 
-- Vue：`vue-i18n`，源语言 English。key 分层 `ribbon.*` `data.*` `workflow.*`。
+- Vue：`vue-i18n`，源语言 English，**默认界面语言 `zh-CN`**（`apps/src/i18n/index.ts` 的 `DEFAULT_LOCALE`）。key 分层 `ribbon.*` `data.*` `workflow.*`。
 - Python 用户消息：RPC `error.i18nKey` + `params`，由前端翻译。sidecar 不要返回中文。
 - 节点 `name`、`qualified_name`：**不翻译**。
 - 一期可只 en + zh_CN 两份 json，缺 key 显示 English。

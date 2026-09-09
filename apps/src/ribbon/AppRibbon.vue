@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { MlRibbon } from '@mlightcad/ribbon'
 import '@mlightcad/ribbon/style.css'
 import type { RibbonLayout } from '@mlightcad/ribbon'
@@ -9,11 +9,18 @@ import { useRibbonSchema } from './schema'
 import DwIcon from '@/icons/DwIcon.vue'
 import WindowCaptionButtons from './WindowCaptionButtons.vue'
 
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 const { tabs, fileMenuItems } = useRibbonSchema()
 const activeTab = ref('home')
 const layout = ref<RibbonLayout>('classic')
 const minimized = ref(false)
+
+const ribbonTexts = computed(() => ({
+  fileMenuLabel: t('ribbon.file'),
+  layoutSwitcherTooltip: t('ribbon.layoutSwitcher'),
+  minimizeTooltip: t('ribbon.minimizeRibbon'),
+  keyTipsToggleText: t('ribbon.keyTips')
+}))
 
 function onItemClick(payload: { itemId: string }): void {
   void commandBus.dispatch(payload.itemId)
@@ -35,6 +42,7 @@ function toggleLocale(): void {
     v-model:minimized="minimized"
     :tabs="tabs"
     :file-menu-items="fileMenuItems"
+    :texts="ribbonTexts"
     :show-open-backstage="false"
     @item-click="onItemClick"
     @file-menu-select="onFileMenuSelect"

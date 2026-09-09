@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
+import { ElConfigProvider } from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import enLocale from 'element-plus/es/locale/lang/en'
 import { useI18n } from 'vue-i18n'
 import AppRibbon from '@/ribbon/AppRibbon.vue'
 import WorkbenchLayout from '@/layout/WorkbenchLayout.vue'
 import { useLogStore } from '@/stores/log'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const epLocale = computed(() => (locale.value === 'zh-CN' ? zhCn : enLocale))
 const log = useLogStore()
 const offs: Array<() => void> = []
 
@@ -45,8 +49,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="app-root">
-    <AppRibbon />
-    <WorkbenchLayout />
-  </div>
+  <el-config-provider :locale="epLocale">
+    <div class="app-root">
+      <AppRibbon />
+      <WorkbenchLayout />
+    </div>
+  </el-config-provider>
 </template>

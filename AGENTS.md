@@ -205,6 +205,7 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 ### 前端
 
 - 窗口无边框：`Menu.setApplicationMenu(null)`（非 macOS）+ `frame: false`。不要把 Electron 默认 File/View/Window 菜单和 Ribbon 叠两层
+- 默认界面语言 `zh-CN`（`DEFAULT_LOCALE`）；源字符串仍是英文 key
 - 一期固定 IDE 布局（左列表 / 中 tab / 右属性 / 底日志），不要上 Golden Layout / dockview
 - 虚表用虚拟滚动，禁止 `v-for` 整表 DOM
 - 单元格编辑 debounce 后批量 `data.patchCells`，禁止一格一次 RPC

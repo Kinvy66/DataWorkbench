@@ -33,7 +33,7 @@
 | Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` | P4 |
 | Chart | Export | `chart.exportPng` `chart.exportSvg` | P4 |
 
-所有 label 走 i18n key，例如 `ribbon.data.import`。英文源：「Import」。
+所有 label 走 i18n key，例如 `ribbon.data.import`。英文源：「Import」。默认界面语言 `zh-CN`。
 
 File tab 使用 ML Ribbon 的 backstage/file menu（若库支持）；否则用 Element Plus 对话框模拟打开/保存（走 Electron `dialog.showOpenDialog`）。
 
