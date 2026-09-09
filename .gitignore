@@ -92,8 +92,9 @@ pytest.xml
 # Thumbnails
 ._*
 
-# Custom folder icons
-Icon
+# macOS Finder custom folder icon (filename Icon + CR). Do not use a bare
+# "Icon" rule: on Windows it ignores asset directories named icon/.
+Icon?
 
 # Volume root files
 .DocumentRevisions-V100
