@@ -78,7 +78,7 @@ gantt
 - **自动（vitest）**：虚表只预取当前块 ±1（最多 3×512），`retainCachedBlocks` 丢掉窗外缓存。
 - **手工**：`scripts/gen_large_csv.py` 生成 csv，Data → Import 后滚动不卡死；Chrome 任务管理器中 renderer 堆远小于整表 CSV。无 Electron E2E，此项不进 CI。
 
-任务 1–6 已实现。**手工滚动确认前不要开始 P2。**
+**任务 1 已完成**（vendor + Constant/roundtrip pytest）。任务 2–8（RPC、Vue Flow、DataToManager、属性面板）未做。
 
 ## P2 — 工作流（5 周）
 

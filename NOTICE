@@ -10,3 +10,12 @@ Copied from [czyt1988/data-workbench](https://github.com/czyt1988/data-workbench
 
 Those assets remain under the upstream **GNU Lesser General Public License v3.0**.
 This application’s own source is MIT; the copied icons are not re-licensed.
+
+python/dw_workflow
+python/dw_nodes_system/icon/*.svg
+
+Vendored from the same upstream (`src/PyScripts/DAWorkbench/DAWorkFlowPy` at
+commit `9dd298fe`, and selected DASystemNodes SVGs). Engine code and those
+SVGs remain LGPL-3.0; see `python/dw_workflow/LICENSE.LGPL`. Adapted node
+files in `python/dw_nodes_system/` (marked `# dw:adapted`) are derived works
+of the upstream System nodes.

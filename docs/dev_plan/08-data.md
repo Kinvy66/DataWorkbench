@@ -64,7 +64,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | `test_data_import_list_fetch_via_rpc` | 每个 `data.*` 方法至少一正一反（stdio）；`fetchBlock` 头为 `arrow-v1` |
 | `test_arrow_block` | IPC 往返与体积小于同内容 JSON |
 
-手工：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（**不要提交该文件**），Data → Import 后滚动虚表。确认前不要开始 P2。
+手工：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（**不要提交该文件**），Data → Import 后滚动虚表。无 Electron E2E，此项不进 CI；不阻塞 P2 引擎 vendor。
 
 ## 明确延期
 

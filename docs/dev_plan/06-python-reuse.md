@@ -12,7 +12,7 @@
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/nodes/style_demo_nodes.py` | 可选，仅开发 | 可不上生产 |
 | `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n |
 
-`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 第一周用 pytest 证明：无 Qt 时 `DANodeFactory` + `execute` 一条 Constant 节点成功。
+`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 第一片已落地：`python/dw_workflow` vendor 自上游 `9dd298fe`，`python/dw_nodes_system` 含 Start/End/Constant/Delay；`tests/test_constant_execute.py` 与 `tests/test_workflow_roundtrip.py` 覆盖无 Qt 的 factory execute 与 `to_dict`/`from_dict`。尚未做 DataToManager、workflow RPC、Vue Flow。
 
 ## 移植并改 Host（必须改）
 

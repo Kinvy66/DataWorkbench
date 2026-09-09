@@ -26,9 +26,9 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 以 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md) 为准。P0 骨架（窗口 + Ribbon + `host.hello`）已落地。执行顺序：
 
-**P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流 → P3 分析节点 → P4 图表 → P5 工程文件**
+**P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（进行中） → P3 分析节点 → P4 图表 → P5 工程文件**
 
-P1 任务 1–6 与 Arrow `fetchBlock` 已落地；pytest 覆盖 50 万行 csv 导入 + 窗口取数（Arrow 载荷 ≪ 文件）。阶段退出还差一次手工：`scripts/gen_large_csv.py` 生成 csv 后在 GUI 里 Import 并滚动虚表。**在该项确认前不要开始 P2**（Vue Flow、DAWorkFlowPy vendor、工作流 RPC）。不要做图表、自由停靠或 Agent。Home 剪贴板 undo/redo 属 P2，不要提前做。
+P1 任务 1–6 与 Arrow `fetchBlock` 已落地。P2 第一片：已 vendor `DAWorkFlowPy` 到 `python/dw_workflow`，系统节点 Start/End/Constant/Delay 在 `python/dw_nodes_system`（无 Qt）。下一步才是 workflow RPC 与 Vue Flow 画布。不要做图表、自由停靠或 Agent。Home 剪贴板 undo/redo 仍属 P2 后期。50 万行 GUI 滚动仍建议手工确认，但不阻塞引擎 vendor。
 
 ## STRUCTURE
 

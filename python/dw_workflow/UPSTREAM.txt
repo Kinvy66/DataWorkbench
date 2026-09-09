@@ -1,0 +1,4 @@
+Vendored from https://github.com/czyt1988/data-workbench
+src/PyScripts/DAWorkbench/DAWorkFlowPy
+upstream commit 9dd298fe
+License: GNU Lesser General Public License v3.0 (see LICENSE.LGPL)

@@ -51,7 +51,7 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**P0 完成，P1 自动验收完成**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export。虚表块走 Arrow IPC。阶段退出还差 GUI 滚动确认：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（不要提交该文件）后 Import。确认前不要做工作流画布。
+**P0 完成，P1 自动验收完成，P2 引擎已 vendor**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export。虚表块走 Arrow IPC。工作流画布尚未接入。50 万行 csv 可用 `python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成（不要提交该文件）后 Import 滚动确认。
 
 阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 
@@ -101,7 +101,7 @@ node node_modules/electron/install.js
 
 ## 许可
 
-应用程序为 [MIT](LICENSE)。从上游拷贝的图标见 [NOTICE](NOTICE)（LGPL-3.0）。P2 再 vendor 的 `DAWorkFlowPy` 同样保留版权头并列入 NOTICE。
+应用程序为 [MIT](LICENSE)。从上游拷贝的图标与 `python/dw_workflow` 见 [NOTICE](NOTICE)（LGPL-3.0）。
 
 ## 贡献
 
