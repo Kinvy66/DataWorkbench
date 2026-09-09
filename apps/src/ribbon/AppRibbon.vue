@@ -76,6 +76,10 @@ function toggleLocale(): void {
   margin-left: env(titlebar-area-x, 0px);
   width: env(titlebar-area-width, 100%);
 }
+.ribbon-shell :deep(.ml-ribbon-collection--column .ml-ribbon-item-host.is-large) {
+  grid-row: 1 / -1;
+  min-height: 0;
+}
 .ribbon-shell :deep(.ml-ribbon-item-host.is-large .ml-ribbon-item-host__icon) {
   width: 32px;
   height: 32px;

@@ -29,19 +29,18 @@ body,
   pointer-events: none;
 }
 
-/* Large commands fill the classic 3-row panel instead of sitting on the top edge. */
-.ml-ribbon-group__content .ml-ribbon-collection {
-  height: 100%;
-  min-height: 100%;
-  align-items: stretch;
-  align-content: stretch;
-}
-.ml-ribbon-item-host.is-large {
-  height: 100%;
-  align-self: stretch;
+/*
+ * Classic ribbon collections are a 3-row CSS grid. A large command is one grid
+ * item, so without a row span it sits in row 1 (icon clipped) with two empty rows
+ * below. Span all rows like Office/SARibbon large buttons.
+ */
+.ml-ribbon-collection--column .ml-ribbon-item-host.is-large {
+  grid-row: 1 / -1;
+  min-height: 0;
 }
 .ml-ribbon-item-host.is-large .el-button {
   height: 100%;
+  min-height: 0;
   box-sizing: border-box;
 }
 .ml-ribbon-item-host.is-large .el-button > span {
