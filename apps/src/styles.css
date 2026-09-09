@@ -55,6 +55,8 @@ body,
 .ml-ribbon__header {
   -webkit-app-region: drag;
 }
+.ml-ribbon__head-right,
+.ml-ribbon__tabs-extra,
 .ml-ribbon__header :is(
     button,
     a,

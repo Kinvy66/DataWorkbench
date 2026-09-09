@@ -128,6 +128,28 @@ function forward(method: string, params: unknown): void {
   }
 }
 
+function targetWindow(sender: Electron.WebContents): BrowserWindow | null {
+  const fromSender = BrowserWindow.fromWebContents(sender)
+  if (fromSender && !fromSender.isDestroyed()) {
+    return fromSender
+  }
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    return mainWindow
+  }
+  return null
+}
+
+function onWindowChrome(sender: Electron.WebContents, action: unknown) {
+  if (!isWindowChromeAction(action)) {
+    return false
+  }
+  const win = targetWindow(sender)
+  if (!win) {
+    return false
+  }
+  return applyWindowChromeAction(win, action) ?? null
+}
+
 app.whenReady().then(() => {
   installApplicationMenu()
   sidecar.onLog((entry) => {
@@ -141,12 +163,12 @@ app.whenReady().then(() => {
   createWindow()
 })
 
+ipcMain.on('dw:window', (event, action: unknown) => {
+  onWindowChrome(event.sender, action)
+})
+
 ipcMain.handle('dw:window', (event, action: unknown) => {
-  const win = BrowserWindow.fromWebContents(event.sender)
-  if (!win || !isWindowChromeAction(action)) {
-    return false
-  }
-  return applyWindowChromeAction(win, action) ?? null
+  return onWindowChrome(event.sender, action)
 })
 
 ipcMain.handle('dw:rpc', async (_event, method: string, params: unknown) => {

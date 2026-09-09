@@ -19,13 +19,16 @@ contextBridge.exposeInMainWorld('dw', {
   },
   window: {
     minimize(): Promise<void> {
-      return ipcRenderer.invoke('dw:window', 'minimize')
+      ipcRenderer.send('dw:window', 'minimize')
+      return Promise.resolve()
     },
     toggleMaximize(): Promise<void> {
-      return ipcRenderer.invoke('dw:window', 'toggleMaximize')
+      ipcRenderer.send('dw:window', 'toggleMaximize')
+      return Promise.resolve()
     },
     close(): Promise<void> {
-      return ipcRenderer.invoke('dw:window', 'close')
+      ipcRenderer.send('dw:window', 'close')
+      return Promise.resolve()
     },
     isMaximized(): Promise<boolean> {
       return ipcRenderer.invoke('dw:window', 'isMaximized')

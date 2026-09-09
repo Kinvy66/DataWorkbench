@@ -36,30 +36,43 @@ function toggleLocale(): void {
 </script>
 
 <template>
-  <MlRibbon
-    v-model:active-tab="activeTab"
-    v-model:layout="layout"
-    v-model:minimized="minimized"
-    :tabs="tabs"
-    :file-menu-items="fileMenuItems"
-    :texts="ribbonTexts"
-    :show-open-backstage="false"
-    @item-click="onItemClick"
-    @file-menu-select="onFileMenuSelect"
-  >
-    <template #tabs-extra>
-      <div class="ribbon-extra">
-        <DwIcon name="app/icon" :size="22" />
-        <button class="locale-btn" type="button" @click="toggleLocale">
-          {{ locale === 'en' ? '中文' : 'EN' }}
-        </button>
-        <WindowCaptionButtons />
-      </div>
-    </template>
-  </MlRibbon>
+  <div class="ribbon-shell">
+    <MlRibbon
+      v-model:active-tab="activeTab"
+      v-model:layout="layout"
+      v-model:minimized="minimized"
+      :tabs="tabs"
+      :file-menu-items="fileMenuItems"
+      :texts="ribbonTexts"
+      :show-open-backstage="false"
+      @item-click="onItemClick"
+      @file-menu-select="onFileMenuSelect"
+    >
+      <template #tabs-extra>
+        <div class="ribbon-extra">
+          <DwIcon name="app/icon" :size="22" />
+          <button class="locale-btn" type="button" @click="toggleLocale">
+            {{ locale === 'en' ? '中文' : 'EN' }}
+          </button>
+        </div>
+      </template>
+    </MlRibbon>
+    <WindowCaptionButtons />
+  </div>
 </template>
 
 <style scoped>
+.ribbon-shell {
+  position: relative;
+  flex: 0 0 auto;
+  --dw-caption-btn-width: 46px;
+  --dw-caption-height: 36px;
+  --dw-caption-width: calc(var(--dw-caption-btn-width) * 3);
+}
+.ribbon-shell :deep(.ml-ribbon__header) {
+  min-height: var(--dw-caption-height);
+  padding-right: var(--dw-caption-width);
+}
 .ribbon-extra {
   display: flex;
   align-items: center;
