@@ -18,9 +18,6 @@ const data = useDataStore()
 const offs: Array<() => void> = []
 
 onMounted(() => {
-  void data.refreshList().catch(() => {
-    // Sidecar may not be ready yet; host.ready retries below.
-  })
   let rpc: NonNullable<Window['dw']>['rpc']
   try {
     rpc = getDesktopBridge().rpc
@@ -54,6 +51,9 @@ onMounted(() => {
       log.append('warning', t('log.pollution', { raw: p.raw ?? '' }))
     })
   )
+  void data.refreshList().catch(() => {
+    // Sidecar may still be spawning; host.ready retries below.
+  })
 })
 
 onUnmounted(() => {

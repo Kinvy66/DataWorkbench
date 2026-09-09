@@ -147,7 +147,7 @@ function createWindow(): void {
     // Do not wait solely on ready-to-show: a hidden WCO window may never paint.
     clearTimeout(showFallback)
     revealWindow(mainWindow, 'did-finish-load')
-    sidecar.start()
+    flushRendererEvents()
     void sidecar
       .waitUntilReady(10000)
       .then(() =>
@@ -169,9 +169,27 @@ function createWindow(): void {
   }
 }
 
+const pendingRendererEvents: Array<{ method: string; params: unknown }> = []
+let rendererCanReceive = false
+
 function forward(method: string, params: unknown): void {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('dw:event', method, params)
+  if (!rendererCanReceive || !mainWindow || mainWindow.isDestroyed()) {
+    pendingRendererEvents.push({ method, params })
+    if (pendingRendererEvents.length > 200) {
+      pendingRendererEvents.shift()
+    }
+    return
+  }
+  mainWindow.webContents.send('dw:event', method, params)
+}
+
+function flushRendererEvents(): void {
+  rendererCanReceive = true
+  const queued = pendingRendererEvents.splice(0)
+  for (const item of queued) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('dw:event', item.method, item.params)
+    }
   }
 }
 
@@ -207,6 +225,7 @@ app.whenReady().then(() => {
   sidecar.onNotify((method, params) => {
     forward(method, params)
   })
+  sidecar.start()
   createWindow()
 })
 

@@ -39,15 +39,29 @@ class HostReadyParams(BaseModel):
     pandasAvailable: bool
 
 
-def _configure_stdout() -> None:
+def _configure_stdio() -> None:
     """JSON lines use LF; Arrow payloads must not be translated on Windows."""
     if sys.platform == "win32":
         try:
             import msvcrt
 
+            msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
             msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
         except Exception:
-            log.info("could not set stdout to binary mode")
+            log.info("could not set stdio to binary mode")
+
+
+def _read_stdin_line() -> str | None:
+    """Read one UTF-8 RPC line. None means stdin EOF (Electron closed the pipe)."""
+    raw = sys.stdin.buffer.readline()
+    if not raw:
+        return None
+    line = raw.decode("utf-8")
+    if line.endswith("\n"):
+        line = line[:-1]
+    if line.endswith("\r"):
+        line = line[:-1]
+    return line
 
 
 def _emit(obj: dict[str, Any]) -> None:
@@ -167,7 +181,7 @@ def main() -> int:
         level=logging.INFO,
         format="%(asctime)s dw_host %(levelname)s %(message)s",
     )
-    _configure_stdout()
+    _configure_stdio()
     pandas_ok = _pandas_available()
     ready = HostReadyParams(pid=os.getpid(), pandasAvailable=pandas_ok)
     _emit({"jsonrpc": "2.0", "method": "host.ready", "params": ready.model_dump()})
@@ -180,10 +194,11 @@ def main() -> int:
 
     manager = DataManager()
     runtime = WorkflowRuntime(notify=_notify)
-    for raw in sys.stdin:
-        line = raw[:-1] if raw.endswith("\n") else raw
-        if line.endswith("\r"):
-            line = line[:-1]
+    while True:
+        line = _read_stdin_line()
+        if line is None:
+            log.info("stdin closed; exiting")
+            return 0
         if not line.strip():
             continue
         try:
@@ -201,8 +216,8 @@ def main() -> int:
             _error(req.get("id"), ErrorCode.Internal, traceback.format_exc().splitlines()[-1])
             keep = True
         if not keep:
+            log.info("host.shutdown; exiting")
             return 0
-    return 0
 
 
 if __name__ == "__main__":

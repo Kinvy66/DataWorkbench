@@ -54,7 +54,9 @@ export default {
   },
   rpc: {
     invalidParams: 'Invalid parameters.',
-    bridgeMissing: 'The desktop bridge failed to load. Restart the app with pnpm dev; do not open the Vite URL in a browser.'
+    bridgeMissing:
+      'The desktop bridge failed to load. Restart the app with pnpm dev; do not open the Vite URL in a browser.',
+    sidecarNotRunning: 'The Python sidecar is not running yet. Wait for host.ready and try again.'
   },
   data: {
     remove: 'Remove dataset',

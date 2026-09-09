@@ -65,3 +65,16 @@ def test_stdout_pollution_after_ready() -> None:
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_stdin_eof_exits_zero() -> None:
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        assert proc.stdin is not None
+        proc.stdin.close()
+        assert proc.wait(timeout=5) == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()

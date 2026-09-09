@@ -45,6 +45,10 @@ function resolvePython(repoRoot: string): { cmd: string; args: string[] } {
   return { cmd: 'python3', args: [] }
 }
 
+export type SidecarBridgeOptions = {
+  processWaitMs?: number
+}
+
 export class SidecarBridge {
   private child: ChildProcessWithoutNullStreams | null = null
   private framer = new StdoutFramer()
@@ -57,6 +61,12 @@ export class SidecarBridge {
   private logHandlers = new Set<(entry: SidecarLog) => void>()
   private ready = false
   private readyWaiters: Array<() => void> = []
+  private processWaiters: Array<(child: ChildProcessWithoutNullStreams | null) => void> = []
+  private readonly processWaitMs: number
+
+  constructor(options?: SidecarBridgeOptions) {
+    this.processWaitMs = options?.processWaitMs ?? 10_000
+  }
 
   onNotify(handler: (method: string, params: unknown) => void): () => void {
     this.notifyHandlers.add(handler)
@@ -103,6 +113,7 @@ export class SidecarBridge {
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true
     })
+    this.flushProcessWaiters(this.child)
     this.child.stderr.setEncoding('utf8')
     this.child.stdout.on('data', (chunk: Buffer) => {
       for (const frame of this.framer.push(chunk)) {
@@ -120,6 +131,7 @@ export class SidecarBridge {
       this.emitLog({ stream: 'stderr', text: `Sidecar exited code=${code} signal=${signal}` })
       this.child = null
       this.ready = false
+      this.flushProcessWaiters(null)
       for (const [, p] of this.pending) {
         clearTimeout(p.timer)
         p.reject(new Error('Sidecar exited'))
@@ -132,10 +144,7 @@ export class SidecarBridge {
   }
 
   async invoke(method: string, params?: unknown, timeoutMs = rpcTimeoutMs(method)): Promise<unknown> {
-    const child = this.child
-    if (!child || !child.stdin.writable) {
-      throw new Error('Sidecar is not running')
-    }
+    const child = await this.waitForProcess()
     const id = this.nextId++
     const payload = JSON.stringify({ jsonrpc: '2.0', id, method, params: params ?? {} })
     return new Promise((resolve, reject) => {
@@ -170,6 +179,43 @@ export class SidecarBridge {
         clearTimeout(timer)
         resolve(code ?? 1)
       })
+    })
+  }
+
+  private sidecarUnavailable(): RpcError {
+    return new RpcError(9001, 'Sidecar is not running', 'rpc.sidecarNotRunning')
+  }
+
+  private flushProcessWaiters(child: ChildProcessWithoutNullStreams | null): void {
+    const waiters = this.processWaiters.splice(0)
+    for (const waiter of waiters) {
+      waiter(child)
+    }
+  }
+
+  private waitForProcess(timeoutMs = this.processWaitMs): Promise<ChildProcessWithoutNullStreams> {
+    const current = this.child
+    if (current && current.stdin.writable) {
+      return Promise.resolve(current)
+    }
+    return new Promise((resolve, reject) => {
+      let timer: NodeJS.Timeout
+      const onChild = (child: ChildProcessWithoutNullStreams | null): void => {
+        clearTimeout(timer)
+        if (child && child.stdin.writable) {
+          resolve(child)
+        } else {
+          reject(this.sidecarUnavailable())
+        }
+      }
+      timer = setTimeout(() => {
+        const idx = this.processWaiters.indexOf(onChild)
+        if (idx >= 0) {
+          this.processWaiters.splice(idx, 1)
+        }
+        reject(this.sidecarUnavailable())
+      }, timeoutMs)
+      this.processWaiters.push(onChild)
     })
   }
 
