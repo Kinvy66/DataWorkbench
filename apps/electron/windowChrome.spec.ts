@@ -20,9 +20,26 @@ function fakeHost(maximized = false) {
 }
 
 describe('window chrome', () => {
-  it('uses a frameless window so Electron does not draw a second menu bar', () => {
-    expect(framelessWindowOptions.frame).toBe(false)
-    expect(framelessWindowOptions.autoHideMenuBar).toBe(true)
+  it('hides the OS title bar and restores native caption buttons on Windows', () => {
+    const opts = framelessWindowOptions('win32')
+    expect(opts.titleBarStyle).toBe('hidden')
+    expect(opts.autoHideMenuBar).toBe(true)
+    expect(opts.titleBarOverlay).toEqual({
+      color: '#ffffff',
+      symbolColor: '#727272',
+      height: 36
+    })
+  })
+
+  it('enables native caption overlay on Linux as well', () => {
+    expect(framelessWindowOptions('linux').titleBarOverlay).toEqual(
+      framelessWindowOptions('win32').titleBarOverlay
+    )
+  })
+
+  it('does not enable Windows Control Overlay on macOS (traffic lights stay native)', () => {
+    expect(framelessWindowOptions('darwin').titleBarOverlay).toBeUndefined()
+    expect(framelessWindowOptions('darwin').titleBarStyle).toBe('hidden')
   })
 
   it('drops the native application menu on Windows', () => {

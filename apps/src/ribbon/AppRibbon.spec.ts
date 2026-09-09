@@ -6,9 +6,10 @@ import { describe, expect, it } from 'vitest'
 const here = dirname(fileURLToPath(import.meta.url))
 
 describe('AppRibbon caption chrome', () => {
-  it('shrinks the drag header with margin-right so caption clicks are not native-drag', () => {
+  it('keeps ribbon header content in the titlebar-area so it does not sit under native controls', () => {
     const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
-    expect(source).toMatch(/margin-right:\s*var\(--dw-caption-width\)/)
-    expect(source).not.toMatch(/padding-right:\s*var\(--dw-caption-width\)/)
+    expect(source).toContain('env(titlebar-area-width')
+    expect(source).toContain('env(titlebar-area-x')
+    expect(source).not.toContain('WindowCaptionButtons')
   })
 })

@@ -53,8 +53,8 @@ body,
   height: 1em;
 }
 
-/* Ribbon tab row is the title bar. Drag is the header border box; do not
-   reserve caption space with padding (still draggable). See AppRibbon margin-right. */
+/* Ribbon tab row is the title bar. Native caption buttons (titleBarOverlay)
+   occupy the top-right on Windows/Linux; keep drag on the header only. */
 .ml-ribbon__header {
   -webkit-app-region: drag;
 }

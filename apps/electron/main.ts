@@ -67,7 +67,7 @@ function createWindow(): void {
     show: false,
     title: 'DataWorkbench',
     icon: resolveWindowIcon(),
-    ...framelessWindowOptions,
+    ...framelessWindowOptions(process.platform),
     webPreferences: {
       preload: resolvePreload(),
       contextIsolation: true,

@@ -7,7 +7,6 @@ import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
 import { useRibbonSchema } from './schema'
 import DwIcon from '@/icons/DwIcon.vue'
-import WindowCaptionButtons from './WindowCaptionButtons.vue'
 
 const { t, locale } = useI18n()
 const { tabs, fileMenuItems } = useRibbonSchema()
@@ -57,28 +56,25 @@ function toggleLocale(): void {
         </div>
       </template>
     </MlRibbon>
-    <WindowCaptionButtons />
   </div>
 </template>
 
 <style scoped>
 .ribbon-shell {
   position: relative;
-  isolation: isolate;
   flex: 0 0 auto;
-  --dw-caption-btn-width: 46px;
   --dw-caption-height: 36px;
-  --dw-caption-width: calc(var(--dw-caption-btn-width) * 3);
 }
 /*
- * Electron maps -webkit-app-region: drag to a native hit-test of the element's
- * border box. padding-right still counts, so overlay buttons never receive clicks.
- * margin-right shrinks that box so it cannot cover the caption strip.
+ * Windows/Linux caption buttons are native titleBarOverlay, not HTML.
+ * env(titlebar-area-*) is the safe rectangle beside those controls
+ * (and beside macOS traffic lights). HTML must not sit under WCO.
  */
 .ribbon-shell :deep(.ml-ribbon__header) {
-  min-height: var(--dw-caption-height);
-  margin-right: var(--dw-caption-width);
-  padding-right: 0;
+  box-sizing: border-box;
+  min-height: env(titlebar-area-height, var(--dw-caption-height));
+  margin-left: env(titlebar-area-x, 0px);
+  width: env(titlebar-area-width, 100%);
 }
 .ribbon-shell :deep(.ml-ribbon-item-host.is-large .ml-ribbon-item-host__icon) {
   width: 32px;

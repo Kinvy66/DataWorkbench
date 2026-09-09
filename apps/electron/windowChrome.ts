@@ -1,8 +1,23 @@
-export const framelessWindowOptions = {
-  frame: false,
-  autoHideMenuBar: true,
-  backgroundColor: '#ffffff'
+export const WINDOW_CAPTION_HEIGHT = 36
+
+const nativeCaptionOverlay = {
+  color: '#ffffff',
+  symbolColor: '#727272',
+  height: WINDOW_CAPTION_HEIGHT
 } as const
+
+export function usesNativeCaptionOverlay(platform: NodeJS.Platform): boolean {
+  return platform === 'win32' || platform === 'linux'
+}
+
+export function framelessWindowOptions(platform: NodeJS.Platform = process.platform) {
+  return {
+    autoHideMenuBar: true,
+    backgroundColor: '#ffffff' as const,
+    titleBarStyle: 'hidden' as const,
+    ...(usesNativeCaptionOverlay(platform) ? { titleBarOverlay: { ...nativeCaptionOverlay } } : {})
+  }
+}
 
 export type WindowChromeHost = {
   minimize(): void
