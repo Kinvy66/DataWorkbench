@@ -8,7 +8,9 @@ pnpm workspace：`apps` 是**唯一应用包**（`@dw/app`），`packages/*` 是
 DataWorkbench/
 ├── apps/                        # 唯一前端包 @dw/app（Electron + Vue）
 │   ├── electron/                # main + preload
+│   ├── resources/               # 窗口 icon.ico（上游拷贝）
 │   ├── src/                     # renderer Vue
+│   │   ├── assets/icons/        # 上游 SVG：app/ + gui/
 │   │   ├── commands/            # 命令总线
 │   │   ├── layout/              # 一期固定分区
 │   │   ├── ribbon/              # ML Ribbon schema

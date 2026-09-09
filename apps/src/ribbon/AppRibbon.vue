@@ -6,6 +6,7 @@ import type { RibbonLayout } from '@mlightcad/ribbon'
 import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
 import { useRibbonSchema } from './schema'
+import DwIcon from '@/icons/DwIcon.vue'
 
 const { locale } = useI18n()
 const { tabs, fileMenuItems } = useRibbonSchema()
@@ -38,16 +39,24 @@ function toggleLocale(): void {
     @file-menu-select="onFileMenuSelect"
   >
     <template #tabs-extra>
-      <button class="locale-btn" type="button" @click="toggleLocale">
-        {{ locale === 'en' ? '中文' : 'EN' }}
-      </button>
+      <div class="ribbon-extra">
+        <DwIcon name="app/icon" :size="22" />
+        <button class="locale-btn" type="button" @click="toggleLocale">
+          {{ locale === 'en' ? '中文' : 'EN' }}
+        </button>
+      </div>
     </template>
   </MlRibbon>
 </template>
 
 <style scoped>
-.locale-btn {
+.ribbon-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-right: 8px;
+}
+.locale-btn {
   border: 1px solid #dcdfe6;
   background: #fff;
   color: #303133;

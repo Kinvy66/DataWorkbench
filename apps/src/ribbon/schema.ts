@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FileMenuItemModel, RibbonTabModel } from '@mlightcad/ribbon'
-import { Connection } from '@element-plus/icons-vue'
+import { ribbonIcon } from '@/icons/resolveIcon'
 
 export function useRibbonSchema() {
   const { t } = useI18n()
@@ -24,7 +24,7 @@ export function useRibbonSchema() {
                   label: t('ribbon.ping'),
                   tooltip: t('ribbon.pingTip'),
                   size: 'large',
-                  props: { icon: Connection }
+                  icon: ribbonIcon('app/plugin')
                 }
               ]
             }

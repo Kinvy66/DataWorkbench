@@ -19,6 +19,14 @@ body,
   min-height: 0;
 }
 
+.dw-ribbon-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
 .splitpanes.default-theme .splitpanes__splitter {
   background-color: #dcdfe6;
 }

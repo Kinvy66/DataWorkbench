@@ -1,0 +1,7 @@
+Icons in this directory are copied from the upstream Qt project
+https://github.com/czyt1988/data-workbench (LGPL-3.0).
+
+app/  <- src/APP/Icon (window / ribbon actions)
+gui/  <- selected files from src/DAGui/icon (clipboard and panel glyphs)
+
+Do not redesign colors here; follow the upstream icon-ui-design-guide palette.

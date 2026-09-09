@@ -91,7 +91,7 @@ Python sidecar 由 Electron 主进程拉起，不要单独在渲染进程 `spawn
 
 ## 许可
 
-应用程序为 [MIT](LICENSE)。从上游 vendor 的 `DAWorkFlowPy` 等文件仍为 **LGPL**，必须保留版权头，并在 `NOTICE` 中列出路径（P2 引入 vendor 时补 NOTICE）。
+应用程序为 [MIT](LICENSE)。从上游拷贝的图标见 [NOTICE](NOTICE)（LGPL-3.0）。P2 再 vendor 的 `DAWorkFlowPy` 同样保留版权头并列入 NOTICE。
 
 ## 贡献
 

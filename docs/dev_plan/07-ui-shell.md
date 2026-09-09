@@ -64,6 +64,12 @@ Ribbon item `@click` 只 `dispatch(item.id)`。`can()` 根据 Pinia：无数据�
 
 不要为每种节点单独做 Vue 面板（上游后来用 DAFormSpec 统一表单，这里直接学）。特殊节点若必须自定义，用 `qualified_name` 注册表覆盖，而不是 if-else 堆在面板里。
 
+## 图标
+
+窗口 ico：`apps/resources/icon.ico`（上游 `src/APP/icon.ico`）。SVG：`apps/src/assets/icons/app/`（上游 `src/APP/Icon`）与 `gui/`（DAGui 按钮子集）。版权见仓库根 `NOTICE`（LGPL-3.0）。
+
+渲染层用 `resolveIconUrl` / `DwIcon` / `ribbonIcon`。**按命令按需 `import '...svg?url'` 写入 `resolveIcon.ts` 的表**，不要 `import.meta.glob` 把整棵图标目录打进 renderer。File 菜单项当前无 `icon` 字段，保持纯文字。
+
 ## 主题
 
 一期跟随 Element Plus 默认浅色。颜色尽量贴近上游图标规范主蓝 `#5280C1` 作为 Ribbon 强调色（CSS 变量），不要另起一套彩虹色。

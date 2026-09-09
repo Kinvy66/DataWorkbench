@@ -3,6 +3,7 @@ import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useI18n } from 'vue-i18n'
 import { useLogStore } from '@/stores/log'
+import DwIcon from '@/icons/DwIcon.vue'
 
 const { t } = useI18n()
 const log = useLogStore()
@@ -20,19 +21,28 @@ function formatTime(at: number): string {
           <Pane :size="18" :min-size="12">
             <section class="panel">
               <header>{{ t('layout.datasets') }}</header>
-              <p class="muted">{{ t('layout.datasetsEmpty') }}</p>
+              <div class="empty">
+                <DwIcon name="gui/data" :size="48" />
+                <p class="muted">{{ t('layout.datasetsEmpty') }}</p>
+              </div>
             </section>
           </Pane>
           <Pane :size="58" :min-size="30">
             <section class="panel">
               <header>{{ t('layout.workspace') }}</header>
-              <p class="muted">{{ t('layout.workspaceHint') }}</p>
+              <div class="empty">
+                <DwIcon name="gui/workflow" :size="48" />
+                <p class="muted">{{ t('layout.workspaceHint') }}</p>
+              </div>
             </section>
           </Pane>
           <Pane :size="24" :min-size="12">
             <section class="panel">
               <header>{{ t('layout.properties') }}</header>
-              <p class="muted">{{ t('layout.propertiesEmpty') }}</p>
+              <div class="empty">
+                <DwIcon name="gui/setting" :size="48" />
+                <p class="muted">{{ t('layout.propertiesEmpty') }}</p>
+              </div>
             </section>
           </Pane>
         </Splitpanes>
@@ -77,9 +87,17 @@ function formatTime(at: number): string {
   background: #f5f7fa;
 }
 .muted {
-  margin: 12px 10px;
+  margin: 8px 0 0;
   color: #909399;
   font-size: 13px;
+}
+.empty {
+  margin: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0.85;
 }
 .log-panel .log-lines {
   margin: 0;

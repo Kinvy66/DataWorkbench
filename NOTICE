@@ -1,0 +1,12 @@
+Third-party notices
+===================
+
+apps/src/assets/icons/app
+apps/src/assets/icons/gui
+apps/resources/icon.ico
+
+Copied from [czyt1988/data-workbench](https://github.com/czyt1988/data-workbench)
+(`src/APP/Icon`, `src/APP/icon.ico`, and selected files under `src/DAGui/icon`).
+
+Those assets remain under the upstream **GNU Lesser General Public License v3.0**.
+This application’s own source is MIT; the copied icons are not re-licensed.

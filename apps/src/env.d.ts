@@ -7,6 +7,11 @@ declare module '*.vue' {
   export default component
 }
 
+declare module '*.svg?url' {
+  const src: string
+  export default src
+}
+
 declare module 'splitpanes' {
   import type { DefineComponent } from 'vue'
   export const Splitpanes: DefineComponent<object, object, unknown>

@@ -38,7 +38,8 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 DataWorkbench/
 ├── apps/                  # 唯一前端：Electron main/preload + Vue renderer
 │   ├── electron/
-│   └── src/               # commands / layout / ribbon / views / stores / i18n
+│   ├── resources/         # 窗口 ico（从上游 icon.ico 拷贝）
+│   └── src/               # commands / layout / ribbon / views / stores / i18n / assets/icons
 ├── packages/
 │   ├── rpc-types/         # 仅类型，无 Element Plus / Electron
 │   └── chart-core/        # uPlot 封装；无 Pinia / ipcRenderer

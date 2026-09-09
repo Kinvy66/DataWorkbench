@@ -8,6 +8,21 @@ const sidecar = new SidecarBridge()
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
 
+function resolveWindowIcon(): string | undefined {
+  const candidates = [
+    path.join(process.cwd(), 'resources', 'icon.ico'),
+    path.join(process.cwd(), 'apps', 'resources', 'icon.ico'),
+    path.join(__dirname, '../../resources/icon.ico'),
+    path.join(__dirname, '../resources/icon.ico')
+  ]
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate
+    }
+  }
+  return undefined
+}
+
 function resolvePreload(): string {
   const dir = path.join(__dirname, '../preload')
   for (const name of ['index.js', 'index.cjs', 'index.mjs']) {
@@ -25,6 +40,7 @@ function createWindow(): void {
     height: 800,
     show: false,
     title: 'DataWorkbench',
+    icon: resolveWindowIcon(),
     webPreferences: {
       preload: resolvePreload(),
       contextIsolation: true,

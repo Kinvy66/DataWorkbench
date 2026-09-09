@@ -47,7 +47,7 @@ def get_data_manager():
 | `nodes/condition_if.py` | P2 末期 | 菱形样式可用 CSS |
 | `nodes/text_viewer.py` | 延期 | 依赖 paint |
 
-图标 SVG：可拷贝 `icon/`，注意上游图标规范（200×200）。Vue 工具箱用同一份 SVG。
+图标 SVG：可拷贝 `icon/`，注意上游图标规范（200×200）。Vue 工具箱用同一份 SVG。窗口 / Ribbon 按钮已拷到 `apps/src/assets/icons/`，用法见 [07-ui-shell.md](./07-ui-shell.md)。
 
 ## 节点文件白名单（Analysis）
 
