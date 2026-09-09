@@ -36,6 +36,9 @@ function toggleLocale(): void {
 
 <template>
   <div class="ribbon-shell">
+    <div class="titlebar-logo" aria-hidden="true">
+      <DwIcon name="app/icon" :size="24" />
+    </div>
     <MlRibbon
       v-model:active-tab="activeTab"
       v-model:layout="layout"
@@ -49,7 +52,6 @@ function toggleLocale(): void {
     >
       <template #tabs-extra>
         <div class="ribbon-extra">
-          <DwIcon name="app/icon" :size="22" />
           <button class="locale-btn" type="button" @click="toggleLocale">
             {{ locale === 'en' ? '中文' : 'EN' }}
           </button>
@@ -64,17 +66,31 @@ function toggleLocale(): void {
   position: relative;
   flex: 0 0 auto;
   --dw-caption-height: 36px;
+  --dw-title-logo-width: 36px;
+}
+.titlebar-logo {
+  position: absolute;
+  top: 0;
+  left: env(titlebar-area-x, 0px);
+  z-index: 20;
+  width: var(--dw-title-logo-width);
+  height: env(titlebar-area-height, var(--dw-caption-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  -webkit-app-region: drag;
 }
 /*
  * Windows/Linux caption buttons are native titleBarOverlay, not HTML.
  * env(titlebar-area-*) is the safe rectangle beside those controls
- * (and beside macOS traffic lights). HTML must not sit under WCO.
+ * (and beside macOS traffic lights). Reserve its first 36px for the app logo.
  */
 .ribbon-shell :deep(.ml-ribbon__header) {
   box-sizing: border-box;
   min-height: env(titlebar-area-height, var(--dw-caption-height));
-  margin-left: env(titlebar-area-x, 0px);
-  width: env(titlebar-area-width, 100%);
+  margin-left: calc(env(titlebar-area-x, 0px) + var(--dw-title-logo-width));
+  width: calc(env(titlebar-area-width, 100%) - var(--dw-title-logo-width));
 }
 .ribbon-shell :deep(.ml-ribbon-collection--column .ml-ribbon-item-host.is-large) {
   grid-row: 1 / -1;

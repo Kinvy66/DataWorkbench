@@ -17,4 +17,13 @@ describe('AppRibbon chrome layout', () => {
     const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
     expect(source).toMatch(/grid-row:\s*1\s*\/\s*-1/)
   })
+
+  it('places the application logo at the start of the title bar', () => {
+    const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
+    expect(source).toMatch(/<div class="titlebar-logo"[\s\S]*?<MlRibbon/)
+    expect(source).toMatch(
+      /margin-left:\s*calc\(env\(titlebar-area-x,\s*0px\)\s*\+\s*var\(--dw-title-logo-width\)\)/
+    )
+    expect(source).not.toMatch(/#tabs-extra>[\s\S]*?<DwIcon name="app\/icon"/)
+  })
 })
