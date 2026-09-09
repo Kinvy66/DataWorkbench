@@ -4,9 +4,11 @@
 
 ## 窗口结构
 
+窗口为 **无边框**（对齐上游 `SARibbonMainWindow`）：Electron `frame: false`，**禁止**保留默认应用菜单（`File / Edit / View / Window / Help` 会叠在 Ribbon 上面）。Mac 仅保留系统 App/Edit/Window 菜单。拖动区域是 Ribbon 标签行空白处；最小化 / 最大化 / 关闭画在 `#tabs-extra` 最右侧。
+
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│  ML Ribbon（File | Home | Data | Workflow | Chart）      │
+│  ML Ribbon（File | Home | …）              [_] [□] [×] │
 ├──────────┬──────────────────────────────┬───────────────┤
 │ 左 240px │  主区 tabs                    │ 右 280px      │
 │ 数据列表 │  Workflow | Table | Figure    │ 属性面板      │

@@ -7,6 +7,7 @@ import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
 import { useRibbonSchema } from './schema'
 import DwIcon from '@/icons/DwIcon.vue'
+import WindowCaptionButtons from './WindowCaptionButtons.vue'
 
 const { locale } = useI18n()
 const { tabs, fileMenuItems } = useRibbonSchema()
@@ -44,6 +45,7 @@ function toggleLocale(): void {
         <button class="locale-btn" type="button" @click="toggleLocale">
           {{ locale === 'en' ? '中文' : 'EN' }}
         </button>
+        <WindowCaptionButtons />
       </div>
     </template>
   </MlRibbon>
@@ -54,7 +56,7 @@ function toggleLocale(): void {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-right: 8px;
+  -webkit-app-region: no-drag;
 }
 .locale-btn {
   border: 1px solid #dcdfe6;

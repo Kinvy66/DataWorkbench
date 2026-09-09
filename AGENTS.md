@@ -204,6 +204,7 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 
 ### 前端
 
+- 窗口无边框：`Menu.setApplicationMenu(null)`（非 macOS）+ `frame: false`。不要把 Electron 默认 File/View/Window 菜单和 Ribbon 叠两层
 - 一期固定 IDE 布局（左列表 / 中 tab / 右属性 / 底日志），不要上 Golden Layout / dockview
 - 虚表用虚拟滚动，禁止 `v-for` 整表 DOM
 - 单元格编辑 debounce 后批量 `data.patchCells`，禁止一格一次 RPC
@@ -279,7 +280,7 @@ feat: 实现 data.fetchBlock 虚表窗口
 | 翻译 `@NodeDef(name=)` | name 保持英文 |
 | 拷贝 `da_app` / `DAAgent` | `dw_host.api`；Agent 不进仓库 |
 | P0 引入 ECharts 当主折线 | 等到 P4 用 uPlot |
-| 对标亿点 / 亿行作为验收 | 遵守 00 文档规模红线 |
+| 叠一层 Electron File/View/Window 菜单 | `setApplicationMenu(null)` + 无边框，只留 Ribbon |
 | 把上游 C++ 工程 git submodule 进来 | 只同步白名单 `.py` |
 | 功能做完不测就 commit / 不 push | T11：自测绿 → commit → push origin |
 | 整阶段攒一周再交一次 | 按功能切片提交，阶段结束再补验收提交 |

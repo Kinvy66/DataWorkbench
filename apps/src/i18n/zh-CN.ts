@@ -2,6 +2,13 @@ export default {
   app: {
     title: 'DataWorkbench'
   },
+  window: {
+    controls: '窗口',
+    minimize: '最小化',
+    maximize: '最大化',
+    restore: '还原',
+    close: '关闭'
+  },
   ribbon: {
     file: '文件',
     home: '开始',

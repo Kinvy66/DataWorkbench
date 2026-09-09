@@ -27,6 +27,27 @@ body,
   pointer-events: none;
 }
 
+/* Ribbon tab row is the title bar (SARibbon-style frameless chrome). */
+.ml-ribbon__header {
+  -webkit-app-region: drag;
+}
+.ml-ribbon__header :is(
+    button,
+    a,
+    input,
+    textarea,
+    select,
+    .el-button,
+    .el-switch,
+    .el-dropdown,
+    .ml-ribbon-tabs,
+    .ml-ribbon-file-menu,
+    .ml-ribbon__control,
+    .ribbon-extra
+  ) {
+  -webkit-app-region: no-drag;
+}
+
 .splitpanes.default-theme .splitpanes__splitter {
   background-color: #dcdfe6;
 }

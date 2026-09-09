@@ -1,8 +1,14 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { APP_VERSION } from '@dw/rpc-types'
 import { SidecarBridge } from './sidecar'
+import {
+  applyWindowChromeAction,
+  framelessWindowOptions,
+  isWindowChromeAction,
+  wantsNativeApplicationMenu
+} from './windowChrome'
 
 const sidecar = new SidecarBridge()
 let mainWindow: BrowserWindow | null = null
@@ -34,6 +40,26 @@ function resolvePreload(): string {
   return path.join(dir, 'index.js')
 }
 
+function installApplicationMenu(): void {
+  if (wantsNativeApplicationMenu(process.platform)) {
+    Menu.setApplicationMenu(
+      Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }])
+    )
+    return
+  }
+  Menu.setApplicationMenu(null)
+}
+
+function bindWindowState(win: BrowserWindow): void {
+  const send = (): void => {
+    if (!win.isDestroyed()) {
+      win.webContents.send('dw:window-state', { maximized: win.isMaximized() })
+    }
+  }
+  win.on('maximize', send)
+  win.on('unmaximize', send)
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -41,6 +67,7 @@ function createWindow(): void {
     show: false,
     title: 'DataWorkbench',
     icon: resolveWindowIcon(),
+    ...framelessWindowOptions,
     webPreferences: {
       preload: resolvePreload(),
       contextIsolation: true,
@@ -48,6 +75,8 @@ function createWindow(): void {
       sandbox: false
     }
   })
+
+  bindWindowState(mainWindow)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
@@ -100,6 +129,7 @@ function forward(method: string, params: unknown): void {
 }
 
 app.whenReady().then(() => {
+  installApplicationMenu()
   sidecar.onLog((entry) => {
     const level = entry.stream === 'protocol' ? 'warning' : 'info'
     console.error(`[sidecar ${entry.stream}] ${entry.text}`)
@@ -109,6 +139,14 @@ app.whenReady().then(() => {
     forward(method, params)
   })
   createWindow()
+})
+
+ipcMain.handle('dw:window', (event, action: unknown) => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (!win || !isWindowChromeAction(action)) {
+    return false
+  }
+  return applyWindowChromeAction(win, action) ?? null
 })
 
 ipcMain.handle('dw:rpc', async (_event, method: string, params: unknown) => {
