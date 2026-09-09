@@ -77,6 +77,16 @@ pnpm dev
 
 Python sidecar 由 Electron 主进程拉起，不要单独在渲染进程 `spawn`。开发态优先使用 `python/.venv`，否则 Windows 上用 `py -3.12`。
 
+若 `pnpm dev` 报 `spawn ...\electron\dist\electron.exe ENOENT`：二进制没下下来（常见于 `checksums.json` 缺失或 GitHub 发布页超时）。仓库 `.npmrc` 已设 `electron_use_remote_checksums` 与 npmmirror。补救：
+
+```powershell
+$env:electron_use_remote_checksums = "1"
+$env:ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/"
+node node_modules/electron/install.js
+```
+
+仍失败时从 `https://cdn.npmmirror.com/binaries/electron/v33.4.11/electron-v33.4.11-win32-x64.zip` 下载 zip，解压进 `node_modules/electron/dist/`，直到 `electron.exe --version` 打出 `v33.4.11`。
+
 
 上游 Qt 仓库若在本机，可设 `DAWB_UPSTREAM` 指向该路径，按 [docs/dev_plan/06-python-reuse.md](docs/dev_plan/06-python-reuse.md) 同步纯 Python 引擎（不要 submodule 整个 C++ 工程）。
 
