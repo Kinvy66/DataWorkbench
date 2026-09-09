@@ -193,6 +193,9 @@ def main() -> int:
         sys.stdout.buffer.flush()
 
     manager = DataManager()
+    from dw_host.api import bind_data_manager
+
+    bind_data_manager(manager)
     runtime = WorkflowRuntime(notify=_notify)
     while True:
         line = _read_stdin_line()

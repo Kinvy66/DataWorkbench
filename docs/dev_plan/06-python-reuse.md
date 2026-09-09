@@ -12,7 +12,7 @@
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/nodes/style_demo_nodes.py` | 可选，仅开发 | 可不上生产 |
 | `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n |
 
-`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎与 sidecar RPC 已落地：`python/dw_workflow` vendor 自上游 `9dd298fe`，`python/dw_nodes_system` 含 Start/End/Constant/Delay；`workflow.*` 经 stdio 可 create/addNode/connect/`dumpLogic`/`loadLogic`/`execute`。尚未做 DataToManager 与 Vue Flow。
+`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC 与 DataToManager 已落地：`python/dw_workflow` vendor 自上游 `9dd298fe`，`python/dw_nodes_system` 含 Start/End/Constant/Delay/DataToManager；`workflow.*` 经 stdio 可 create/addNode/connect/`listNodeTypes`/`dumpLogic`/`loadLogic`/`execute`。Vue Flow 画布已接入。尚未做 If/Else、TextViewer、undo。
 
 ## 移植并改 Host（必须改）
 

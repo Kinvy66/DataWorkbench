@@ -36,6 +36,28 @@ _STATE_WIRE = {
 }
 
 
+def _param_wire(name: str, param: Any) -> dict[str, Any]:
+    if hasattr(param, "to_dict"):
+        raw = param.to_dict(name)
+    else:
+        raw = {"name": name, "type": "str"}
+    props = raw.pop("properties", None) or {}
+    out: dict[str, Any] = {
+        "name": raw.get("name", name),
+        "type": raw.get("type", "str"),
+        "description": raw.get("description", ""),
+    }
+    if "default" in raw:
+        out["default"] = raw["default"]
+    for key in ("min", "max", "step", "decimals", "layout", "height"):
+        if key in props:
+            out[key] = props[key]
+    enum = props.get("enum")
+    if enum:
+        out["choices"] = list(enum)
+    return out
+
+
 class _Session:
     def __init__(self, workflow: DAWorkflow) -> None:
         self.workflow = workflow
@@ -54,6 +76,37 @@ class WorkflowRuntime:
         self._serializer = DAWorkflowSerializer(self._factory)
         self._sessions: dict[str, _Session] = {}
         self._lock = threading.Lock()
+
+    def list_node_types(self) -> dict[str, Any]:
+        types: list[dict[str, Any]] = []
+        for cls in self._factory.get_registry().get_all_descriptors():
+            inputs = [
+                {
+                    "name": port["name"],
+                    "type": port.get("data_type", "any"),
+                    "required": bool(port.get("required", True)),
+                }
+                for port in (getattr(cls, "inputs", None) or [])
+            ]
+            outputs = [
+                {"name": port["name"], "type": port.get("data_type", "any")}
+                for port in (getattr(cls, "outputs", None) or [])
+            ]
+            parameters = []
+            for name, param in (getattr(cls, "parameters", None) or {}).items():
+                parameters.append(_param_wire(name, param))
+            types.append(
+                {
+                    "qualifiedName": getattr(cls, "qualified_name", ""),
+                    "name": getattr(cls, "name", ""),
+                    "category": getattr(cls, "category", ""),
+                    "inputs": inputs,
+                    "outputs": outputs,
+                    "parameters": parameters,
+                }
+            )
+        types.sort(key=lambda item: (str(item["category"]), str(item["name"])))
+        return {"types": types}
 
     def create(self, name: str) -> dict[str, Any]:
         workflow_id = str(uuid.uuid4())

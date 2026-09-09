@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import math
+import threading
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -209,6 +210,7 @@ class DataManager:
 
     def __init__(self) -> None:
         self._items: dict[str, Dataset] = {}
+        self._lock = threading.RLock()
 
     def _names(self) -> set[str]:
         return {ds.name for ds in self._items.values()}
@@ -219,15 +221,18 @@ class DataManager:
         return ds
 
     def get(self, dataset_id: str) -> Dataset:
-        ds = self._items.get(dataset_id)
+        with self._lock:
+            ds = self._items.get(dataset_id)
         if ds is None:
             raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
         return ds
 
     def list_datasets(self) -> list[dict[str, Any]]:
+        with self._lock:
+            items = list(self._items.values())
         return [
             {"id": ds.id, "name": ds.name, "rows": int(len(ds.df)), "cols": int(ds.df.shape[1])}
-            for ds in self._items.values()
+            for ds in items
         ]
 
     def get_schema(self, dataset_id: str) -> dict[str, Any]:
@@ -237,11 +242,12 @@ class DataManager:
     def publish_dataframe(self, name: str, df: Any) -> str:
         """Node-facing API: same display name overwrites the existing frame."""
         _require_pandas()
-        for ds in self._items.values():
-            if ds.name == name:
-                ds.df = df
-                return ds.id
-        return self._insert(name, df).id
+        with self._lock:
+            for ds in self._items.values():
+                if ds.name == name:
+                    ds.df = df
+                    return ds.id
+            return self._insert(name, df).id
 
     def import_path(self, path: str, fmt: str | None = None) -> dict[str, Any]:
         _require_pandas()
@@ -262,8 +268,9 @@ class DataManager:
         except Exception as exc:
             log.info("data.import failed: %s", type(exc).__name__)
             raise HostError(ErrorCode.FileIo, f"Failed to import {file_path.name}", "data.ioError") from exc
-        name = _unique_display_name(self._names(), file_path.stem)
-        ds = self._insert(name, df)
+        with self._lock:
+            name = _unique_display_name(self._names(), file_path.stem)
+            ds = self._insert(name, df)
         log.info("data.import name=%s rows=%s cols=%s", ds.name, len(df), df.shape[1])
         return _meta(ds)
 
@@ -304,16 +311,18 @@ class DataManager:
         ds.df = work
 
     def rename(self, dataset_id: str, name: str) -> None:
-        ds = self.get(dataset_id)
-        new_name = name.strip()
-        if not new_name:
-            raise HostError(ErrorCode.ColumnOrValidation, "Name must not be empty", "data.invalidValue")
-        others = {item.name for item in self._items.values() if item.id != dataset_id}
-        ds.name = _unique_display_name(others, new_name)
+        with self._lock:
+            ds = self.get(dataset_id)
+            new_name = name.strip()
+            if not new_name:
+                raise HostError(ErrorCode.ColumnOrValidation, "Name must not be empty", "data.invalidValue")
+            others = {item.name for item in self._items.values() if item.id != dataset_id}
+            ds.name = _unique_display_name(others, new_name)
 
     def remove(self, dataset_id: str) -> None:
-        self.get(dataset_id)
-        del self._items[dataset_id]
+        with self._lock:
+            self.get(dataset_id)
+            del self._items[dataset_id]
 
     def export_path(self, dataset_id: str, path: str, fmt: str | None = None) -> None:
         _require_pandas()

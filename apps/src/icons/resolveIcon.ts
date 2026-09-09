@@ -10,6 +10,8 @@ import iconData from '@/assets/icons/gui/data.svg?url'
 import iconDataTable from '@/assets/icons/gui/data-table.svg?url'
 import iconWorkflow from '@/assets/icons/gui/workflow.svg?url'
 import iconSetting from '@/assets/icons/gui/setting.svg?url'
+import iconRun from '@/assets/icons/app/run.svg?url'
+import iconStop from '@/assets/icons/app/stop.svg?url'
 
 const urls: Record<string, string> = {
   'app/icon': iconApp,
@@ -18,6 +20,8 @@ const urls: Record<string, string> = {
   'app/save': iconSave,
   'app/removeData': iconRemoveData,
   'app/renameColumns': iconRenameColumns,
+  'app/run': iconRun,
+  'app/stop': iconStop,
   'gui/data': iconData,
   'gui/data-table': iconDataTable,
   'gui/workflow': iconWorkflow,

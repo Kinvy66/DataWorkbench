@@ -27,6 +27,12 @@ export default {
     dataRenameTip: '重命名当前数据集',
     dataRemove: '移除',
     dataRemoveTip: '从内存中移除当前数据集',
+    workflow: '工作流',
+    workflowRunGroup: '运行',
+    workflowRun: '运行',
+    workflowRunTip: '执行当前工作流',
+    workflowStop: '停止',
+    workflowStopTip: '停止正在运行的工作流',
     layoutSwitcher: '切换功能区布局',
     minimizeRibbon: '最小化功能区',
     keyTips: '快捷提示',
@@ -39,8 +45,12 @@ export default {
   layout: {
     datasets: '数据集',
     datasetsEmpty: '还没有数据集。使用「数据 → 导入」加载表格。',
+    nodes: '节点',
+    nodesEmpty: '尚未加载节点类型。',
     table: '表格',
     tableEmpty: '选择一个数据集以浏览表格。',
+    workflow: '工作流',
+    workflowEmpty: '从「节点」列表拖入节点，或点击添加。',
     workspace: '工作区',
     workspaceHint: '表格、工作流和图表将在此打开。',
     properties: '属性',
@@ -70,6 +80,19 @@ export default {
     ioError: '读写文件失败。',
     pickleDisabled: '已禁用 pickle 导入。'
   },
+  workflow: {
+    unknownType: '未知节点类型。',
+    invalidNode: '无法添加该节点。',
+    nodeNotFound: '找不到该节点。',
+    unknownParam: '未知节点参数。',
+    duplicateConnection: '这两个端口已经连上。',
+    invalidDisconnect: '请指定要断开的连接。',
+    connectionNotFound: '找不到该连接。',
+    invalidFormat: '工作流数据无效。',
+    cycle: '工作流存在环路。',
+    busy: '工作流正在运行。请先停止再编辑。',
+    notFound: '找不到该工作流。'
+  },
   log: {
     ready: 'Sidecar 已就绪（pid {pid}，pandas {pandas}）。',
     pingOk: 'host.hello 成功，Python {version}，pandas {pandas}。',
@@ -78,6 +101,8 @@ export default {
     importOk: '已导入 {name}（{rows} × {cols}）。',
     exportOk: '数据集已导出。',
     renameOk: '数据集已重命名为 {name}。',
-    removeOk: '数据集已移除。'
+    removeOk: '数据集已移除。',
+    workflowFinished: '工作流已完成。',
+    workflowFailed: '工作流失败：{error}'
   }
 }

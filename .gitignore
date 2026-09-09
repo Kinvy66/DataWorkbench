@@ -151,3 +151,4 @@ $RECYCLE.BIN/
 # Generated P1 smoke CSVs (do not commit)
 /large_500k.csv
 /large_*.csv
+testdata

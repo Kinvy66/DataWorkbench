@@ -41,4 +41,4 @@ flowchart LR
 
 ## 当前状态
 
-P0 骨架已落地。P1 数据自动验收已完成。P2 已 vendor 引擎并实现 sidecar `workflow.*` RPC。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。尚未做 Vue Flow 画布。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。
+P0 骨架已落地。P1 数据自动验收已完成。P2 已接入 Vue Flow 画布、System 节点工具箱与 DataToManager（Constant → Output to DataManager 可写入数据集列表）。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。尚未做 undo、dump/load wrap 画布。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。

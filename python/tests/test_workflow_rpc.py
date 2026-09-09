@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 
-from dw_nodes_system import ConstantNode, DelayNode, EndNode
+from dw_nodes_system import ConstantNode, DataToManagerNode, DelayNode, EndNode
 from rpc_client import popen, read_rpc, readline, send
 
 CONSTANT = ConstantNode.qualified_name
+DATAMGR = DataToManagerNode.qualified_name
 END = EndNode.qualified_name
 DELAY = DelayNode.qualified_name
 
@@ -168,6 +169,74 @@ def test_workflow_duplicate_connect_and_cycle() -> None:
         assert cycled["error"]["code"] == 2002
         assert cycled["error"]["data"]["i18nKey"] == "workflow.cycle"
         send(proc, {"jsonrpc": "2.0", "id": 10, "method": "host.shutdown", "params": {}})
+        assert proc.wait(timeout=5) == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
+def test_list_node_types_includes_system_set() -> None:
+    proc = popen()
+    try:
+        _ready(proc)
+        listed = _rpc(proc, 1, "workflow.listNodeTypes", {})
+        names = {item["qualifiedName"] for item in listed["result"]["types"]}
+        assert CONSTANT in names
+        assert DATAMGR in names
+        assert DELAY in names
+        constant = next(item for item in listed["result"]["types"] if item["qualifiedName"] == CONSTANT)
+        assert any(p["name"] == "value" for p in constant["outputs"])
+        assert any(p["name"] == "value" and p["type"] == "code" for p in constant["parameters"])
+        send(proc, {"jsonrpc": "2.0", "id": 2, "method": "host.shutdown", "params": {}})
+        assert proc.wait(timeout=5) == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
+def test_constant_to_datamanager_appears_in_data_list() -> None:
+    proc = popen()
+    try:
+        _ready(proc)
+        created = _rpc(proc, 1, "workflow.create", {"name": "publish"})
+        wf = created["result"]["workflowId"]
+        src = _rpc(proc, 2, "workflow.addNode", {"workflowId": wf, "qualifiedName": CONSTANT})
+        dst = _rpc(proc, 3, "workflow.addNode", {"workflowId": wf, "qualifiedName": DATAMGR})
+        src_id = src["result"]["nodeId"]
+        dst_id = dst["result"]["nodeId"]
+        _rpc(
+            proc,
+            4,
+            "workflow.setParam",
+            {"workflowId": wf, "nodeId": src_id, "name": "value", "value": "[10, 20]"},
+        )
+        _rpc(
+            proc,
+            5,
+            "workflow.setParam",
+            {"workflowId": wf, "nodeId": dst_id, "name": "data_name", "value": "from_workflow"},
+        )
+        _rpc(
+            proc,
+            6,
+            "workflow.connect",
+            {
+                "workflowId": wf,
+                "fromId": src_id,
+                "fromPort": "value",
+                "toId": dst_id,
+                "toPort": "data",
+            },
+        )
+        accepted = _rpc(proc, 7, "workflow.execute", {"workflowId": wf})
+        assert accepted["result"]["accepted"] is True
+        notes = _drain_until_finished(proc, wf)
+        finished = notes[-1]
+        assert finished["params"]["ok"] is True
+        listed = _rpc(proc, 8, "data.list", {})
+        names = {item["name"] for item in listed["result"]["datasets"]}
+        assert "from_workflow" in names
+        send(proc, {"jsonrpc": "2.0", "id": 9, "method": "host.shutdown", "params": {}})
         assert proc.wait(timeout=5) == 0
     finally:
         if proc.poll() is None:

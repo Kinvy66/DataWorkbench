@@ -3,10 +3,12 @@ import { useI18n } from 'vue-i18n'
 import type { FileMenuItemModel, RibbonTabModel } from '@mlightcad/ribbon'
 import { ribbonIcon } from '@/icons/resolveIcon'
 import { useDataStore } from '@/stores/data'
+import { useWorkflowStore } from '@/stores/workflow'
 
 export function useRibbonSchema() {
   const { t } = useI18n()
   const data = useDataStore()
+  const workflow = useWorkflowStore()
 
   const tabs = computed<RibbonTabModel[]>(() => {
     const hasDataset = Boolean(data.currentId)
@@ -101,6 +103,41 @@ export function useRibbonSchema() {
                     tooltip: t('ribbon.dataRemoveTip'),
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/removeData')
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'workflow',
+        title: t('ribbon.workflow'),
+        groups: [
+          {
+            id: 'workflow-run',
+            title: t('ribbon.workflowRunGroup'),
+            collections: [
+              {
+                id: 'workflow-run-actions',
+                items: [
+                  {
+                    id: 'workflow.run',
+                    type: 'button',
+                    label: t('ribbon.workflowRun'),
+                    tooltip: t('ribbon.workflowRunTip'),
+                    size: 'large',
+                    disabled: !workflow.canRun,
+                    icon: ribbonIcon('app/run')
+                  },
+                  {
+                    id: 'workflow.stop',
+                    type: 'button',
+                    label: t('ribbon.workflowStop'),
+                    tooltip: t('ribbon.workflowStopTip'),
+                    size: 'large',
+                    disabled: !workflow.canStop,
+                    icon: ribbonIcon('app/stop')
                   }
                 ]
               }

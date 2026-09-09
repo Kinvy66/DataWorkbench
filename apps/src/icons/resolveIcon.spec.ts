@@ -15,6 +15,8 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/plugin')).toMatch(/plugin\.svg/)
     expect(resolveIconUrl('app/addData')).toMatch(/addData\.svg/)
     expect(resolveIconUrl('app/renameColumns')).toMatch(/renameColumns\.svg/)
+    expect(resolveIconUrl('app/run')).toMatch(/run\.svg/)
+    expect(resolveIconUrl('app/stop')).toMatch(/stop\.svg/)
   })
 
   it('returns empty string for a missing name', () => {

@@ -3,6 +3,7 @@ import { APP_VERSION } from '@dw/rpc-types'
 import { commandBus } from './commandBus'
 import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
+import { useWorkflowStore } from '@/stores/workflow'
 import { i18n } from '@/i18n'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
@@ -134,6 +135,30 @@ export function registerBuiltinCommands(): void {
       }
     },
     () => useDataStore().hasSelection
+  )
+
+  commandBus.register(
+    'workflow.run',
+    async () => {
+      try {
+        await useWorkflowStore().run()
+      } catch (err) {
+        reportError(err)
+      }
+    },
+    () => useWorkflowStore().canRun
+  )
+
+  commandBus.register(
+    'workflow.stop',
+    async () => {
+      try {
+        await useWorkflowStore().stop()
+      } catch (err) {
+        reportError(err)
+      }
+    },
+    () => useWorkflowStore().canStop
   )
 
   commandBus.register('file.exit', async () => {

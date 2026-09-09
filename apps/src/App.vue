@@ -8,13 +8,16 @@ import AppRibbon from '@/ribbon/AppRibbon.vue'
 import WorkbenchLayout from '@/layout/WorkbenchLayout.vue'
 import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
+import { useWorkflowStore } from '@/stores/workflow'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
+import type { WorkflowFinishedParams, WorkflowNodeStateParams } from '@dw/rpc-types'
 
 const { t, locale, te } = useI18n()
 const epLocale = computed(() => (locale.value === 'zh-CN' ? zhCn : enLocale))
 const log = useLogStore()
 const data = useDataStore()
+const workflow = useWorkflowStore()
 const offs: Array<() => void> = []
 
 onMounted(() => {
@@ -36,6 +39,25 @@ onMounted(() => {
         })
       )
       void data.refreshList().catch(() => {})
+      void workflow.bootstrap().catch(() => {})
+    })
+  )
+  offs.push(
+    rpc.on('workflow.nodeState', (params) => {
+      const p = params as WorkflowNodeStateParams
+      workflow.applyNodeState(p.workflowId, p.nodeId, p.state)
+    })
+  )
+  offs.push(
+    rpc.on('workflow.finished', (params) => {
+      const p = params as WorkflowFinishedParams
+      workflow.applyFinished(p.workflowId, Boolean(p.ok))
+      void data.refreshList().catch(() => {})
+      if (p.ok) {
+        log.append('info', t('log.workflowFinished'))
+      } else {
+        log.append('error', t('log.workflowFailed', { error: p.error ?? '' }))
+      }
     })
   )
   offs.push(
@@ -54,6 +76,7 @@ onMounted(() => {
   void data.refreshList().catch(() => {
     // Sidecar may still be spawning; host.ready retries below.
   })
+  void workflow.bootstrap().catch(() => {})
 })
 
 onUnmounted(() => {

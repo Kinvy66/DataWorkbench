@@ -1,14 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useI18n } from 'vue-i18n'
 import { useLogStore } from '@/stores/log'
+import { useWorkflowStore } from '@/stores/workflow'
 import DatasetList from '@/views/DatasetList.vue'
 import DatasetProperties from '@/views/DatasetProperties.vue'
 import VirtualTable from '@/views/VirtualTable.vue'
+import NodeToolbox from '@/views/workflow/NodeToolbox.vue'
+import NodeProperties from '@/views/workflow/NodeProperties.vue'
+import WorkflowCanvas from '@/views/workflow/WorkflowCanvas.vue'
 
 const { t } = useI18n()
 const log = useLogStore()
+const workflow = useWorkflowStore()
+
+const rightPanel = computed(() => (workflow.selectedNodeId ? 'node' : 'dataset'))
 
 function formatTime(at: number): string {
   return new Date(at).toLocaleTimeString()
@@ -22,20 +30,33 @@ function formatTime(at: number): string {
         <Splitpanes class="default-theme">
           <Pane :size="18" :min-size="12">
             <section class="panel">
-              <header>{{ t('layout.datasets') }}</header>
-              <DatasetList />
+              <el-tabs v-model="workflow.leftTab" class="panel-tabs">
+                <el-tab-pane :label="t('layout.datasets')" name="datasets">
+                  <DatasetList />
+                </el-tab-pane>
+                <el-tab-pane :label="t('layout.nodes')" name="nodes">
+                  <NodeToolbox />
+                </el-tab-pane>
+              </el-tabs>
             </section>
           </Pane>
           <Pane :size="58" :min-size="30">
             <section class="panel">
-              <header>{{ t('layout.table') }}</header>
-              <VirtualTable />
+              <el-tabs v-model="workflow.centerTab" class="panel-tabs">
+                <el-tab-pane :label="t('layout.table')" name="table">
+                  <VirtualTable />
+                </el-tab-pane>
+                <el-tab-pane :label="t('layout.workflow')" name="workflow">
+                  <WorkflowCanvas />
+                </el-tab-pane>
+              </el-tabs>
             </section>
           </Pane>
           <Pane :size="24" :min-size="12">
             <section class="panel">
               <header>{{ t('layout.properties') }}</header>
-              <DatasetProperties />
+              <NodeProperties v-if="rightPanel === 'node'" />
+              <DatasetProperties v-else />
             </section>
           </Pane>
         </Splitpanes>
@@ -78,6 +99,26 @@ function formatTime(at: number): string {
   border-bottom: 1px solid #ebeef5;
   color: #303133;
   background: #f5f7fa;
+}
+.panel-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.panel-tabs :deep(.el-tabs__header) {
+  margin: 0;
+  padding: 0 8px;
+  background: #f5f7fa;
+}
+.panel-tabs :deep(.el-tabs__content) {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.panel-tabs :deep(.el-tab-pane) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .log-panel .log-lines {
   margin: 0;

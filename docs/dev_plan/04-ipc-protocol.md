@@ -64,6 +64,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | 方法 | 参数 | 说明 |
 |------|------|------|
 | `workflow.create` | `{name?}` | `{workflowId, name}` 空 DAG |
+| `workflow.listNodeTypes` | `{}` | `{types:[{qualifiedName,name,category,inputs,outputs,parameters}]}` 供工具箱与属性表单。无 workflowId |
 | `workflow.addNode` | `{workflowId, qualifiedName, nodeId?, position?}` | 工厂 `create_node`；`nodeId` 省略则 Python 生成。`position` 仅会话缓存，不进逻辑 dump |
 | `workflow.removeNode` | `{workflowId, nodeId}` | |
 | `workflow.setParam` | `{workflowId, nodeId, name, value}` | value 为 JSON 可序列化 |

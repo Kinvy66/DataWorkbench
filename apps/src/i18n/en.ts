@@ -27,6 +27,12 @@ export default {
     dataRenameTip: 'Rename the selected dataset',
     dataRemove: 'Remove',
     dataRemoveTip: 'Remove the selected dataset from memory',
+    workflow: 'Workflow',
+    workflowRunGroup: 'Run',
+    workflowRun: 'Run',
+    workflowRunTip: 'Execute the current workflow',
+    workflowStop: 'Stop',
+    workflowStopTip: 'Stop the running workflow',
     layoutSwitcher: 'Switch ribbon layout',
     minimizeRibbon: 'Minimize ribbon',
     keyTips: 'Key Tips',
@@ -39,8 +45,12 @@ export default {
   layout: {
     datasets: 'Datasets',
     datasetsEmpty: 'No datasets yet. Use Data → Import to load a table.',
+    nodes: 'Nodes',
+    nodesEmpty: 'Node types have not loaded yet.',
     table: 'Table',
     tableEmpty: 'Select a dataset to browse its table.',
+    workflow: 'Workflow',
+    workflowEmpty: 'Drag a node from the Nodes list, or click one to add it.',
     workspace: 'Workspace',
     workspaceHint: 'Tables, workflow, and charts will open here.',
     properties: 'Properties',
@@ -71,6 +81,19 @@ export default {
     ioError: 'Failed to read or write the file.',
     pickleDisabled: 'Pickle import is disabled.'
   },
+  workflow: {
+    unknownType: 'Unknown node type.',
+    invalidNode: 'Could not add that node.',
+    nodeNotFound: 'Node not found.',
+    unknownParam: 'Unknown node parameter.',
+    duplicateConnection: 'These ports are already connected.',
+    invalidDisconnect: 'Specify a connection to remove.',
+    connectionNotFound: 'Connection not found.',
+    invalidFormat: 'The workflow payload is invalid.',
+    cycle: 'The workflow contains a cycle.',
+    busy: 'The workflow is running. Stop it before editing.',
+    notFound: 'Workflow not found.'
+  },
   log: {
     ready: 'Sidecar ready (pid {pid}, pandas {pandas}).',
     pingOk: 'host.hello ok, Python {version}, pandas {pandas}.',
@@ -79,6 +102,8 @@ export default {
     importOk: 'Imported {name} ({rows} × {cols}).',
     exportOk: 'Dataset exported.',
     renameOk: 'Dataset renamed to {name}.',
-    removeOk: 'Dataset removed.'
+    removeOk: 'Dataset removed.',
+    workflowFinished: 'Workflow finished.',
+    workflowFailed: 'Workflow failed: {error}'
   }
 }

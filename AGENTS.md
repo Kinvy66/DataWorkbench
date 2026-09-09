@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（进行中） → P3 分析节点 → P4 图表 → P5 工程文件**
 
-P1 任务 1–6 与 Arrow `fetchBlock` 已落地。P2：`python/dw_workflow` + `dw_nodes_system`（Start/End/Constant/Delay）已 vendor；sidecar 已实现 `workflow.*` RPC（含 `dumpLogic`/`loadLogic`/`execute` 通知）。下一步是 Vue Flow 画布与 DataToManager。不要做图表、自由停靠或 Agent。Home 剪贴板 undo/redo 仍属 P2 后期。
+P1 任务 1–6 与 Arrow `fetchBlock` 已落地。P2：`python/dw_workflow` + `dw_nodes_system`（Start/End/Constant/Delay/DataToManager）已 vendor；sidecar 已实现 `workflow.*` RPC；Vue Flow 画布、节点工具箱、属性表单、Ribbon 运行/停止已接入。下一步是 dump/load wrap 画布、Delay Stop、undo。不要做图表、自由停靠或 Agent。Home 剪贴板 undo/redo 仍属 P2 后期。
 
 ## STRUCTURE
 

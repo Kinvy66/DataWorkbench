@@ -76,6 +76,8 @@ class ExecuteParams(BaseModel):
 
 
 def dispatch(method: str, params: dict[str, Any], runtime: WorkflowRuntime) -> Any:
+    if method == "workflow.listNodeTypes":
+        return runtime.list_node_types()
     if method == "workflow.create":
         parsed = CreateParams.model_validate(params)
         return runtime.create(parsed.name)

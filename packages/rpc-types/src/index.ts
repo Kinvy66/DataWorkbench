@@ -32,6 +32,7 @@ export const RpcMethod = {
   DataExport: 'data.export',
   DataRegister: 'data.register',
   WorkflowCreate: 'workflow.create',
+  WorkflowListNodeTypes: 'workflow.listNodeTypes',
   WorkflowAddNode: 'workflow.addNode',
   WorkflowRemoveNode: 'workflow.removeNode',
   WorkflowSetParam: 'workflow.setParam',
@@ -193,6 +194,39 @@ export interface OkResult {
 
 export interface DialogCancelled {
   cancelled: true
+}
+
+export interface WorkflowPortSpec {
+  name: string
+  type: string
+  required?: boolean
+}
+
+export interface WorkflowParamSpec {
+  name: string
+  type: string
+  description?: string
+  default?: unknown
+  min?: number
+  max?: number
+  step?: number
+  decimals?: number
+  layout?: 'inline' | 'below'
+  height?: number
+  choices?: string[]
+}
+
+export interface WorkflowNodeType {
+  qualifiedName: string
+  name: string
+  category: string
+  inputs: WorkflowPortSpec[]
+  outputs: WorkflowPortSpec[]
+  parameters: WorkflowParamSpec[]
+}
+
+export interface WorkflowListNodeTypesResult {
+  types: WorkflowNodeType[]
 }
 
 export interface WorkflowCreateParams {

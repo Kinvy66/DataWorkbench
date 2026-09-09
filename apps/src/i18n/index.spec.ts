@@ -15,4 +15,13 @@ describe('i18n', () => {
     expect(String(i18n.global.t('layout.datasetsEmpty'))).toContain('Import')
     i18n.global.locale.value = 'zh-CN'
   })
+
+  it('translates workflow empty states', () => {
+    expect(String(i18n.global.t('layout.nodesEmpty'))).toContain('节点')
+    expect(String(i18n.global.t('layout.workflowEmpty'))).toContain('节点')
+    i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('layout.nodesEmpty'))).toContain('Node types')
+    expect(String(i18n.global.t('workflow.busy'))).toContain('running')
+    i18n.global.locale.value = 'zh-CN'
+  })
 })
