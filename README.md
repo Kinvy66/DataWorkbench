@@ -51,14 +51,9 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**计划已落盘，应用代码尚未初始化。** 不要按下方命令预期能立刻跑起窗口——P0 完成后才会有 `pnpm dev`。
+**P0 骨架已落地**：`pnpm install` 后 `pnpm dev` 可打开窗口、拉起 Python sidecar，Home → Ping 走命令总线调用 `host.hello`。
 
-已完成：
-
-- [docs/dev_plan/](docs/dev_plan/README.md) 全套开发计划（目标、架构、RPC、P0–P5 路线图、上游 Python 复用清单）
-- 本 README 与 [AGENTS.md](AGENTS.md)
-
-下一步：按计划 **P0 骨架**（electron-vite 空壳 + Python `host.hello`）。阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
+下一步：按计划 **P1 数据**（导入与虚表）。阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 
 ## 开发环境（P0 起）
 
@@ -73,20 +68,15 @@ Windows 为主要开发平台；Linux 作为后续验证，不阻塞 P0。
 
 ### 仓库就绪后的预期命令
 
-P0 落地后（目录以 [docs/dev_plan/03-repo-layout.md](docs/dev_plan/03-repo-layout.md) 为准）：
-
 ```bash
 pnpm install
+py -3.12 -m pip install -r python/requirements.txt
+pnpm test
 pnpm dev
 ```
 
-Python sidecar 由 Electron 主进程拉起，不要单独在渲染进程 `spawn`。
+Python sidecar 由 Electron 主进程拉起，不要单独在渲染进程 `spawn`。开发态优先使用 `python/.venv`，否则 Windows 上用 `py -3.12`。
 
-```bash
-cd python
-uv sync
-uv run pytest
-```
 
 上游 Qt 仓库若在本机，可设 `DAWB_UPSTREAM` 指向该路径，按 [docs/dev_plan/06-python-reuse.md](docs/dev_plan/06-python-reuse.md) 同步纯 Python 引擎（不要 submodule 整个 C++ 工程）。
 
@@ -101,7 +91,7 @@ uv run pytest
 
 ## 许可
 
-应用程序许可待 P0 选定（计划倾向 MIT）。从上游 vendor 的 `DAWorkFlowPy` 等文件仍为 **LGPL**，必须保留版权头，并在 `NOTICE` 中列出路径。详见开发计划中的许可说明。
+应用程序为 [MIT](LICENSE)。从上游 vendor 的 `DAWorkFlowPy` 等文件仍为 **LGPL**，必须保留版权头，并在 `NOTICE` 中列出路径（P2 引入 vendor 时补 NOTICE）。
 
 ## 贡献
 

@@ -31,9 +31,19 @@
 
 | 方法 | 方向 | 说明 |
 |------|------|------|
-| `host.ready` | Py → Main 通知 | 导入完 pandas 后发，对应上游 `booting`/`ready` 思想 |
-| `host.hello` | Main → Py | 交换 `appVersion`、`workspaceRoot` |
+| `host.ready` | Py → Main 通知 | sidecar 启动完成后发（尝试导入 pandas 之后）。无 `id`。params：`{pid, pandasAvailable}` |
+| `host.hello` | Main → Py | 交换版本与工作区路径 |
 | `host.shutdown` | Main → Py | 优雅退出；超时 `kill` |
+
+`host.hello` params：`{appVersion, workspaceRoot}`。result：`{ok: true, pythonVersion, appVersion, workspaceRoot, pandasAvailable}`。
+
+`host.shutdown` result：`{ok: true}`，随后进程以退出码 0 结束。
+
+pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不阻塞骨架）。
+
+### P0 验收：stdout 污染
+
+若 sidecar 在 JSON-RPC 行之间向 stdout 打印非 JSON（例如 `oops`），主进程必须记为 **protocol pollution** 并继续解析后续合法行，而不是阻塞等待。测试可用环境变量 `DW_POLLUTE_AFTER_READY=1` 在 `host.ready` 后故意写一行 `oops`。
 
 ## data 域
 

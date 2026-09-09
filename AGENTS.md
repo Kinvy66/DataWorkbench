@@ -24,11 +24,11 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 ## 当前阶段
 
-以 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md) 为准。文档落盘时代码尚未初始化，执行顺序：
+以 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md) 为准。P0 骨架（窗口 + Ribbon + `host.hello`）已落地。执行顺序：
 
-**P0 骨架 → P1 数据 → P2 工作流 → P3 分析节点 → P4 图表 → P5 工程文件**
+**P0 骨架（完成） → P1 数据 → P2 工作流 → P3 分析节点 → P4 图表 → P5 工程文件**
 
-未完成当前阶段验收，不要开始下一阶段的可见功能。P2 完成前禁止做图表。不要在 P0 上自由停靠或 Agent。
+未完成当前阶段验收，不要开始下一阶段的可见功能。现在不要做虚表/工作流/图表。P2 完成前禁止做图表。不要自由停靠或 Agent。
 
 ## STRUCTURE
 
@@ -166,7 +166,7 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 
 | 改动范围 | 提交前至少跑 |
 |----------|----------------|
-| `python/` | `uv run pytest`（Windows 可加 `--junitxml=pytest.xml` 再读文件） |
+| `python/` | `py -3.12 -m pytest python/tests`（或 venv 内 pytest；Windows 可加 `--junitxml=python/pytest.xml` 再读文件） |
 | `packages/` 或 renderer TS | `pnpm` workspace 内 vitest |
 | RPC 协议 | 契约测试（stdio 或同进程 Host），两端各一正一反 |
 | 仅文档 | 打开改过的 md、检查相对链接；不跑应用测试 |

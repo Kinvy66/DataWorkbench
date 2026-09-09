@@ -1,0 +1,13 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+shamefullyHoist: true
+strictPeerDependencies: false
+
+neverBuiltDependencies: []
+
+allowBuilds:
+  electron: true
+  esbuild: true
+  vue-demi: true

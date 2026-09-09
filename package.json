@@ -1,0 +1,11 @@
+{
+  "name": "dataworkbench",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Desktop data workbench: Electron + Vue 3 + Python sidecar",
+  "scripts": {
+    "dev": "pnpm --filter @dw/desktop dev",
+    "test": "pnpm --filter @dw/desktop test && pnpm test:python",
+    "test:python": "python/.venv/Scripts/python.exe -m pytest python/tests -q --junitxml=python/pytest.xml"
+  }
+}
