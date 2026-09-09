@@ -14,6 +14,12 @@ const sidecar = new SidecarBridge()
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
 
+// Hidden windows on Windows + titleBarOverlay often never paint, so ready-to-show
+// never fires and the UI stays invisible. Disable occlusion and always have a show fallback.
+if (process.platform === 'win32') {
+  app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
+}
+
 function resolveWindowIcon(): string | undefined {
   const candidates = [
     path.join(process.cwd(), 'resources', 'icon.ico'),
@@ -60,6 +66,20 @@ function bindWindowState(win: BrowserWindow): void {
   win.on('unmaximize', send)
 }
 
+function revealWindow(win: BrowserWindow | null, reason: string): void {
+  if (!win || win.isDestroyed()) {
+    return
+  }
+  if (!win.isVisible()) {
+    console.error(`[window] show (${reason})`)
+    win.show()
+  }
+  if (!app.isPackaged && process.env.DW_DEVTOOLS === '1' && !win.webContents.isDevToolsOpened()) {
+    win.webContents.openDevTools({ mode: 'detach' })
+  }
+  win.focus()
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -72,17 +92,33 @@ function createWindow(): void {
       preload: resolvePreload(),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: false,
+      backgroundThrottling: false,
+      paintWhenInitiallyHidden: true
     }
   })
 
   bindWindowState(mainWindow)
 
+  const showFallback = setTimeout(() => {
+    revealWindow(mainWindow, 'timeout')
+  }, 1500)
+  mainWindow.once('closed', () => {
+    clearTimeout(showFallback)
+  })
+
   mainWindow.on('ready-to-show', () => {
-    mainWindow?.show()
-    if (!app.isPackaged && process.env.DW_DEVTOOLS === '1') {
-      mainWindow?.webContents.openDevTools({ mode: 'detach' })
-    }
+    clearTimeout(showFallback)
+    revealWindow(mainWindow, 'ready-to-show')
+  })
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, url) => {
+    console.error(`[window] did-fail-load code=${errorCode} ${errorDescription} url=${url}`)
+    clearTimeout(showFallback)
+    revealWindow(mainWindow, 'did-fail-load')
+  })
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    console.error(`[window] renderer gone: ${details.reason} exit=${details.exitCode}`)
   })
 
   if (!app.isPackaged) {
@@ -100,6 +136,9 @@ function createWindow(): void {
   }
 
   mainWindow.webContents.once('did-finish-load', () => {
+    // Do not wait solely on ready-to-show: a hidden WCO window may never paint.
+    clearTimeout(showFallback)
+    revealWindow(mainWindow, 'did-finish-load')
     sidecar.start()
     void sidecar
       .waitUntilReady(10000)
