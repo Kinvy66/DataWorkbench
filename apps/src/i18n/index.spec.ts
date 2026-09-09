@@ -7,4 +7,12 @@ describe('i18n', () => {
     expect(FALLBACK_LOCALE).toBe('en')
     expect(i18n.global.locale.value).toBe('zh-CN')
   })
+
+  it('uses vue-i18n for the empty dataset copy instead of a P1 placeholder', () => {
+    expect(String(i18n.global.t('layout.datasetsEmpty'))).toContain('导入')
+    expect(String(i18n.global.t('layout.datasetsEmpty'))).not.toContain('P1')
+    i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('layout.datasetsEmpty'))).toContain('Import')
+    i18n.global.locale.value = 'zh-CN'
+  })
 })

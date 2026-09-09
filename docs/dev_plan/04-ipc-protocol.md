@@ -49,15 +49,15 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 
 | 方法 | 参数 | 返回 | 说明 |
 |------|------|------|------|
-| `data.import` | `{path, format?}` | `{id, name, rows, cols, columns:[{name,dtype}]}` | format 缺省按后缀 |
+| `data.import` | `{path, format?}` | `{id, name, rows, cols, columns:[{name,dtype}]}` | format 缺省按后缀；**pickle 默认拒绝**（3001）。渲染进程可省略 `path`：主进程弹出打开对话框后再转发给 sidecar；用户取消返回 `{cancelled:true}`（不是 JSON-RPC error）。超时 120s |
 | `data.list` | `{}` | `{datasets:[{id,name,rows,cols}]}` | |
 | `data.getSchema` | `{id}` | `{columns, rowCount}` | 轻量，可频繁调 |
-| `data.fetchBlock` | `{id, startRow, rowCount}` | `{startRow, rows: any[][]}` 或 Arrow | `rowCount` 默认 512，上限 2048 |
-| `data.patchCells` | `{id, patches:[{row,col,value}]}` | `{ok}` | 批量；禁止单格一轮 RPC |
-| `data.rename` | `{id, name}` | `{ok}` | |
+| `data.fetchBlock` | `{id, startRow, rowCount}` | `{startRow, rows: any[][]}` 或 Arrow | `rowCount` 默认 512，上限 2048；一期为 JSON 二维数组 |
+| `data.patchCells` | `{id, patches:[{row,col,value}]}` | `{ok}` | 批量事务；非法 dtype → 1002，整批不提交 |
+| `data.rename` | `{id, name}` | `{ok}` | 重名时自动 `name (2)` |
 | `data.remove` | `{id}` | `{ok}` | |
-| `data.export` | `{id, path, format}` | `{ok}` | csv/xlsx/parquet |
-| `data.register` | `{name, handle}` | `{id}` | 供节点 DataToManager 内部调用，不直接给 UI |
+| `data.export` | `{id, path, format}` | `{ok}` | csv/xlsx/parquet。渲染进程可省略 `path`：主进程弹出保存对话框 |
+| `data.register` | `{name, handle?}` | `{id}` | 供节点 DataToManager 内部调用；同名覆盖。JSON-RPC 一期仅 `{name}` 建空表 |
 
 `id` 为 UUID 字符串。显示名可重复策略：导入时若重名自动 `name (2)`（与 Excel 类似），节点发布同名则**覆盖值**（对齐上游 DataToManager）。
 

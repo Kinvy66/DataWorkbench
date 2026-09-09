@@ -1,7 +1,9 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { APP_VERSION } from '@dw/rpc-types'
+import { dataOpenDialogOptions, dataSaveDialogOptions } from './dialogs'
+import { RpcError } from './rpc-error'
 import { SidecarBridge } from './sidecar'
 import {
   applyWindowChromeAction,
@@ -210,13 +212,66 @@ ipcMain.handle('dw:window', (event, action: unknown) => {
   return onWindowChrome(event.sender, action)
 })
 
-ipcMain.handle('dw:rpc', async (_event, method: string, params: unknown) => {
+ipcMain.handle('dw:rpc', async (event, method: string, params: unknown) => {
+  try {
+    return await handleRendererRpc(event, method, params)
+  } catch (err) {
+    if (err instanceof RpcError) {
+      return err.toPayload()
+    }
+    throw err
+  }
+})
+
+async function handleRendererRpc(
+  event: Electron.IpcMainInvokeEvent,
+  method: string,
+  params: unknown
+): Promise<unknown> {
   if (method === 'app.quit') {
     app.quit()
     return { ok: true }
   }
+  const win = targetWindow(event.sender)
+  if (method === 'data.import') {
+    const p = (params ?? {}) as { path?: string; format?: string }
+    let filePath = p.path
+    if (!filePath) {
+      if (!win) {
+        return { cancelled: true }
+      }
+      const picked = await dialog.showOpenDialog(win, dataOpenDialogOptions())
+      if (picked.canceled || !picked.filePaths[0]) {
+        return { cancelled: true }
+      }
+      filePath = picked.filePaths[0]
+    }
+    return sidecar.invoke('data.import', { path: filePath, format: p.format })
+  }
+  if (method === 'data.export') {
+    const p = (params ?? {}) as { id?: string; path?: string; format?: string; suggestedName?: string }
+    if (!p.id) {
+      throw new RpcError(1001, 'Dataset id is required', 'data.notFound')
+    }
+    let filePath = p.path
+    if (!filePath) {
+      if (!win) {
+        return { cancelled: true }
+      }
+      const picked = await dialog.showSaveDialog(win, dataSaveDialogOptions(p.suggestedName))
+      if (picked.canceled || !picked.filePath) {
+        return { cancelled: true }
+      }
+      filePath = picked.filePath
+      if (!path.extname(filePath)) {
+        filePath += '.csv'
+      }
+    }
+    const format = p.format ?? path.extname(filePath).replace(/^\./, '').toLowerCase()
+    return sidecar.invoke('data.export', { id: p.id, path: filePath, format })
+  }
   return sidecar.invoke(method, params)
-})
+}
 
 app.on('window-all-closed', () => {
   app.quit()

@@ -3,7 +3,9 @@ import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useI18n } from 'vue-i18n'
 import { useLogStore } from '@/stores/log'
-import DwIcon from '@/icons/DwIcon.vue'
+import DatasetList from '@/views/DatasetList.vue'
+import DatasetProperties from '@/views/DatasetProperties.vue'
+import VirtualTable from '@/views/VirtualTable.vue'
 
 const { t } = useI18n()
 const log = useLogStore()
@@ -21,28 +23,19 @@ function formatTime(at: number): string {
           <Pane :size="18" :min-size="12">
             <section class="panel">
               <header>{{ t('layout.datasets') }}</header>
-              <div class="empty">
-                <DwIcon name="gui/data" :size="48" />
-                <p class="muted">{{ t('layout.datasetsEmpty') }}</p>
-              </div>
+              <DatasetList />
             </section>
           </Pane>
           <Pane :size="58" :min-size="30">
             <section class="panel">
-              <header>{{ t('layout.workspace') }}</header>
-              <div class="empty">
-                <DwIcon name="gui/workflow" :size="48" />
-                <p class="muted">{{ t('layout.workspaceHint') }}</p>
-              </div>
+              <header>{{ t('layout.table') }}</header>
+              <VirtualTable />
             </section>
           </Pane>
           <Pane :size="24" :min-size="12">
             <section class="panel">
               <header>{{ t('layout.properties') }}</header>
-              <div class="empty">
-                <DwIcon name="gui/setting" :size="48" />
-                <p class="muted">{{ t('layout.propertiesEmpty') }}</p>
-              </div>
+              <DatasetProperties />
             </section>
           </Pane>
         </Splitpanes>
@@ -85,19 +78,6 @@ function formatTime(at: number): string {
   border-bottom: 1px solid #ebeef5;
   color: #303133;
   background: #f5f7fa;
-}
-.muted {
-  margin: 8px 0 0;
-  color: #909399;
-  font-size: 13px;
-}
-.empty {
-  margin: 16px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  opacity: 0.85;
 }
 .log-panel .log-lines {
   margin: 0;

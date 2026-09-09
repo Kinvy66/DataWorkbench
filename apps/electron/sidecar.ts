@@ -2,6 +2,7 @@ import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { parseRpcLine } from './rpc-parse'
+import { RpcError, rpcTimeoutMs } from './rpc-error'
 
 export type SidecarLog = { stream: 'stderr' | 'protocol'; text: string }
 
@@ -124,7 +125,7 @@ export class SidecarBridge {
     })
   }
 
-  async invoke(method: string, params?: unknown, timeoutMs = 30000): Promise<unknown> {
+  async invoke(method: string, params?: unknown, timeoutMs = rpcTimeoutMs(method)): Promise<unknown> {
     const child = this.child
     if (!child || !child.stdin.writable) {
       throw new Error('Sidecar is not running')
@@ -209,7 +210,8 @@ export class SidecarBridge {
     this.pending.delete(Number(parsed.id))
     clearTimeout(pending.timer)
     if (parsed.error) {
-      pending.reject(new Error(parsed.error.message))
+      const data = parsed.error.data as { i18nKey?: string } | undefined
+      pending.reject(new RpcError(parsed.error.code, parsed.error.message, data?.i18nKey))
     } else {
       pending.resolve(parsed.result)
     }

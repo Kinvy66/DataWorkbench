@@ -1,9 +1,24 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+const DW_RPC_ERROR = '__dwRpcError'
+
 contextBridge.exposeInMainWorld('dw', {
   rpc: {
     invoke(method: string, params?: unknown): Promise<unknown> {
-      return ipcRenderer.invoke('dw:rpc', method, params ?? {})
+      return ipcRenderer.invoke('dw:rpc', method, params ?? {}).then((value: unknown) => {
+        if (
+          typeof value === 'object' &&
+          value !== null &&
+          (value as { [DW_RPC_ERROR]?: boolean })[DW_RPC_ERROR] === true
+        ) {
+          const payload = value as { code: number; message: string; i18nKey?: string }
+          const err = new Error(payload.message)
+          ;(err as Error & { code: number; i18nKey?: string }).code = payload.code
+          ;(err as Error & { i18nKey?: string }).i18nKey = payload.i18nKey
+          throw err
+        }
+        return value
+      })
     },
     on(method: string, cb: (params: unknown) => void): () => void {
       const listener = (_event: unknown, m: string, params: unknown) => {

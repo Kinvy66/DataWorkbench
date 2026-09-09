@@ -9,6 +9,10 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
+from dw_host.data_manager import DataManager
+from dw_host.errors import ErrorCode, HostError
+from dw_host.rpc_data import dispatch as dispatch_data
+
 log = logging.getLogger("dw_host")
 
 
@@ -52,19 +56,22 @@ def _pandas_available() -> bool:
         return False
 
 
-def _handle(req: dict[str, Any], pandas_ok: bool) -> bool:
+def _handle(req: dict[str, Any], pandas_ok: bool, manager: DataManager) -> bool:
     """Return False to stop the process after the response is written."""
     req_id = req.get("id")
     method = req.get("method")
     params = req.get("params") or {}
     if not isinstance(method, str):
-        _error(req_id, -32600, "Invalid Request")
+        _error(req_id, ErrorCode.InvalidRequest, "Invalid Request")
+        return True
+    if not isinstance(params, dict):
+        _error(req_id, ErrorCode.InvalidParams, "params must be an object", "rpc.invalidParams")
         return True
     if method == "host.hello":
         try:
             parsed = HostHelloParams.model_validate(params)
         except ValidationError as exc:
-            _error(req_id, -32602, str(exc), "rpc.invalidParams")
+            _error(req_id, ErrorCode.InvalidParams, str(exc), "rpc.invalidParams")
             return True
         result = HostHelloResult(
             pythonVersion=sys.version.split()[0],
@@ -77,7 +84,18 @@ def _handle(req: dict[str, Any], pandas_ok: bool) -> bool:
     if method == "host.shutdown":
         _emit({"jsonrpc": "2.0", "id": req_id, "result": {"ok": True}})
         return False
-    _error(req_id, -32601, f"Method not found: {method}")
+    if method.startswith("data."):
+        try:
+            result = dispatch_data(method, params, manager, pandas_ok)
+        except ValidationError as exc:
+            _error(req_id, ErrorCode.InvalidParams, str(exc), "rpc.invalidParams")
+            return True
+        except HostError as exc:
+            _error(req_id, exc.code, str(exc), exc.i18n_key)
+            return True
+        _emit({"jsonrpc": "2.0", "id": req_id, "result": result})
+        return True
+    _error(req_id, ErrorCode.MethodNotFound, f"Method not found: {method}")
     return True
 
 
@@ -97,6 +115,7 @@ def main() -> int:
         sys.stdout.write("oops\n")
         sys.stdout.flush()
 
+    manager = DataManager()
     for raw in sys.stdin:
         line = raw[:-1] if raw.endswith("\n") else raw
         if line.endswith("\r"):
@@ -106,16 +125,16 @@ def main() -> int:
         try:
             req = json.loads(line)
         except json.JSONDecodeError:
-            _error(None, -32700, "Parse error")
+            _error(None, ErrorCode.ParseError, "Parse error")
             continue
         if not isinstance(req, dict) or req.get("jsonrpc") != "2.0":
-            _error(req.get("id") if isinstance(req, dict) else None, -32600, "Invalid Request")
+            _error(req.get("id") if isinstance(req, dict) else None, ErrorCode.InvalidRequest, "Invalid Request")
             continue
         try:
-            keep = _handle(req, pandas_ok)
+            keep = _handle(req, pandas_ok, manager)
         except Exception:
             log.exception("unhandled error in RPC handler")
-            _error(req.get("id"), 9001, traceback.format_exc().splitlines()[-1])
+            _error(req.get("id"), ErrorCode.Internal, traceback.format_exc().splitlines()[-1])
             keep = True
         if not keep:
             return 0

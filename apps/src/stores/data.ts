@@ -1,0 +1,97 @@
+import { defineStore } from 'pinia'
+import type {
+  DataFetchBlockResult,
+  DataGetSchemaResult,
+  DataImportResult,
+  DataListResult,
+  DatasetListItem
+} from '@dw/rpc-types'
+import { BLOCK_SIZE } from '@/data/blockWindow'
+import { isCancelled } from '@/rpc/rpcError'
+
+export const useDataStore = defineStore('data', {
+  state: () => ({
+    datasets: [] as DatasetListItem[],
+    currentId: null as string | null,
+    schema: null as DataGetSchemaResult | null
+  }),
+  getters: {
+    current(state): DatasetListItem | null {
+      return state.datasets.find((item) => item.id === state.currentId) ?? null
+    },
+    hasSelection(state): boolean {
+      return state.currentId != null
+    }
+  },
+  actions: {
+    async refreshList(): Promise<void> {
+      const result = (await window.dw.rpc.invoke('data.list', {})) as DataListResult
+      this.datasets = result.datasets
+      if (this.currentId && !this.datasets.some((item) => item.id === this.currentId)) {
+        this.currentId = null
+        this.schema = null
+      }
+    },
+    async select(id: string | null): Promise<void> {
+      this.currentId = id
+      if (!id) {
+        this.schema = null
+        return
+      }
+      this.schema = (await window.dw.rpc.invoke('data.getSchema', { id })) as DataGetSchemaResult
+    },
+    async importInteractive(): Promise<DataImportResult | null> {
+      const result = await window.dw.rpc.invoke('data.import', {})
+      if (isCancelled(result)) {
+        return null
+      }
+      const imported = result as DataImportResult
+      await this.refreshList()
+      await this.select(imported.id)
+      return imported
+    },
+    async exportCurrent(): Promise<boolean> {
+      if (!this.currentId || !this.current) {
+        return false
+      }
+      const result = await window.dw.rpc.invoke('data.export', {
+        id: this.currentId,
+        suggestedName: this.current.name
+      })
+      return !isCancelled(result)
+    },
+    async removeCurrent(): Promise<void> {
+      if (!this.currentId) {
+        return
+      }
+      const id = this.currentId
+      await window.dw.rpc.invoke('data.remove', { id })
+      await this.refreshList()
+      const next = this.datasets[0]?.id ?? null
+      await this.select(next)
+    },
+    async rename(id: string, name: string): Promise<void> {
+      await window.dw.rpc.invoke('data.rename', { id, name })
+      await this.refreshList()
+      if (this.currentId === id) {
+        await this.select(id)
+      }
+    },
+    async fetchBlock(startRow: number, rowCount = BLOCK_SIZE): Promise<DataFetchBlockResult> {
+      if (!this.currentId) {
+        return { startRow, rows: [] }
+      }
+      return (await window.dw.rpc.invoke('data.fetchBlock', {
+        id: this.currentId,
+        startRow,
+        rowCount
+      })) as DataFetchBlockResult
+    },
+    async patchCells(patches: Array<{ row: number; col: number; value: unknown }>): Promise<void> {
+      if (!this.currentId || patches.length === 0) {
+        return
+      }
+      await window.dw.rpc.invoke('data.patchCells', { id: this.currentId, patches })
+    }
+  }
+})

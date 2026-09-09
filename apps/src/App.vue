@@ -7,13 +7,18 @@ import { useI18n } from 'vue-i18n'
 import AppRibbon from '@/ribbon/AppRibbon.vue'
 import WorkbenchLayout from '@/layout/WorkbenchLayout.vue'
 import { useLogStore } from '@/stores/log'
+import { useDataStore } from '@/stores/data'
 
 const { t, locale } = useI18n()
 const epLocale = computed(() => (locale.value === 'zh-CN' ? zhCn : enLocale))
 const log = useLogStore()
+const data = useDataStore()
 const offs: Array<() => void> = []
 
 onMounted(() => {
+  void data.refreshList().catch(() => {
+    // Sidecar may not be ready yet; host.ready retries below.
+  })
   offs.push(
     window.dw.rpc.on('host.ready', (params) => {
       const p = params as { pid?: number; pandasAvailable?: boolean }
@@ -24,6 +29,7 @@ onMounted(() => {
           pandas: p.pandasAvailable ? 'yes' : 'no'
         })
       )
+      void data.refreshList().catch(() => {})
     })
   )
   offs.push(

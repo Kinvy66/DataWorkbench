@@ -41,4 +41,4 @@ flowchart LR
 
 ## 当前状态
 
-计划与仓库约定已落盘，应用代码尚未初始化。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。执行时从 P0 的 electron-vite 骨架与 Python sidecar `ping` 开始，不要先铺图表编辑器。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。
+P0 骨架与 P1 数据（导入 / 虚表 / `data.*` RPC）正在本仓库落地。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。未完成 P1 验收前不要做工作流画布或图表。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。

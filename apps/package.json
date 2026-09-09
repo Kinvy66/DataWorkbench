@@ -14,6 +14,7 @@
     "@dw/rpc-types": "workspace:*",
     "@element-plus/icons-vue": "^2.3.2",
     "@mlightcad/ribbon": "^0.1.13",
+    "@tanstack/vue-virtual": "^3.13.37",
     "element-plus": "^2.9.0",
     "pinia": "^2.3.0",
     "splitpanes": "^4.0.0",
