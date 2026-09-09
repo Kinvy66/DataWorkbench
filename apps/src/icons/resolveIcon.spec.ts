@@ -14,6 +14,7 @@ describe('resolveIconUrl', () => {
   it('resolves a ribbon action icon', () => {
     expect(resolveIconUrl('app/plugin')).toMatch(/plugin\.svg/)
     expect(resolveIconUrl('app/addData')).toMatch(/addData\.svg/)
+    expect(resolveIconUrl('app/renameColumns')).toMatch(/renameColumns\.svg/)
   })
 
   it('returns empty string for a missing name', () => {

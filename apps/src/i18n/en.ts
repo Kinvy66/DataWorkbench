@@ -16,12 +16,15 @@ export default {
     ping: 'Ping',
     pingTip: 'Call host.hello on the Python sidecar',
     data: 'Data',
-    dataIo: 'Table',
-    dataManage: 'Manage',
+    dataImportGroup: 'Import',
+    dataExportGroup: 'Export',
+    dataDataset: 'Dataset',
     dataImport: 'Import',
     dataImportTip: 'Import CSV, Excel, or Parquet',
     dataExport: 'Export',
     dataExportTip: 'Export the selected dataset',
+    dataRename: 'Rename',
+    dataRenameTip: 'Rename the selected dataset',
     dataRemove: 'Remove',
     dataRemoveTip: 'Remove the selected dataset from memory',
     layoutSwitcher: 'Switch ribbon layout',
@@ -55,6 +58,7 @@ export default {
   data: {
     remove: 'Remove dataset',
     removeConfirm: 'Remove “{name}” from memory? This does not delete the file.',
+    renamePrompt: 'New dataset name',
     pandasRequired: 'pandas is not installed in the Python sidecar.',
     fileMissing: 'The selected file was not found.',
     unsupportedFormat: 'This file format is not supported.',
@@ -71,6 +75,7 @@ export default {
     pollution: 'Protocol pollution on sidecar stdout: {raw}',
     importOk: 'Imported {name} ({rows} × {cols}).',
     exportOk: 'Dataset exported.',
+    renameOk: 'Dataset renamed to {name}.',
     removeOk: 'Dataset removed.'
   }
 }

@@ -1,27 +1,38 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { useDataStore } from '@/stores/data'
 import { BLOCK_SIZE, blockOrigin, blocksForWindow } from '@/data/blockWindow'
+import {
+  DEFAULT_COL_WIDTH,
+  INDEX_COL_WIDTH,
+  gridTemplate,
+  nextColumnWidth,
+  tableMinWidth as minTableWidth
+} from '@/data/columnLayout'
 import { translateRpcError } from '@/rpc/rpcError'
 import DwIcon from '@/icons/DwIcon.vue'
 
 const { t, te } = useI18n()
 const store = useDataStore()
 const parentRef = ref<HTMLElement | null>(null)
+const editorRef = ref<HTMLInputElement | null>(null)
 const blocks = ref<Record<number, unknown[][]>>({})
 const inflight = new Set<number>()
 let fetchGen = 0
 const editing = ref<{ row: number; col: number; text: string } | null>(null)
+const widthByName = ref<Record<string, number>>({})
 let pendingPatches: Array<{ row: number; col: number; value: unknown }> = []
 let patchTimer: ReturnType<typeof setTimeout> | null = null
 
 const rowCount = computed(() => store.schema?.rowCount ?? 0)
 const columns = computed(() => store.schema?.columns ?? [])
-const colCount = computed(() => columns.value.length)
-const tableMinWidth = computed(() => 56 + colCount.value * 120)
+const columnWidths = computed(() =>
+  columns.value.map((col) => widthByName.value[col.name] ?? DEFAULT_COL_WIDTH)
+)
+const tableMinWidth = computed(() => minTableWidth(INDEX_COL_WIDTH, columnWidths.value))
 
 const virtualizer = useVirtualizer(
   computed(() => {
@@ -113,6 +124,7 @@ watch(
     blocks.value = {}
     inflight.clear()
     editing.value = null
+    widthByName.value = {}
     pendingPatches = []
     if (patchTimer) {
       clearTimeout(patchTimer)
@@ -128,6 +140,15 @@ watch(
   },
   { immediate: true }
 )
+
+watch(editing, async (current) => {
+  if (!current) {
+    return
+  }
+  await nextTick()
+  editorRef.value?.focus()
+  editorRef.value?.select()
+})
 
 function beginEdit(row: number, col: number): void {
   if (isLoading(row)) {
@@ -197,8 +218,36 @@ function cancelEdit(): void {
   editing.value = null
 }
 
+function onResizeStart(index: number, ev: PointerEvent): void {
+  const name = columns.value[index]?.name
+  if (!name) {
+    return
+  }
+  const startWidth = columnWidths.value[index] ?? DEFAULT_COL_WIDTH
+  const startX = ev.clientX
+  const target = ev.currentTarget as HTMLElement
+  target.setPointerCapture(ev.pointerId)
+  const onMove = (move: PointerEvent): void => {
+    widthByName.value = {
+      ...widthByName.value,
+      [name]: nextColumnWidth(startWidth, move.clientX - startX)
+    }
+  }
+  const onUp = (): void => {
+    target.removeEventListener('pointermove', onMove)
+    target.removeEventListener('pointerup', onUp)
+    target.removeEventListener('pointercancel', onUp)
+    if (target.hasPointerCapture(ev.pointerId)) {
+      target.releasePointerCapture(ev.pointerId)
+    }
+  }
+  target.addEventListener('pointermove', onMove)
+  target.addEventListener('pointerup', onUp)
+  target.addEventListener('pointercancel', onUp)
+}
+
 const gridStyle = computed(() => ({
-  gridTemplateColumns: `56px repeat(${Math.max(colCount.value, 1)}, minmax(120px, 1fr))`,
+  gridTemplateColumns: gridTemplate(INDEX_COL_WIDTH, columnWidths.value),
   minWidth: `${tableMinWidth.value}px`
 }))
 </script>
@@ -212,8 +261,9 @@ const gridStyle = computed(() => ({
     <div ref="parentRef" class="table-scroll" @scroll="requestVisibleBlocks">
       <div class="row header" :style="gridStyle">
         <div class="cell index">#</div>
-        <div v-for="(col, i) in columns" :key="i" class="cell" :title="col.dtype">
-          {{ col.name }}
+        <div v-for="(col, i) in columns" :key="i" class="cell header-cell" :title="col.dtype">
+          <span class="header-label">{{ col.name }}</span>
+          <span class="col-resizer" @pointerdown.stop.prevent="onResizeStart(i, $event)" />
         </div>
       </div>
       <div
@@ -240,6 +290,7 @@ const gridStyle = computed(() => ({
           >
             <input
               v-if="editing && editing.row === row.index && editing.col === colIndex"
+              ref="editorRef"
               v-model="editing.text"
               class="editor"
               @blur="commitEdit"
@@ -322,6 +373,28 @@ const gridStyle = computed(() => ({
 }
 .cell.loading {
   color: #c0c4cc;
+}
+.header-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.header-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 3;
+}
+.col-resizer:hover {
+  background: rgba(82, 128, 193, 0.35);
 }
 .editor {
   width: 100%;

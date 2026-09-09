@@ -37,7 +37,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 
 渲染：只用当前缓存的行画可见区（TanStack Virtual）。**禁止** `v-for` 50 万个 `tr`。
 
-列宽拖拽存在前端，不回写 Python。
+列宽拖拽存在前端（像素轨，不使用 `1fr` 拉伸），不回写 Python。切换数据集时列宽重置。
 
 ## 与工作流衔接
 
@@ -54,8 +54,14 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | 用例 | 断言 |
 |------|------|
 | `test_fetch_block_range` | 1000 行表取 start=512 count=512 得到 488 行 |
+| `test_fetch_block_500k_window_not_full_table` | 50 万行内存表 `fetchBlock` 只返回 512 / 末窗余数，不序列化整表 |
+| `test_fetch_block_caps_row_count` | `rowCount` 上限 2048 |
 | `test_patch_rollback` | 非法 float 写入数值列 → error 且原值不变 |
 | `test_import_csv_utf8` | 中文列名 roundtrip |
+| `test_xlsx_roundtrip` / `test_parquet_roundtrip` | 导入再导出内容一致 |
+| `test_data_import_list_fetch_via_rpc` | 每个 `data.*` 方法至少一正一反（stdio） |
+
+手工：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（**不要提交该文件**），Data → Import 后滚动虚表。
 
 ## 明确延期
 

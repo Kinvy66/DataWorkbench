@@ -33,7 +33,7 @@ DataWorkbench/
 │   └── tests/
 ├── docs/
 │   └── dev_plan/                # 本计划
-├── scripts/                     # 开发启动、复制上游 Python、打包
+├── scripts/                     # 开发启动、复制上游 Python、打包；`gen_large_csv.py` 生成 P1 虚表烟测 csv
 ├── pnpm-workspace.yaml
 ├── package.json
 ├── AGENTS.md                    # 给后续 AI 的仓库约定（P0 补写，不在本期计划范围内强制）

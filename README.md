@@ -51,7 +51,7 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**P0 骨架已落地，P1 数据进行中**：`pnpm install` 后 `pnpm dev` 可打开窗口、拉起 Python sidecar。Home → Ping 走 `host.hello`；Data → Import 走 `data.import` + 虚表。
+**P0 骨架已落地，P1 数据进行中**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export。50 万行 csv 可用 `python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成（不要提交该文件）。
 
 阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 

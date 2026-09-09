@@ -27,8 +27,9 @@
 | File | | `file.new` `file.open` `file.save` `file.saveAs` `file.exit` | P5 真正可用，P0 可 disabled |
 | Home | Clipboard | `edit.undo` `edit.redo` | P2 起 |
 | Data | Import | `data.import` | P1 |
-| Data | Clean | `data.dropNa` `data.query` | P3 |
 | Data | Export | `data.export` | P1 |
+| Data | Dataset | `data.rename` `data.remove` | P1 |
+| Data | Clean | `data.dropNa` `data.query` | P3 |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |
 | Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` | P4 |
 | Chart | Export | `chart.exportPng` `chart.exportSvg` | P4 |

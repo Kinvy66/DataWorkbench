@@ -42,7 +42,7 @@ export function useRibbonSchema() {
         groups: [
           {
             id: 'data-import',
-            title: t('ribbon.dataIo'),
+            title: t('ribbon.dataImportGroup'),
             collections: [
               {
                 id: 'data-import-actions',
@@ -60,19 +60,39 @@ export function useRibbonSchema() {
             ]
           },
           {
-            id: 'data-manage',
-            title: t('ribbon.dataManage'),
+            id: 'data-export',
+            title: t('ribbon.dataExportGroup'),
             collections: [
               {
-                id: 'data-manage-actions',
+                id: 'data-export-actions',
                 items: [
                   {
                     id: 'data.export',
                     type: 'button',
                     label: t('ribbon.dataExport'),
                     tooltip: t('ribbon.dataExportTip'),
+                    size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/save')
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'data-dataset',
+            title: t('ribbon.dataDataset'),
+            collections: [
+              {
+                id: 'data-dataset-actions',
+                items: [
+                  {
+                    id: 'data.rename',
+                    type: 'button',
+                    label: t('ribbon.dataRename'),
+                    tooltip: t('ribbon.dataRenameTip'),
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/renameColumns')
                   },
                   {
                     id: 'data.remove',

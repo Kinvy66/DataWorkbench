@@ -16,12 +16,15 @@ export default {
     ping: 'Ping',
     pingTip: '调用 Python sidecar 的 host.hello',
     data: '数据',
-    dataIo: '表格',
-    dataManage: '管理',
+    dataImportGroup: '导入',
+    dataExportGroup: '导出',
+    dataDataset: '数据集',
     dataImport: '导入',
     dataImportTip: '导入 CSV、Excel 或 Parquet',
     dataExport: '导出',
     dataExportTip: '导出当前数据集',
+    dataRename: '重命名',
+    dataRenameTip: '重命名当前数据集',
     dataRemove: '移除',
     dataRemoveTip: '从内存中移除当前数据集',
     layoutSwitcher: '切换功能区布局',
@@ -55,6 +58,7 @@ export default {
   data: {
     remove: '移除数据集',
     removeConfirm: '从内存中移除“{name}”？不会删除源文件。',
+    renamePrompt: '新的数据集名称',
     pandasRequired: 'Python sidecar 未安装 pandas。',
     fileMissing: '找不到所选文件。',
     unsupportedFormat: '不支持此文件格式。',
@@ -71,6 +75,7 @@ export default {
     pollution: 'Sidecar 标准输出被污染：{raw}',
     importOk: '已导入 {name}（{rows} × {cols}）。',
     exportOk: '数据集已导出。',
+    renameOk: '数据集已重命名为 {name}。',
     removeOk: '数据集已移除。'
   }
 }

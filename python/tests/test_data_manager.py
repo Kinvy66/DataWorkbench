@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -86,3 +87,60 @@ def test_export_csv_sees_patch(tmp_path: Path) -> None:
     manager.export_path(dataset_id, str(out), "csv")
     text = out.read_text(encoding="utf-8-sig")
     assert "3.5" in text
+
+
+def test_fetch_block_500k_window_not_full_table() -> None:
+    manager = DataManager()
+    n = 500_000
+    df = pd.DataFrame({"id": np.arange(n), "value": np.arange(n) * 0.1})
+    dataset_id = manager.publish_dataframe("big", df)
+    first = manager.fetch_block(dataset_id, 0, 512)
+    assert first["startRow"] == 0
+    assert len(first["rows"]) == 512
+    assert first["rows"][0][0] == 0
+    assert first["rows"][-1][0] == 511
+    last_start = (n - 1) // 512 * 512
+    last = manager.fetch_block(dataset_id, last_start, 512)
+    assert last["startRow"] == last_start
+    assert len(last["rows"]) == n - last_start
+    assert last["rows"][-1][0] == n - 1
+
+
+def test_fetch_block_caps_row_count() -> None:
+    manager = DataManager()
+    dataset_id = manager.publish_dataframe("c", pd.DataFrame({"a": list(range(3000))}))
+    block = manager.fetch_block(dataset_id, 0, 10_000)
+    assert len(block["rows"]) == 2048
+
+
+def test_xlsx_roundtrip(tmp_path: Path) -> None:
+    src = tmp_path / "sheet.xlsx"
+    pd.DataFrame({"x": [1, 2], "y": ["甲", "乙"]}).to_excel(src, index=False)
+    manager = DataManager()
+    info = manager.import_path(str(src))
+    assert info["rows"] == 2
+    assert [c["name"] for c in info["columns"]] == ["x", "y"]
+    out = tmp_path / "out.xlsx"
+    manager.export_path(info["id"], str(out), "xlsx")
+    loaded = pd.read_excel(out)
+    assert list(loaded["y"]) == ["甲", "乙"]
+
+
+def test_parquet_roundtrip(tmp_path: Path) -> None:
+    src = tmp_path / "t.parquet"
+    pd.DataFrame({"x": [10, 20]}).to_parquet(src, index=False)
+    manager = DataManager()
+    info = manager.import_path(str(src))
+    assert info["rows"] == 2
+    out = tmp_path / "out.parquet"
+    manager.export_path(info["id"], str(out), "parquet")
+    loaded = pd.read_parquet(out)
+    assert list(loaded["x"]) == [10, 20]
+
+
+def test_rename_unique() -> None:
+    manager = DataManager()
+    a = manager.publish_dataframe("alpha", pd.DataFrame({"a": [1]}))
+    manager.publish_dataframe("beta", pd.DataFrame({"a": [2]}))
+    manager.rename(a, "beta")
+    assert manager.get(a).name == "beta (2)"

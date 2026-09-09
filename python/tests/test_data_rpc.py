@@ -54,7 +54,71 @@ def test_data_import_list_fetch_via_rpc(tmp_path: Path) -> None:
         assert missing["error"]["code"] == 1001
         assert missing["error"]["data"]["i18nKey"] == "data.notFound"
 
-        _send(proc, {"jsonrpc": "2.0", "id": 6, "method": "host.shutdown", "params": {}})
+        _send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "data.patchCells",
+                "params": {"id": dataset_id, "patches": [{"row": 0, "col": 1, "value": "9"}]},
+            },
+        )
+        patched = json.loads(_readline(proc))
+        assert patched["result"]["ok"] is True
+
+        _send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "method": "data.rename",
+                "params": {"id": dataset_id, "name": "renamed"},
+            },
+        )
+        renamed = json.loads(_readline(proc))
+        assert renamed["result"]["ok"] is True
+
+        export_path = tmp_path / "out.csv"
+        _send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "method": "data.export",
+                "params": {"id": dataset_id, "path": str(export_path), "format": "csv"},
+            },
+        )
+        exported = json.loads(_readline(proc))
+        assert exported["result"]["ok"] is True
+        assert "9" in export_path.read_text(encoding="utf-8-sig")
+
+        _send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "method": "data.patchCells",
+                "params": {"id": dataset_id, "patches": [{"row": 0, "col": 1, "value": "not-a-number"}]},
+            },
+        )
+        invalid = json.loads(_readline(proc))
+        assert invalid["error"]["code"] == 1002
+        assert invalid["error"]["data"]["i18nKey"] == "data.invalidValue"
+
+        _send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "method": "data.rename",
+                "params": {"id": dataset_id, "name": "   "},
+            },
+        )
+        empty_name = json.loads(_readline(proc))
+        assert empty_name["error"]["code"] == 1002
+        assert empty_name["error"]["data"]["i18nKey"] == "data.invalidValue"
+
+        _send(proc, {"jsonrpc": "2.0", "id": 11, "method": "host.shutdown", "params": {}})
         proc.wait(timeout=5)
         assert proc.returncode == 0
     finally:

@@ -146,3 +146,7 @@ $RECYCLE.BIN/
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# Generated P1 smoke CSVs (do not commit)
+/large_500k.csv
+/large_*.csv

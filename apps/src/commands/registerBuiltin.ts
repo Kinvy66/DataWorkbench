@@ -80,6 +80,37 @@ export function registerBuiltinCommands(): void {
   )
 
   commandBus.register(
+    'data.rename',
+    async () => {
+      const data = useDataStore()
+      if (!data.current || !data.currentId) {
+        return
+      }
+      try {
+        const { value } = await ElMessageBox.prompt(
+          t('data.renamePrompt'),
+          t('ribbon.dataRename'),
+          {
+            inputValue: data.current.name,
+            inputValidator: (input) => Boolean(input?.trim()) || t('data.invalidValue')
+          }
+        )
+        const name = value.trim()
+        await data.rename(data.currentId, name)
+        const line = t('log.renameOk', { name })
+        useLogStore().append('info', line)
+        ElMessage.success(line)
+      } catch (err) {
+        if (err === 'cancel' || err === 'close') {
+          return
+        }
+        reportError(err)
+      }
+    },
+    () => useDataStore().hasSelection
+  )
+
+  commandBus.register(
     'data.remove',
     async () => {
       const data = useDataStore()
