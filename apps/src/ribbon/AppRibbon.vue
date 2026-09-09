@@ -64,14 +64,33 @@ function toggleLocale(): void {
 <style scoped>
 .ribbon-shell {
   position: relative;
+  isolation: isolate;
   flex: 0 0 auto;
   --dw-caption-btn-width: 46px;
   --dw-caption-height: 36px;
   --dw-caption-width: calc(var(--dw-caption-btn-width) * 3);
 }
+/*
+ * Electron maps -webkit-app-region: drag to a native hit-test of the element's
+ * border box. padding-right still counts, so overlay buttons never receive clicks.
+ * margin-right shrinks that box so it cannot cover the caption strip.
+ */
 .ribbon-shell :deep(.ml-ribbon__header) {
   min-height: var(--dw-caption-height);
-  padding-right: var(--dw-caption-width);
+  margin-right: var(--dw-caption-width);
+  padding-right: 0;
+}
+.ribbon-shell :deep(.ml-ribbon-item-host.is-large .ml-ribbon-item-host__icon) {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  overflow: visible;
+}
+.ribbon-shell :deep(.ml-ribbon-item-host.is-large .dw-ribbon-icon) {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  object-position: center;
 }
 .ribbon-extra {
   display: flex;

@@ -7,6 +7,7 @@ body,
 #app {
   height: 100%;
   margin: 0;
+  overflow: hidden;
   background: #f0f2f5;
   color: #303133;
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -23,6 +24,7 @@ body,
   width: 1em;
   height: 1em;
   object-fit: contain;
+  object-position: center;
   display: block;
   pointer-events: none;
 }
@@ -51,7 +53,8 @@ body,
   height: 1em;
 }
 
-/* Ribbon tab row is the title bar (SARibbon-style frameless chrome). */
+/* Ribbon tab row is the title bar. Drag is the header border box; do not
+   reserve caption space with padding (still draggable). See AppRibbon margin-right. */
 .ml-ribbon__header {
   -webkit-app-region: drag;
 }

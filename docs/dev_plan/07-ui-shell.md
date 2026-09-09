@@ -4,7 +4,7 @@
 
 ## 窗口结构
 
-窗口为 **无边框**（对齐上游 `SARibbonMainWindow`）：Electron `frame: false`，**禁止**保留默认应用菜单（`File / Edit / View / Window / Help` 会叠在 Ribbon 上面）。Mac 仅保留系统 App/Edit/Window 菜单。拖动区域是 Ribbon 标签行空白处。最小化 / 最大化 / 关闭是窗口右上角覆盖层（贴顶贴右，不放进 `#tabs-extra`，避免 `-webkit-app-region: drag` 吞掉点击）。
+窗口为 **无边框**（对齐上游 `SARibbonMainWindow`）：Electron `frame: false`，**禁止**保留默认应用菜单（`File / Edit / View / Window / Help` 会叠在 Ribbon 上面）。Mac 仅保留系统 App/Edit/Window 菜单。拖动区域是 Ribbon 标签行空白处。最小化 / 最大化 / 关闭是窗口右上角覆盖层（贴顶贴右）。标题行必须用 **`margin-right` 给按钮留空**，不能只用 `padding-right`：Electron 的 `-webkit-app-region: drag` 按元素边框做原生命中，padding 仍算拖动区，覆盖层点不到。覆盖层也不要放进 `#tabs-extra`。
 
 ```text
 ┌─────────────────────────────────────────────────────────┐

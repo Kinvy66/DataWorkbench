@@ -36,6 +36,15 @@ function run(action: 'minimize' | 'toggleMaximize' | 'close'): void {
   }
   void chrome[action]()
 }
+
+function onCaptionPointer(action: 'minimize' | 'toggleMaximize' | 'close', event: PointerEvent): void {
+  if (event.button !== 0) {
+    return
+  }
+  event.preventDefault()
+  event.stopPropagation()
+  run(action)
+}
 </script>
 
 <template>
@@ -44,8 +53,7 @@ function run(action: 'minimize' | 'toggleMaximize' | 'close'): void {
       type="button"
       class="dw-caption__btn"
       :title="t('window.minimize')"
-      @pointerdown.stop
-      @click.stop="run('minimize')"
+      @pointerdown="onCaptionPointer('minimize', $event)"
     >
       <svg viewBox="0 0 10 10" aria-hidden="true">
         <path d="M1 5h8" />
@@ -55,8 +63,7 @@ function run(action: 'minimize' | 'toggleMaximize' | 'close'): void {
       type="button"
       class="dw-caption__btn"
       :title="maximized ? t('window.restore') : t('window.maximize')"
-      @pointerdown.stop
-      @click.stop="run('toggleMaximize')"
+      @pointerdown="onCaptionPointer('toggleMaximize', $event)"
     >
       <svg v-if="!maximized" viewBox="0 0 10 10" aria-hidden="true">
         <rect x="1.5" y="1.5" width="7" height="7" />
@@ -70,8 +77,7 @@ function run(action: 'minimize' | 'toggleMaximize' | 'close'): void {
       type="button"
       class="dw-caption__btn dw-caption__btn--close"
       :title="t('window.close')"
-      @pointerdown.stop
-      @click.stop="run('close')"
+      @pointerdown="onCaptionPointer('close', $event)"
     >
       <svg viewBox="0 0 10 10" aria-hidden="true">
         <path d="M2 2l6 6M8 2L2 8" />
@@ -89,6 +95,12 @@ function run(action: 'minimize' | 'toggleMaximize' | 'close'): void {
   display: flex;
   height: var(--dw-caption-height, 36px);
   margin: 0;
+  pointer-events: auto;
+  background: linear-gradient(
+    180deg,
+    var(--ml-rb-header-start, #ffffff) 0%,
+    var(--ml-rb-header-end, #f5f7fa) 100%
+  );
   -webkit-app-region: no-drag;
 }
 .dw-caption__btn {
@@ -103,6 +115,7 @@ function run(action: 'minimize' | 'toggleMaximize' | 'close'): void {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: auto;
   -webkit-app-region: no-drag;
 }
 .dw-caption__btn svg {
