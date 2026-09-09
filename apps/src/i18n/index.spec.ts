@@ -22,6 +22,8 @@ describe('i18n', () => {
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('layout.nodesEmpty'))).toContain('Node types')
     expect(String(i18n.global.t('workflow.busy'))).toContain('running')
+    expect(String(i18n.global.t('layout.fitView'))).toBe('Fit view')
     i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('layout.fitView'))).toBe('适应画布')
   })
 })

@@ -2,7 +2,6 @@
 import { markRaw, nextTick, watch } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
-import { Controls } from '@vue-flow/controls'
 import type { Connection, EdgeChange, NodeChange } from '@vue-flow/core'
 import { applyEdgeChanges, applyNodeChanges } from '@vue-flow/core'
 import '@vue-flow/core/dist/style.css'
@@ -10,13 +9,14 @@ import '@vue-flow/core/dist/theme-default.css'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import WorkflowNode from './WorkflowNode.vue'
+import DwIcon from '@/icons/DwIcon.vue'
 import { useWorkflowStore } from '@/stores/workflow'
 import { translateRpcError } from '@/rpc/rpcError'
 
 const FLOW_ID = 'dw-flow'
 const { t, te } = useI18n()
 const store = useWorkflowStore()
-const { screenToFlowCoordinate, fitView } = useVueFlow({ id: FLOW_ID })
+const { screenToFlowCoordinate, fitView, zoomIn, zoomOut } = useVueFlow({ id: FLOW_ID })
 const nodeTypes = { dw: markRaw(WorkflowNode) }
 
 watch(
@@ -120,8 +120,18 @@ function onDrop(event: DragEvent): void {
       @pane-click="onPaneClick"
     >
       <Background />
-      <Controls />
     </VueFlow>
+    <div class="flow-toolbar" @mousedown.stop>
+      <button type="button" :title="t('layout.zoomIn')" :aria-label="t('layout.zoomIn')" @click="zoomIn()">
+        <DwIcon name="app/zoomIn" :size="18" />
+      </button>
+      <button type="button" :title="t('layout.zoomOut')" :aria-label="t('layout.zoomOut')" @click="zoomOut()">
+        <DwIcon name="app/zoomOut" :size="18" />
+      </button>
+      <button type="button" :title="t('layout.fitView')" :aria-label="t('layout.fitView')" @click="fitView()">
+        <DwIcon name="app/viewAll" :size="18" />
+      </button>
+    </div>
   </div>
 </template>
 
@@ -146,5 +156,32 @@ function onDrop(event: DragEvent): void {
   width: 100%;
   height: 100%;
   background: #fafafa;
+}
+.flow-toolbar {
+  position: absolute;
+  z-index: 5;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+.flow-toolbar button {
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+.flow-toolbar button:hover {
+  border-color: var(--dw-accent, #5280c1);
 }
 </style>

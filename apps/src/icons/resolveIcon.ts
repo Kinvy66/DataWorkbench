@@ -12,6 +12,9 @@ import iconWorkflow from '@/assets/icons/gui/workflow.svg?url'
 import iconSetting from '@/assets/icons/gui/setting.svg?url'
 import iconRun from '@/assets/icons/app/run.svg?url'
 import iconStop from '@/assets/icons/app/stop.svg?url'
+import iconZoomIn from '@/assets/icons/app/zoomIn.svg?url'
+import iconZoomOut from '@/assets/icons/app/zoomOut.svg?url'
+import iconViewAll from '@/assets/icons/app/viewAll.svg?url'
 
 const urls: Record<string, string> = {
   'app/icon': iconApp,
@@ -22,6 +25,9 @@ const urls: Record<string, string> = {
   'app/renameColumns': iconRenameColumns,
   'app/run': iconRun,
   'app/stop': iconStop,
+  'app/zoomIn': iconZoomIn,
+  'app/zoomOut': iconZoomOut,
+  'app/viewAll': iconViewAll,
   'gui/data': iconData,
   'gui/data-table': iconDataTable,
   'gui/workflow': iconWorkflow,
