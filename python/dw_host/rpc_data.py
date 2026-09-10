@@ -106,6 +106,14 @@ class FillNaParams(BaseModel):
     value: Any = 0.0
 
 
+class InterpolateParams(BaseModel):
+    id: str
+    method: str = "linear"
+    subset: list[str] | str | None = None
+    limit: int | None = None
+    order: int = 3
+
+
 class ReplaceValuesParams(BaseModel):
     id: str
     oldValues: list[Any] | str | None = None
@@ -230,6 +238,15 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             method=parsed.method,
             subset=_subset_list(parsed.subset),
             value=parsed.value,
+        )
+    if method == "data.interpolate":
+        parsed = InterpolateParams.model_validate(params)
+        return manager.interpolate(
+            parsed.id,
+            method=parsed.method,
+            subset=_subset_list(parsed.subset),
+            limit=parsed.limit,
+            order=parsed.order,
         )
     if method == "data.replaceValues":
         parsed = ReplaceValuesParams.model_validate(params)

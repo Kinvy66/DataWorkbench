@@ -38,6 +38,7 @@ export const RpcMethod = {
   DataSearch: 'data.search',
   DataSort: 'data.sort',
   DataFillNa: 'data.fillNa',
+  DataInterpolate: 'data.interpolate',
   DataReplaceValues: 'data.replaceValues',
   DataThresholdFilter: 'data.thresholdFilter',
   DataFilterByColumn: 'data.filterByColumn',
@@ -298,6 +299,23 @@ export interface DataFillNaParams {
 }
 
 export interface DataFillNaResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  filledCount: number
+}
+
+export interface DataInterpolateParams {
+  id: string
+  method?: string
+  subset?: string[] | string
+  limit?: number | null
+  order?: number
+}
+
+export interface DataInterpolateResult {
   id: string
   name: string
   rows: number

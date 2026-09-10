@@ -11,6 +11,7 @@ import type {
   DataSearchResult,
   DataSortResult,
   DataFillNaResult,
+  DataInterpolateResult,
   DataReplaceValuesResult,
   DataThresholdFilterResult,
   DataFilterByColumnResult,
@@ -33,6 +34,7 @@ export const useDataStore = defineStore('data', {
     searchDialogOpen: false,
     sortDialogOpen: false,
     fillNaDialogOpen: false,
+    interpolateDialogOpen: false,
     replaceValuesDialogOpen: false,
     thresholdFilterDialogOpen: false,
     filterByColumnDialogOpen: false,
@@ -226,6 +228,27 @@ export const useDataStore = defineStore('data', {
         subset: options?.subset,
         value: options?.value ?? 0
       })) as DataFillNaResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async interpolate(options?: {
+      method?: string
+      subset?: string[]
+      limit?: number | null
+      order?: number
+    }): Promise<DataInterpolateResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.interpolate', {
+        id,
+        method: options?.method ?? 'linear',
+        subset: options?.subset,
+        limit: options?.limit,
+        order: options?.order ?? 3
+      })) as DataInterpolateResult
       await this.refreshList()
       await this.select(id)
       return result

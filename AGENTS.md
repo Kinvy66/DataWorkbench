@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（进行中） → P4 图表 → P5 工程文件**
 
-P2 任务 1–8 已落地。P3：已 vendor `dw_nodes_analysis/core`，工具箱含 Data Source（从 DataManager 取表）、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Filter By Column、Eval Expression、Search、Sort、Describe 与 Data Export。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签（数据清洗：删除缺失值/删除重复值/填充缺失值；数据过滤：数值计算/条件筛选/数据检索/列数据过滤/数据排序；统计：数据描述）。Replace Values、Threshold Filter 上游无 Ribbon 按钮，只做工作流节点 + RPC。Describe 发布新表，不改源表；Eval 必须用赋值表达式如 `c = a + b`，无赋值会返回 Series 并被拒绝。Data Export 是工作流写盘节点（Core `export_data`）；功能区导出仍是 `data.export`。**不要把每个新节点塞进 Data 标签。** 后续 Ribbon 按钮只加上游同一 panel 已有的 action（插值、IQR、Z-score、偏态转换、透视表）。不要做图表、自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。Home 不要擅自改成对齐 Qt。其余清洗节点仍属 P3 后续。
+P2 任务 1–8 已落地。P3：已 vendor `dw_nodes_analysis/core`，工具箱含 Data Source（从 DataManager 取表）、Query、Drop NA、Drop Duplicates、Fill NA、Interpolate、Replace Values、Threshold Filter、Filter By Column、Eval Expression、Search、Sort、Describe 与 Data Export。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签（数据清洗：删除缺失值/删除重复值/填充缺失值/插值填充；数据过滤：数值计算/条件筛选/数据检索/列数据过滤/数据排序；统计：数据描述）。Replace Values、Threshold Filter 上游无 Ribbon 按钮，只做工作流节点 + RPC。Describe 发布新表，不改源表；Eval 必须用赋值表达式如 `c = a + b`，无赋值会返回 Series 并被拒绝。Data Export 是工作流写盘节点（Core `export_data`）；功能区导出仍是 `data.export`。**不要把每个新节点塞进 Data 标签。** 后续 Ribbon 按钮只加上游同一 panel 已有的 action（IQR、Z-score、偏态转换、透视表）。不要做图表、自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。Home 不要擅自改成对齐 Qt。其余清洗节点仍属 P3 后续。
 
 ## STRUCTURE
 

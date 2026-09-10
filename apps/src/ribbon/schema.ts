@@ -167,6 +167,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/fillNa')
+                  },
+                  {
+                    id: 'data.interpolate',
+                    type: 'button',
+                    label: t('ribbon.dataInterpolate'),
+                    tooltip: t('ribbon.dataInterpolateTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/interpolate')
                   }
                 ]
               }

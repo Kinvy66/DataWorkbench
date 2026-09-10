@@ -1,4 +1,4 @@
-# dw:adapted — Data Source / Query / DropNA / DropDuplicates / FillNA / ReplaceValues / ThresholdFilter / FilterByColumn / Eval / Search / Sort / Describe / Export; Core lives in .core (vendored DADataAnalysisCore).
+# dw:adapted — Data Source / Query / DropNA / DropDuplicates / FillNA / Interpolate / ReplaceValues / ThresholdFilter / FilterByColumn / Eval / Search / Sort / Describe / Export; Core lives in .core (vendored DADataAnalysisCore).
 
 from .i18n import setup_i18n
 
@@ -11,6 +11,7 @@ from .nodes.data_eval import DataEvalNode
 from .nodes.data_export import DataExportNode
 from .nodes.data_fillna import DataFillNaNode
 from .nodes.data_filter_by_column import DataFilterByColumnNode
+from .nodes.data_interpolate import DataFillInterpolateNode
 from .nodes.data_query import DataQueryNode
 from .nodes.data_replace_values import DataReplaceValuesNode
 from .nodes.data_search import DataSearchNode
@@ -25,6 +26,7 @@ __all__ = [
     "DataEvalNode",
     "DataExportNode",
     "DataFillNaNode",
+    "DataFillInterpolateNode",
     "DataFilterByColumnNode",
     "DataQueryNode",
     "DataReplaceValuesNode",
@@ -44,6 +46,7 @@ def register_analysis_nodes(factory) -> None:
         DataDropNaNode,
         DataDropDuplicatesNode,
         DataFillNaNode,
+        DataFillInterpolateNode,
         DataReplaceValuesNode,
         DataThresholdFilterNode,
         DataFilterByColumnNode,

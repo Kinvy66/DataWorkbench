@@ -48,6 +48,10 @@ describe('i18n', () => {
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataFillNa'))).toBe('填充缺失值')
     i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.dataInterpolate'))).toBe('Fill Interpolate')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.dataInterpolate'))).toBe('插值填充')
+    i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataReplaceValues'))).toBe('Replace Values')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataReplaceValues'))).toBe('替换值')

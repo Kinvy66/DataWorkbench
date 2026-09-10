@@ -600,6 +600,54 @@ class DataManager:
         log.info("data.fillNa name=%s method=%s filled=%s", ds.name, method_norm, result["filledCount"])
         return result
 
+    def interpolate(
+        self,
+        dataset_id: str,
+        *,
+        method: str = "linear",
+        subset: list[str] | None = None,
+        limit: int | None = None,
+        order: int = 3,
+    ) -> dict[str, Any]:
+        """Fill NA cells in place via the shared Core ``interpolate_impl``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.cleaning import interpolate_impl
+
+        method_norm = _normalize_interpolate_method(method)
+        order_norm = _parse_interpolate_order(order)
+        limit_norm = _parse_interpolate_limit(limit)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, subset)
+            before = _na_cell_count(ds.df)
+            try:
+                filled = interpolate_impl(
+                    ds.df,
+                    subset=resolved,
+                    method=method_norm,
+                    limit=limit_norm,
+                    order=order_norm,
+                )
+            except Exception as exc:
+                log.info("data.interpolate failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to interpolate missing values",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = filled
+        result = _meta(ds)
+        result["filledCount"] = before - _na_cell_count(filled)
+        log.info(
+            "data.interpolate name=%s method=%s filled=%s",
+            ds.name,
+            method_norm,
+            result["filledCount"],
+        )
+        return result
+
     def replace_values(
         self,
         dataset_id: str,
@@ -825,6 +873,26 @@ class DataManager:
 
 _FILLNA_METHODS = frozenset({"value", "forward", "backward", "mean", "median", "mode"})
 _FILLNA_ALIASES = {"constant": "value", "ffill": "forward", "bfill": "backward"}
+_INTERPOLATE_METHODS = frozenset(
+    {
+        "linear",
+        "time",
+        "index",
+        "pad",
+        "nearest",
+        "zero",
+        "slinear",
+        "quadratic",
+        "cubic",
+        "spline",
+        "barycentric",
+        "polynomial",
+        "krogh",
+        "piecewise_polynomial",
+        "pchip",
+        "akima",
+    }
+)
 _KEEP_VALUES = frozenset({"first", "last", "none"})
 _KEEP_ALIASES = {"false": "none"}
 _FILTER_TYPES = frozenset({"greater_than", "less_than", "in_range", "out_of_range"})
@@ -912,6 +980,37 @@ def _normalize_fillna_method(raw: object) -> str:
     if key not in _FILLNA_METHODS:
         raise HostError(ErrorCode.ColumnOrValidation, "Unsupported fill method", "data.invalidValue")
     return key
+
+
+def _normalize_interpolate_method(raw: object) -> str:
+    key = str(raw or "linear").strip().lower()
+    if key not in _INTERPOLATE_METHODS:
+        raise HostError(ErrorCode.ColumnOrValidation, "Unsupported interpolate method", "data.invalidValue")
+    return key
+
+
+def _parse_interpolate_order(raw: object) -> int:
+    try:
+        value = int(raw if raw is not None and raw != "" else 3)
+    except (TypeError, ValueError) as exc:
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid interpolate order", "data.invalidValue") from exc
+    if value < 1 or value > 10:
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid interpolate order", "data.invalidValue")
+    return value
+
+
+def _parse_interpolate_limit(raw: object) -> int | None:
+    if raw is None or raw == "":
+        return None
+    try:
+        value = int(raw)
+    except (TypeError, ValueError) as exc:
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid interpolate limit", "data.invalidValue") from exc
+    if value == 0:
+        return None
+    if value < 1:
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid interpolate limit", "data.invalidValue")
+    return value
 
 
 def _parse_fill_value(raw: Any) -> Any:
