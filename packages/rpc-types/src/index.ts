@@ -34,6 +34,7 @@ export const RpcMethod = {
   DataDropNa: 'data.dropNa',
   DataDropDuplicates: 'data.dropDuplicates',
   DataQuery: 'data.query',
+  DataEval: 'data.eval',
   DataSort: 'data.sort',
   DataFillNa: 'data.fillNa',
   DataReplaceValues: 'data.replaceValues',
@@ -242,6 +243,19 @@ export interface DataQueryResult {
   columns: ColumnSchema[]
   matchedCount: number
   removedCount: number
+}
+
+export interface DataEvalParams {
+  id: string
+  expression: string
+}
+
+export interface DataEvalResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
 }
 
 export interface DataSortParams {

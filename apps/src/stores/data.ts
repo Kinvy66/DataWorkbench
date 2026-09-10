@@ -7,6 +7,7 @@ import type {
   DataImportResult,
   DataListResult,
   DataQueryResult,
+  DataEvalResult,
   DataSortResult,
   DataFillNaResult,
   DataReplaceValuesResult,
@@ -27,6 +28,7 @@ export const useDataStore = defineStore('data', {
     dropNaDialogOpen: false,
     dropDuplicatesDialogOpen: false,
     queryDialogOpen: false,
+    evalDialogOpen: false,
     sortDialogOpen: false,
     fillNaDialogOpen: false,
     replaceValuesDialogOpen: false,
@@ -157,6 +159,19 @@ export const useDataStore = defineStore('data', {
         id,
         queryString
       })) as DataQueryResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async evaluate(expression: string): Promise<DataEvalResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.eval', {
+        id,
+        expression
+      })) as DataEvalResult
       await this.refreshList()
       await this.select(id)
       return result

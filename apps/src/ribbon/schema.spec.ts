@@ -18,6 +18,7 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'data.replaceValues'")
     expect(source).toContain("id: 'data.thresholdFilter'")
     expect(source).toContain("id: 'data.filterByColumn'")
+    expect(source).toContain("id: 'data.eval'")
     expect(source).toContain("id: 'data.query'")
     expect(source).toContain("id: 'data.sort'")
     expect(source).toContain("id: 'data.describe'")

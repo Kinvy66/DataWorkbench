@@ -2,6 +2,7 @@
 from .data_describe import DataDescribeNode
 from .data_drop_duplicates import DataDropDuplicatesNode
 from .data_dropna import DataDropNaNode
+from .data_eval import DataEvalNode
 from .data_export import DataExportNode
 from .data_fillna import DataFillNaNode
 from .data_filter_by_column import DataFilterByColumnNode
@@ -15,6 +16,7 @@ __all__ = [
     "DataDescribeNode",
     "DataDropDuplicatesNode",
     "DataDropNaNode",
+    "DataEvalNode",
     "DataExportNode",
     "DataFillNaNode",
     "DataFilterByColumnNode",

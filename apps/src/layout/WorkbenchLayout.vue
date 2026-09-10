@@ -17,6 +17,7 @@ import FillNaDialog from '@/views/data/FillNaDialog.vue'
 import ReplaceValuesDialog from '@/views/data/ReplaceValuesDialog.vue'
 import ThresholdFilterDialog from '@/views/data/ThresholdFilterDialog.vue'
 import FilterByColumnDialog from '@/views/data/FilterByColumnDialog.vue'
+import EvalDialog from '@/views/data/EvalDialog.vue'
 import DescribeDialog from '@/views/data/DescribeDialog.vue'
 import QueryDialog from '@/views/data/QueryDialog.vue'
 import SortDialog from '@/views/data/SortDialog.vue'
@@ -88,6 +89,7 @@ function formatTime(at: number): string {
     <ReplaceValuesDialog />
     <ThresholdFilterDialog />
     <FilterByColumnDialog />
+    <EvalDialog />
     <DescribeDialog />
     <QueryDialog />
     <SortDialog />

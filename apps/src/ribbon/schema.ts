@@ -199,6 +199,15 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/filterByColumn')
                   },
                   {
+                    id: 'data.eval',
+                    type: 'button',
+                    label: t('ribbon.dataEval'),
+                    tooltip: t('ribbon.dataEvalTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/eval')
+                  },
+                  {
                     id: 'data.query',
                     type: 'button',
                     label: t('ribbon.dataQuery'),

@@ -473,6 +473,42 @@ class DataManager:
         log.info("data.sort name=%s columns=%s ascending=%s", ds.name, names, ascending)
         return result
 
+    def evaluate(self, dataset_id: str, expression: str) -> dict[str, Any]:
+        """Compute columns in place via the shared Core ``eval_expression``.
+
+        pandas ``DataFrame.eval`` returns a Series when the expression has no
+        assignment. That must not overwrite the selected table.
+        """
+        _require_pandas()
+        from dw_nodes_analysis.core.operations import eval_expression
+
+        expr = str(expression or "").strip()
+        if not expr:
+            raise HostError(ErrorCode.ColumnOrValidation, "expression must not be empty", "data.evalEmpty")
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            try:
+                computed = eval_expression(ds.df, expr)
+            except Exception as exc:
+                log.info("data.eval failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Invalid eval expression",
+                    "data.invalidEval",
+                ) from exc
+            if not isinstance(computed, pd.DataFrame):
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Eval expression must assign a column, e.g. c = a + b",
+                    "data.invalidEval",
+                )
+            ds.df = computed
+        result = _meta(ds)
+        log.info("data.eval name=%s rows=%s cols=%s", ds.name, result["rows"], result["cols"])
+        return result
+
     def fillna(
         self,
         dataset_id: str,

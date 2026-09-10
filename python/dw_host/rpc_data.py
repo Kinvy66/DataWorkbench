@@ -81,6 +81,11 @@ class QueryParams(BaseModel):
     queryString: str
 
 
+class EvalParams(BaseModel):
+    id: str
+    expression: str
+
+
 class SortParams(BaseModel):
     id: str
     columns: list[str] | str
@@ -193,6 +198,9 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
     if method == "data.query":
         parsed = QueryParams.model_validate(params)
         return manager.query(parsed.id, parsed.queryString)
+    if method == "data.eval":
+        parsed = EvalParams.model_validate(params)
+        return manager.evaluate(parsed.id, parsed.expression)
     if method == "data.sort":
         parsed = SortParams.model_validate(params)
         return manager.sort(

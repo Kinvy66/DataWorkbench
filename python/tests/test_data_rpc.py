@@ -745,6 +745,97 @@ def test_data_filter_by_column_via_rpc(tmp_path: Path) -> None:
             proc.kill()
 
 
+def test_data_eval_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "nums.csv"
+    csv_path.write_text("a,b\n1,10\n2,20\n", encoding="utf-8")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        assert imported["result"]["rows"] == 2
+        assert imported["result"]["cols"] == 2
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.eval",
+                "params": {"id": dataset_id, "expression": "c = a + b"},
+            },
+        )
+        evaluated = read_rpc(proc)
+        assert "result" in evaluated, evaluated
+        assert evaluated["result"]["rows"] == 2
+        assert evaluated["result"]["cols"] == 3
+        names = [col["name"] for col in evaluated["result"]["columns"]]
+        assert names == ["a", "b", "c"]
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "data.eval",
+                "params": {"id": dataset_id, "expression": "   "},
+            },
+        )
+        empty = read_rpc(proc)
+        assert empty["error"]["code"] == 1002
+        assert empty["error"]["data"]["i18nKey"] == "data.evalEmpty"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.eval",
+                "params": {"id": dataset_id, "expression": "a + b"},
+            },
+        )
+        series = read_rpc(proc)
+        assert series["error"]["code"] == 1002
+        assert series["error"]["data"]["i18nKey"] == "data.invalidEval"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "data.eval",
+                "params": {"id": dataset_id, "expression": "zzz = no_such_col"},
+            },
+        )
+        invalid = read_rpc(proc)
+        assert invalid["error"]["code"] == 1002
+        assert invalid["error"]["data"]["i18nKey"] == "data.invalidEval"
+
+        send(
+            proc,
+            {"jsonrpc": "2.0", "id": 6, "method": "data.eval", "params": {"id": "missing", "expression": "c = a + b"}},
+        )
+        missing = read_rpc(proc)
+        assert missing["error"]["code"] == 1001
+
+        send(proc, {"jsonrpc": "2.0", "id": 7, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
 def test_data_describe_via_rpc(tmp_path: Path) -> None:
     csv_path = tmp_path / "nums.csv"
     csv_path.write_text("a,b\n1,10\n2,20\n3,30\n4,40\n", encoding="utf-8")
