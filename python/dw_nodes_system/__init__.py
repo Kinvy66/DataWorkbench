@@ -1,9 +1,10 @@
-# dw:adapted — Start/End/Constant/Delay/DataToManager from DASystemNodes.
+# dw:adapted — Start/End/Constant/Delay/IfElse/DataToManager from DASystemNodes.
 
 from .i18n import setup_i18n
 
 setup_i18n()
 
+from .nodes.condition_if import IfElseNode
 from .nodes.constant import ConstantNode
 from .nodes.data_to_manager import DataToManagerNode
 from .nodes.delay import DelayNode
@@ -15,6 +16,7 @@ __all__ = [
     "DataToManagerNode",
     "DelayNode",
     "EndNode",
+    "IfElseNode",
     "StartNode",
     "register_system_nodes",
 ]
@@ -22,5 +24,5 @@ __all__ = [
 
 def register_system_nodes(factory) -> None:
     registry = factory.get_registry()
-    for cls in (StartNode, EndNode, ConstantNode, DelayNode, DataToManagerNode):
+    for cls in (StartNode, EndNode, ConstantNode, DelayNode, IfElseNode, DataToManagerNode):
         registry.register_node(cls)

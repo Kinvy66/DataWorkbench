@@ -157,7 +157,8 @@ export const useWorkflowStore = defineStore('workflow', {
             qualifiedName: added.qualifiedName,
             state: 'idle' as NodeRunState,
             inputs: spec?.inputs ?? [],
-            outputs: spec?.outputs ?? []
+            outputs: spec?.outputs ?? [],
+            bodyShape: spec?.bodyShape
           }
         }
       ]
@@ -377,7 +378,8 @@ export const useWorkflowStore = defineStore('workflow', {
             qualifiedName: item.qualifiedName,
             state: 'idle' as NodeRunState,
             inputs: spec?.inputs ?? [],
-            outputs: spec?.outputs ?? []
+            outputs: spec?.outputs ?? [],
+            bodyShape: spec?.bodyShape
           }
         }
       })

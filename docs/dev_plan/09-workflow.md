@@ -52,7 +52,7 @@
 - 状态：idle 灰 / running 蓝 / ok 绿 / error 红（左边框）
 - Delay 等：不要用 Python `paint()`；用状态文字即可
 
-If/Else：P2 末期可用菱形 CSS `clip-path`，非必须。
+If/Else：已落地。未匹配分支输出 `None`，执行器不向下游传播（不要另发明 skip 协议）。画布用菱形 CSS `clip-path`（`#E3F2FD` / `#2196F3`），不要用 Python `paint()`。
 
 ## 执行
 

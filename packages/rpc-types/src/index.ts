@@ -512,6 +512,7 @@ export interface WorkflowNodeType {
   inputs: WorkflowPortSpec[]
   outputs: WorkflowPortSpec[]
   parameters: WorkflowParamSpec[]
+  bodyShape?: string
 }
 
 export interface WorkflowListNodeTypesResult {

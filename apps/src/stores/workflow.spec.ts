@@ -30,6 +30,22 @@ const dataMgrType: WorkflowNodeType = {
   parameters: [{ name: 'data_name', type: 'str', default: 'workflow_output' }]
 }
 
+const ifElseType: WorkflowNodeType = {
+  qualifiedName: 'dw_nodes_system.nodes.condition_if.IfElseNode',
+  name: 'If / Else',
+  category: 'System / Flow Control',
+  bodyShape: 'Diamond',
+  inputs: [
+    { name: 'condition', type: 'bool', required: true },
+    { name: 'data', type: 'any', required: false }
+  ],
+  outputs: [
+    { name: 'true', type: 'any' },
+    { name: 'false', type: 'any' }
+  ],
+  parameters: []
+}
+
 describe('useWorkflowStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -38,7 +54,7 @@ describe('useWorkflowStore', () => {
     invoke.mockReset()
     invoke.mockImplementation(async (method: string, params: Record<string, unknown> = {}) => {
       if (method === 'workflow.listNodeTypes') {
-        return { types: [constantType, dataMgrType] }
+        return { types: [constantType, dataMgrType, ifElseType] }
       }
       if (method === 'workflow.create') {
         return { workflowId: 'wf-1', name: 'untitle' }
@@ -75,6 +91,16 @@ describe('useWorkflowStore', () => {
       workflowId: 'wf-1',
       qualifiedName: constantType.qualifiedName,
       position: { x: 40, y: 80 }
+    })
+  })
+
+  it('copies optional bodyShape onto canvas node data', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(ifElseType.qualifiedName, { x: 10, y: 20 })
+    expect(store.nodes[0]?.data).toMatchObject({
+      label: 'If / Else',
+      qualifiedName: ifElseType.qualifiedName,
+      bodyShape: 'Diamond'
     })
   })
 

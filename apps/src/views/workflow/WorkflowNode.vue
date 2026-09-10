@@ -10,11 +10,13 @@ const props = defineProps<{
     state: 'idle' | 'running' | 'ok' | 'error'
     inputs: WorkflowPortSpec[]
     outputs: WorkflowPortSpec[]
+    bodyShape?: string
   }
 }>()
 
 const inputs = computed(() => props.data.inputs ?? [])
 const outputs = computed(() => props.data.outputs ?? [])
+const isDiamond = computed(() => props.data.bodyShape === 'Diamond')
 
 function handleTop(index: number, count: number): string {
   if (count <= 1) {
@@ -25,7 +27,7 @@ function handleTop(index: number, count: number): string {
 </script>
 
 <template>
-  <div class="dw-node" :class="'st-' + data.state">
+  <div class="dw-node" :class="['st-' + data.state, { diamond: isDiamond }]">
     <Handle
       v-for="(port, index) in inputs"
       :id="port.name"
@@ -81,5 +83,26 @@ function handleTop(index: number, count: number): string {
   height: 8px;
   background: #5280c1;
   border: 1px solid #fff;
+}
+.dw-node.diamond {
+  min-width: 168px;
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e3f2fd;
+  border: none;
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  box-shadow: inset 0 0 0 2px #2196f3;
+}
+.dw-node.diamond.st-running {
+  box-shadow: inset 0 0 0 3px #5280c1;
+}
+.dw-node.diamond.st-ok {
+  box-shadow: inset 0 0 0 3px #669e8b;
+}
+.dw-node.diamond.st-error {
+  box-shadow: inset 0 0 0 3px #ce6043;
 }
 </style>

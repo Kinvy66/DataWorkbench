@@ -109,16 +109,19 @@ class WorkflowRuntime:
             parameters = []
             for name, param in (getattr(cls, "parameters", None) or {}).items():
                 parameters.append(_param_wire(name, param))
-            types.append(
-                {
-                    "qualifiedName": getattr(cls, "qualified_name", ""),
-                    "name": getattr(cls, "name", ""),
-                    "category": getattr(cls, "category", ""),
-                    "inputs": inputs,
-                    "outputs": outputs,
-                    "parameters": parameters,
-                }
-            )
+            item: dict[str, Any] = {
+                "qualifiedName": getattr(cls, "qualified_name", ""),
+                "name": getattr(cls, "name", ""),
+                "category": getattr(cls, "category", ""),
+                "inputs": inputs,
+                "outputs": outputs,
+                "parameters": parameters,
+            }
+            display = getattr(cls, "_node_display", None)
+            body_shape = getattr(display, "body_shape", None) if display is not None else None
+            if body_shape:
+                item["bodyShape"] = str(body_shape)
+            types.append(item)
         types.sort(key=lambda item: (str(item["category"]), str(item["name"])))
         return {"types": types}
 

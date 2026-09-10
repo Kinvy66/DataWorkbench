@@ -20,7 +20,7 @@ from dw_nodes_analysis import (
     DataSourceNode,
     DataThresholdFilterNode,
 )
-from dw_nodes_system import ConstantNode, DataToManagerNode, DelayNode, EndNode, StartNode
+from dw_nodes_system import ConstantNode, DataToManagerNode, DelayNode, EndNode, IfElseNode, StartNode
 from rpc_client import popen, read_rpc, readline, send
 
 START = StartNode.qualified_name
@@ -42,6 +42,7 @@ PIVOT = DataPivotTableNode.qualified_name
 EXPORT = DataExportNode.qualified_name
 END = EndNode.qualified_name
 DELAY = DelayNode.qualified_name
+IFELSE = IfElseNode.qualified_name
 
 
 def _ready(proc):
@@ -237,6 +238,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert CONSTANT in names
         assert DATAMGR in names
         assert DELAY in names
+        assert IFELSE in names
         assert SOURCE in names
         assert QUERY in names
         assert DROPNA in names
@@ -254,6 +256,10 @@ def test_list_node_types_includes_system_set() -> None:
         constant = next(item for item in listed["result"]["types"] if item["qualifiedName"] == CONSTANT)
         assert any(p["name"] == "value" for p in constant["outputs"])
         assert any(p["name"] == "value" and p["type"] == "code" for p in constant["parameters"])
+        ifelse = next(item for item in listed["result"]["types"] if item["qualifiedName"] == IFELSE)
+        assert ifelse["bodyShape"] == "Diamond"
+        assert {p["name"] for p in ifelse["outputs"]} == {"true", "false"}
+        assert {p["name"] for p in ifelse["inputs"]} == {"condition", "data"}
         send(proc, {"jsonrpc": "2.0", "id": 2, "method": "host.shutdown", "params": {}})
         assert proc.wait(timeout=5) == 0
     finally:
