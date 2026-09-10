@@ -624,6 +624,57 @@ class DataManager:
         )
         return result
 
+    def filter_by_column(
+        self,
+        dataset_id: str,
+        *,
+        column: object,
+        min_val: object = None,
+        max_val: object = None,
+    ) -> dict[str, Any]:
+        """Keep rows in an inclusive column range via Core ``filter_by_column_range``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.operations import filter_by_column_range
+
+        col_name = str(column or "").strip()
+        if not col_name:
+            raise HostError(
+                ErrorCode.ColumnOrValidation,
+                "Column is required",
+                "data.filterByColumnColumnEmpty",
+            )
+        lo = _parse_optional_float(min_val)
+        hi = _parse_optional_float(max_val)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, [col_name])
+            col = resolved[0]
+            _require_numeric_columns(ds.df, [col])
+            before = int(len(ds.df))
+            try:
+                filtered = filter_by_column_range(ds.df, col, lo, hi)
+            except Exception as exc:
+                log.info("data.filterByColumn failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to filter by column range",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = filtered
+        result = _meta(ds)
+        result["matchedCount"] = int(len(filtered))
+        result["removedCount"] = before - int(len(filtered))
+        log.info(
+            "data.filterByColumn name=%s column=%s matched=%s removed=%s",
+            ds.name,
+            col_name,
+            result["matchedCount"],
+            result["removedCount"],
+        )
+        return result
+
     def describe(
         self,
         dataset_id: str,
@@ -735,6 +786,18 @@ def _parse_float(raw: object, default: float) -> float:
         return float(raw)
     except (TypeError, ValueError) as exc:
         raise HostError(ErrorCode.ColumnOrValidation, "Threshold must be a number", "data.invalidValue") from exc
+
+
+def _parse_optional_float(raw: object) -> float | None:
+    """Empty / None means unbounded. 0 is a real bound, not a sentinel."""
+    if raw is None or raw == "":
+        return None
+    if isinstance(raw, bool):
+        raise HostError(ErrorCode.ColumnOrValidation, "Bound must be a number", "data.invalidValue")
+    try:
+        return float(raw)
+    except (TypeError, ValueError) as exc:
+        raise HostError(ErrorCode.ColumnOrValidation, "Bound must be a number", "data.invalidValue") from exc
 
 
 def _numeric_columns(df: Any) -> list[Any]:

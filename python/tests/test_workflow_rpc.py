@@ -10,6 +10,7 @@ from dw_nodes_analysis import (
     DataDropNaNode,
     DataExportNode,
     DataFillNaNode,
+    DataFilterByColumnNode,
     DataQueryNode,
     DataReplaceValuesNode,
     DataSortNode,
@@ -29,6 +30,7 @@ DROPDUPE = DataDropDuplicatesNode.qualified_name
 FILLNA = DataFillNaNode.qualified_name
 REPLACE = DataReplaceValuesNode.qualified_name
 THRESHOLD = DataThresholdFilterNode.qualified_name
+FILTERCOL = DataFilterByColumnNode.qualified_name
 SORT = DataSortNode.qualified_name
 DESCRIBE = DataDescribeNode.qualified_name
 EXPORT = DataExportNode.qualified_name
@@ -236,6 +238,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert FILLNA in names
         assert REPLACE in names
         assert THRESHOLD in names
+        assert FILTERCOL in names
         assert SORT in names
         assert DESCRIBE in names
         assert EXPORT in names

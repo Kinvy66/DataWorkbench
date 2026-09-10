@@ -190,6 +190,15 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/thresholdFilter')
                   },
                   {
+                    id: 'data.filterByColumn',
+                    type: 'button',
+                    label: t('ribbon.dataFilterByColumn'),
+                    tooltip: t('ribbon.dataFilterByColumnTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/filterByColumn')
+                  },
+                  {
                     id: 'data.query',
                     type: 'button',
                     label: t('ribbon.dataQuery'),

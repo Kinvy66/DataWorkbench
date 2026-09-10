@@ -51,7 +51,7 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**P0 完成，P1 自动验收完成，P2 画布路径完成，P3 已接入 Data Source、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Sort、Describe 与 Data Export**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export / 删除缺失 / 删除重复 / 填充缺失 / 替换值 / 阈值筛选 / 查询 / 排序 / 描述统计。虚表块走 Arrow IPC。左侧「节点」可拖 Constant / Data Source / Query / Drop NA / Drop Duplicates / Fill NA / Replace Values / Threshold Filter / Sort / Describe / Data Export / Output to DataManager。导入表后，Data Source（填显示名）→ Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Sort 或 Describe → Output to DataManager 或 Data Export → 运行。Delay 执行中可 Stop；Home 撤销/重做可回退画布编辑。File 保存/打开尚未做。
+**P0 完成，P1 自动验收完成，P2 画布路径完成，P3 已接入 Data Source、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Filter by Column、Sort、Describe 与 Data Export**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → Import / Export / 删除缺失 / 删除重复 / 填充缺失 / 替换值 / 阈值筛选 / 按列筛选 / 查询 / 排序 / 描述统计。虚表块走 Arrow IPC。左侧「节点」可拖 Constant / Data Source / Query / Drop NA / Drop Duplicates / Fill NA / Replace Values / Threshold Filter / Filter By Column / Sort / Describe / Data Export / Output to DataManager。导入表后，Data Source（填显示名）→ Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Filter By Column、Sort 或 Describe → Output to DataManager 或 Data Export → 运行。Delay 执行中可 Stop；Home 撤销/重做可回退画布编辑。File 保存/打开尚未做。
 
 阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 

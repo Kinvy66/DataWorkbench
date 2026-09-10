@@ -10,6 +10,7 @@ import iconDropDuplicates from '@/assets/icons/app/dropDuplicates.svg?url'
 import iconFillNa from '@/assets/icons/app/fillNa.svg?url'
 import iconReplaceValues from '@/assets/icons/app/replaceValues.svg?url'
 import iconThresholdFilter from '@/assets/icons/app/thresholdFilter.svg?url'
+import iconFilterByColumn from '@/assets/icons/app/filterByColumn.svg?url'
 import iconQuery from '@/assets/icons/app/query.svg?url'
 import iconSort from '@/assets/icons/app/sort.svg?url'
 import iconDescribe from '@/assets/icons/app/describe.svg?url'
@@ -37,6 +38,7 @@ const urls: Record<string, string> = {
   'app/fillNa': iconFillNa,
   'app/replaceValues': iconReplaceValues,
   'app/thresholdFilter': iconThresholdFilter,
+  'app/filterByColumn': iconFilterByColumn,
   'app/query': iconQuery,
   'app/sort': iconSort,
   'app/describe': iconDescribe,

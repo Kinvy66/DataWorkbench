@@ -112,6 +112,13 @@ class ThresholdFilterParams(BaseModel):
     treatNan: bool = False
 
 
+class FilterByColumnParams(BaseModel):
+    id: str
+    column: str
+    min: Any = None
+    max: Any = None
+
+
 class DescribeParams(BaseModel):
     id: str
     percentiles: list[float] | str | None = "0.25,0.5,0.75"
@@ -220,6 +227,14 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             subset=_subset_list(parsed.subset),
             row_logic=parsed.rowLogic,
             treat_nan=parsed.treatNan,
+        )
+    if method == "data.filterByColumn":
+        parsed = FilterByColumnParams.model_validate(params)
+        return manager.filter_by_column(
+            parsed.id,
+            column=parsed.column,
+            min_val=parsed.min,
+            max_val=parsed.max,
         )
     if method == "data.describe":
         parsed = DescribeParams.model_validate(params)

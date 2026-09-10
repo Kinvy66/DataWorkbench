@@ -50,6 +50,10 @@ describe('i18n', () => {
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataThresholdFilter'))).toBe('阈值筛选')
     i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.dataFilterByColumn'))).toBe('Filter by Column')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.dataFilterByColumn'))).toBe('按列筛选')
+    i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataQuery'))).toBe('Query')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataQuery'))).toBe('查询')

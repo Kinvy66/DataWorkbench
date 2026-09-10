@@ -208,6 +208,25 @@ export function registerBuiltinCommands(): void {
   )
 
   commandBus.register(
+    'data.filterByColumn',
+    async () => {
+      const data = useDataStore()
+      if (!data.currentId) {
+        return
+      }
+      try {
+        if (!data.schema) {
+          await data.select(data.currentId)
+        }
+        data.filterByColumnDialogOpen = true
+      } catch (err) {
+        reportError(err)
+      }
+    },
+    () => useDataStore().hasSelection
+  )
+
+  commandBus.register(
     'data.query',
     async () => {
       const data = useDataStore()
