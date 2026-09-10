@@ -138,6 +138,12 @@ export interface HostReadyParams {
   pandasAvailable: boolean
 }
 
+export interface HostCrashedParams {
+  code: number | null
+  signal: string | null
+  willRestart: boolean
+}
+
 export interface ColumnSchema {
   name: string
   dtype: string

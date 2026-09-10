@@ -130,5 +130,5 @@ Python 节点若要改 DataManager，在 sidecar 内用**同一把锁**（DataMa
 ## 错误模型
 
 - RPC 业务失败：JSON-RPC `error` `{code, message, data}`，`message` 英文给日志，另附 `i18nKey` 给 UI。
-- sidecar 崩溃：主进程 `error` 事件 → 提示 → 可选自动重启一次 → 重启后工程视为需重新 load（内存 DataFrame 丢失，除非已写入工程）。
+- sidecar 崩溃：主进程捕获 `exit` → 通知渲染层 `host.crashed` → 意外退出最多自动重启一次（故意 `shutdown` 不重启；第二次崩溃只提示）。重启后内存 DataFrame 丢失：渲染层立刻清空画布并 `project.reset(null)`，禁止用空工程覆盖已保存的 `.dwproj`；用户需 File → Open。
 - 渲染进程崩溃：Electron 默认行为；不自动静默丢 Python 进程（主进程仍在则 sidecar 可留）。

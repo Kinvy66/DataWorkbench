@@ -128,7 +128,8 @@ export default {
     invalidParams: 'Invalid parameters.',
     bridgeMissing:
       'The desktop bridge failed to load. Restart the app with pnpm dev; do not open the Vite URL in a browser.',
-    sidecarNotRunning: 'The Python sidecar is not running yet. Wait for host.ready and try again.'
+    sidecarNotRunning: 'The Python sidecar is not running yet. Wait for host.ready and try again.',
+    sidecarExited: 'The Python sidecar stopped. Retry after it restarts, or restart the app.'
   },
   project: {
     untitled: 'Untitled',
@@ -426,6 +427,9 @@ export default {
     projectSaved: 'Project saved.',
     projectOpened: 'Project opened.',
     projectNew: 'New project.',
+    sidecarCrashed: 'Python sidecar crashed (code {code}, signal {signal}). Restarting once…',
+    sidecarRestarted: 'Sidecar restarted. In-memory data was lost. Open a saved project to restore.',
+    sidecarDead: 'Python sidecar stopped and could not be restarted. Restart the application.',
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'

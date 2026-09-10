@@ -121,7 +121,11 @@ describe('i18n', () => {
     expect(String(i18n.global.t('project.invalid'))).toBe('这不是 DataWorkbench 工程文件。')
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('log.projectSaved'))).toBe('Project saved.')
+    expect(String(i18n.global.t('log.sidecarRestarted'))).toContain('In-memory data was lost')
+    expect(String(i18n.global.t('rpc.sidecarExited'))).toContain('sidecar stopped')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('log.projectSaved'))).toBe('工程已保存。')
+    expect(String(i18n.global.t('log.sidecarDead'))).toContain('重启应用')
+    expect(String(i18n.global.t('log.sidecarCrashed', { code: 1, signal: '-' }))).toContain('自动重启')
   })
 })

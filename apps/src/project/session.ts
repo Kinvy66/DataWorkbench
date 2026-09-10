@@ -211,3 +211,44 @@ export async function confirmAndQuit(): Promise<void> {
   }
   await rpc().invoke('app.quit')
 }
+
+function resetLocalWorkspace(): void {
+  useWorkflowStore().resetSession()
+  useChartStore().clear()
+  const data = useDataStore()
+  data.datasets = []
+  data.currentId = null
+  data.schema = null
+}
+
+export async function freezeAfterSidecarDeath(): Promise<void> {
+  const project = useProjectStore()
+  project.beginRestore()
+  try {
+    resetLocalWorkspace()
+    project.reset(null)
+  } finally {
+    project.endRestore()
+  }
+  await syncDocumentTitle()
+}
+
+export async function recoverAfterSidecarRestart(): Promise<void> {
+  const project = useProjectStore()
+  project.beginRestore()
+  try {
+    resetLocalWorkspace()
+    await useWorkflowStore().bootstrap()
+    await useDataStore().refreshList()
+    project.reset(null)
+  } catch (err) {
+    project.endRestore()
+    reportError(err)
+    return
+  }
+  project.endRestore()
+  await syncDocumentTitle()
+  const line = t('log.sidecarRestarted')
+  useLogStore().append('warning', line)
+  ElMessage.warning(line)
+}

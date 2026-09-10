@@ -51,7 +51,7 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**P0 完成，P1 自动验收完成，P2 画布路径完成，P3 分析节点已齐，P4 图表一期已齐，P5 File 保存/打开已落地**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → 添加数据 / 移除 / 重命名 / 导出；Operate → 数据清洗 / 数据过滤 / 统计（对齐上游，清洗按钮不在 Data 标签）；**Chart → 折线 / 散点 / 柱状 / 直方**（Python `chart.buildSeries` 降采样或分箱，缩放后按视口再取样），导出 PNG/SVG。**File → 新建 / 打开 / 保存 / 另存为**（`.dwproj` ZIP）。Replace Values 与 Threshold Filter 只在节点箱。P5 其余（sidecar 崩溃重启、NSIS 安装包）尚未做。
+**P0 完成，P1 自动验收完成，P2 画布路径完成，P3 分析节点已齐，P4 图表一期已齐，P5 File 保存/打开已落地**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → 添加数据 / 移除 / 重命名 / 导出；Operate → 数据清洗 / 数据过滤 / 统计（对齐上游，清洗按钮不在 Data 标签）；**Chart → 折线 / 散点 / 柱状 / 直方**（Python `chart.buildSeries` 降采样或分箱，缩放后按视口再取样），导出 PNG/SVG。**File → 新建 / 打开 / 保存 / 另存为**（`.dwproj` ZIP）。sidecar 意外退出会提示并**自动重启一次**（内存数据丢失，请打开已保存工程）。Replace Values 与 Threshold Filter 只在节点箱。P5 其余（NSIS 安装包）尚未做。
 
 阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 

@@ -1,20 +1,25 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, watch } from 'vue'
-import { ElConfigProvider } from 'element-plus'
+import { ElConfigProvider, ElMessage } from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import enLocale from 'element-plus/es/locale/lang/en'
 import { useI18n } from 'vue-i18n'
 import AppRibbon from '@/ribbon/AppRibbon.vue'
 import WorkbenchLayout from '@/layout/WorkbenchLayout.vue'
 import { commandBus } from '@/commands/commandBus'
-import { confirmAndQuit, syncDocumentTitle } from '@/project/session'
+import {
+  confirmAndQuit,
+  freezeAfterSidecarDeath,
+  recoverAfterSidecarRestart,
+  syncDocumentTitle
+} from '@/project/session'
 import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
 import { useProjectStore } from '@/stores/project'
 import { useWorkflowStore } from '@/stores/workflow'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
-import type { WorkflowFinishedParams, WorkflowNodeStateParams } from '@dw/rpc-types'
+import type { HostCrashedParams, HostReadyParams, WorkflowFinishedParams, WorkflowNodeStateParams } from '@dw/rpc-types'
 
 const { t, locale, te } = useI18n()
 const epLocale = computed(() => (locale.value === 'zh-CN' ? zhCn : enLocale))
@@ -85,9 +90,26 @@ onMounted(() => {
       void confirmAndQuit()
     })
   )
+  let sidecarGeneration = 0
+  offs.push(
+    rpc.on('host.crashed', (params) => {
+      const p = params as HostCrashedParams
+      void freezeAfterSidecarDeath()
+      if (p.willRestart) {
+        log.append(
+          'warning',
+          t('log.sidecarCrashed', { code: p.code ?? '?', signal: p.signal ?? '-' })
+        )
+        return
+      }
+      const line = t('log.sidecarDead')
+      log.append('error', line)
+      ElMessage.error(line)
+    })
+  )
   offs.push(
     rpc.on('host.ready', (params) => {
-      const p = params as { pid?: number; pandasAvailable?: boolean }
+      const p = params as HostReadyParams
       log.append(
         'info',
         t('log.ready', {
@@ -95,8 +117,13 @@ onMounted(() => {
           pandas: p.pandasAvailable ? 'yes' : 'no'
         })
       )
-      void data.refreshList().catch(() => {})
-      void workflow.bootstrap().catch(() => {})
+      sidecarGeneration += 1
+      if (sidecarGeneration === 1) {
+        void data.refreshList().catch(() => {})
+        void workflow.bootstrap().catch(() => {})
+        return
+      }
+      void recoverAfterSidecarRestart()
     })
   )
   offs.push(

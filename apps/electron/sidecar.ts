@@ -5,8 +5,10 @@ import { parseRpcLine } from './rpc-parse'
 import { RpcError, rpcTimeoutMs } from './rpc-error'
 import { arrowIpcToRows } from './arrow-decode'
 import { StdoutFramer, type StdoutFrame } from './rpc-frame'
+import { shouldRestartSidecar } from './sidecar-watchdog'
 
 export type SidecarLog = { stream: 'stderr' | 'protocol'; text: string }
+export type SidecarSpawnFn = () => ChildProcessWithoutNullStreams
 
 function findRepoRoot(startDir: string): string {
   const starts = [startDir, process.cwd()]
@@ -47,6 +49,9 @@ function resolvePython(repoRoot: string): { cmd: string; args: string[] } {
 
 export type SidecarBridgeOptions = {
   processWaitMs?: number
+  spawnProcess?: SidecarSpawnFn
+  restartDelayMs?: number
+  maxRestarts?: number
 }
 
 export class SidecarBridge {
@@ -63,9 +68,18 @@ export class SidecarBridge {
   private readyWaiters: Array<() => void> = []
   private processWaiters: Array<(child: ChildProcessWithoutNullStreams | null) => void> = []
   private readonly processWaitMs: number
+  private readonly spawnFn: SidecarSpawnFn
+  private readonly restartDelayMs: number
+  private readonly maxRestarts: number
+  private restartAttempts = 0
+  private shuttingDown = false
+  private restartTimer: NodeJS.Timeout | null = null
 
   constructor(options?: SidecarBridgeOptions) {
     this.processWaitMs = options?.processWaitMs ?? 10_000
+    this.spawnFn = options?.spawnProcess ?? (() => this.spawnDefault())
+    this.restartDelayMs = options?.restartDelayMs ?? 200
+    this.maxRestarts = options?.maxRestarts ?? 1
   }
 
   onNotify(handler: (method: string, params: unknown) => void): () => void {
@@ -92,10 +106,15 @@ export class SidecarBridge {
   }
 
   start(): void {
-    if (this.child) {
+    if (this.child || this.shuttingDown) {
       return
     }
     this.framer = new StdoutFramer()
+    this.ready = false
+    this.attachChild(this.spawnFn())
+  }
+
+  private spawnDefault(): ChildProcessWithoutNullStreams {
     const repoRoot = findRepoRoot(__dirname)
     const pythonRoot = path.join(repoRoot, 'python')
     const py = resolvePython(repoRoot)
@@ -107,39 +126,11 @@ export class SidecarBridge {
       PYTHONIOENCODING: 'utf-8'
     }
     this.emitLog({ stream: 'stderr', text: `Starting sidecar: ${py.cmd} ${args.join(' ')}` })
-    this.child = spawn(py.cmd, args, {
+    return spawn(py.cmd, args, {
       cwd: pythonRoot,
       env,
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true
-    })
-    this.flushProcessWaiters(this.child)
-    this.child.stderr.setEncoding('utf8')
-    this.child.stdout.on('data', (chunk: Buffer) => {
-      for (const frame of this.framer.push(chunk)) {
-        this.handleFrame(frame)
-      }
-    })
-    this.child.stderr.on('data', (chunk: string) => {
-      for (const line of chunk.split(/\r?\n/)) {
-        if (line.length > 0) {
-          this.emitLog({ stream: 'stderr', text: line })
-        }
-      }
-    })
-    this.child.on('exit', (code, signal) => {
-      this.emitLog({ stream: 'stderr', text: `Sidecar exited code=${code} signal=${signal}` })
-      this.child = null
-      this.ready = false
-      this.flushProcessWaiters(null)
-      for (const [, p] of this.pending) {
-        clearTimeout(p.timer)
-        p.reject(new Error('Sidecar exited'))
-      }
-      this.pending.clear()
-    })
-    this.child.on('error', (err) => {
-      this.emitLog({ stream: 'stderr', text: `Sidecar spawn error: ${err.message}` })
     })
   }
 
@@ -161,16 +152,13 @@ export class SidecarBridge {
   }
 
   async shutdown(timeoutMs = 5000): Promise<number> {
+    this.shuttingDown = true
+    this.clearRestartTimer()
     const child = this.child
     if (!child) {
       return 0
     }
-    try {
-      await this.invoke('host.shutdown', {}, timeoutMs)
-    } catch {
-      // still wait for exit
-    }
-    return await new Promise((resolve) => {
+    const waitExit = new Promise<number>((resolve) => {
       const timer = setTimeout(() => {
         child.kill()
         resolve(1)
@@ -180,10 +168,91 @@ export class SidecarBridge {
         resolve(code ?? 1)
       })
     })
+    try {
+      await this.invoke('host.shutdown', {}, timeoutMs)
+    } catch {
+      // still wait for exit
+    }
+    return await waitExit
+  }
+
+  private attachChild(child: ChildProcessWithoutNullStreams): void {
+    this.child = child
+    this.flushProcessWaiters(child)
+    child.stderr.setEncoding('utf8')
+    child.stdout.on('data', (chunk: Buffer) => {
+      for (const frame of this.framer.push(chunk)) {
+        this.handleFrame(frame)
+      }
+    })
+    child.stderr.on('data', (chunk: string) => {
+      for (const line of chunk.split(/\r?\n/)) {
+        if (line.length > 0) {
+          this.emitLog({ stream: 'stderr', text: line })
+        }
+      }
+    })
+    child.on('exit', (code, signal) => {
+      this.onChildExit(child, code, signal)
+    })
+    child.on('error', (err) => {
+      this.emitLog({ stream: 'stderr', text: `Sidecar spawn error: ${err.message}` })
+    })
+  }
+
+  private onChildExit(
+    child: ChildProcessWithoutNullStreams,
+    code: number | null,
+    signal: NodeJS.Signals | null
+  ): void {
+    if (this.child !== child) {
+      return
+    }
+    this.emitLog({ stream: 'stderr', text: `Sidecar exited code=${code} signal=${signal}` })
+    this.child = null
+    this.ready = false
+    this.flushProcessWaiters(null)
+    for (const [, p] of this.pending) {
+      clearTimeout(p.timer)
+      p.reject(this.sidecarExited())
+    }
+    this.pending.clear()
+    const willRestart = shouldRestartSidecar({
+      shuttingDown: this.shuttingDown,
+      restartAttempts: this.restartAttempts,
+      maxRestarts: this.maxRestarts
+    })
+    if (!this.shuttingDown) {
+      this.emitNotify('host.crashed', { code, signal, willRestart })
+    }
+    if (!willRestart) {
+      return
+    }
+    this.restartAttempts += 1
+    this.scheduleRestart()
+  }
+
+  private scheduleRestart(): void {
+    this.clearRestartTimer()
+    this.restartTimer = setTimeout(() => {
+      this.restartTimer = null
+      this.start()
+    }, this.restartDelayMs)
+  }
+
+  private clearRestartTimer(): void {
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer)
+      this.restartTimer = null
+    }
   }
 
   private sidecarUnavailable(): RpcError {
     return new RpcError(9001, 'Sidecar is not running', 'rpc.sidecarNotRunning')
+  }
+
+  private sidecarExited(): RpcError {
+    return new RpcError(9001, 'Sidecar exited', 'rpc.sidecarExited')
   }
 
   private flushProcessWaiters(child: ChildProcessWithoutNullStreams | null): void {

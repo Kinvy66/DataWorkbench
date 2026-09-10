@@ -127,7 +127,8 @@ export default {
   rpc: {
     invalidParams: '参数无效。',
     bridgeMissing: '桌面桥接未加载。请用 pnpm dev 重启应用，不要在浏览器里打开 Vite 地址。',
-    sidecarNotRunning: 'Python sidecar 尚未运行。请等 host.ready 后再试。'
+    sidecarNotRunning: 'Python sidecar 尚未运行。请等 host.ready 后再试。',
+    sidecarExited: 'Python sidecar 已退出。请等它重启后再试，或重启应用。'
   },
   project: {
     untitled: '未命名',
@@ -424,6 +425,9 @@ export default {
     projectSaved: '工程已保存。',
     projectOpened: '工程已打开。',
     projectNew: '已新建工程。',
+    sidecarCrashed: 'Python sidecar 已崩溃（code {code}，signal {signal}）。正在自动重启一次…',
+    sidecarRestarted: 'Sidecar 已重启。内存中的数据已丢失，请打开已保存的工程恢复。',
+    sidecarDead: 'Python sidecar 已停止且无法再重启。请重启应用。',
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'

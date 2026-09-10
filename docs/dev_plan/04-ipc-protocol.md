@@ -32,6 +32,7 @@
 | `host.ready` | Py → Main 通知 | sidecar 启动完成后发（尝试导入 pandas 之后）。无 `id`。params：`{pid, pandasAvailable}` |
 | `host.hello` | Main → Py | 交换版本与工作区路径 |
 | `host.shutdown` | Main → Py | 优雅退出；超时 `kill` |
+| `host.crashed` | Main → Renderer 通知 | sidecar **意外**退出后由主进程发出（不是 Python 协议；故意 `host.shutdown` 不发）。params：`{code, signal, willRestart}`。`willRestart=true` 时再拉起一次；第二次意外退出为 `false` |
 
 `host.hello` params：`{appVersion, workspaceRoot}`。result：`{ok: true, pythonVersion, appVersion, workspaceRoot, pandasAvailable}`。
 
