@@ -13,4 +13,10 @@ describe('WorkflowNode diamond', () => {
     expect(source).toContain('#e3f2fd')
     expect(source).toContain('#2196f3')
   })
+
+  it('renders cached runtime text on the node body', () => {
+    const source = readFileSync(resolve(here, 'WorkflowNode.vue'), 'utf8')
+    expect(source).toContain('data.displayText')
+    expect(source).toContain('class="preview"')
+  })
 })

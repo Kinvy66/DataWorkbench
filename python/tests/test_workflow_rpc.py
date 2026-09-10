@@ -20,7 +20,15 @@ from dw_nodes_analysis import (
     DataSourceNode,
     DataThresholdFilterNode,
 )
-from dw_nodes_system import ConstantNode, DataToManagerNode, DelayNode, EndNode, IfElseNode, StartNode
+from dw_nodes_system import (
+    ConstantNode,
+    DataToManagerNode,
+    DelayNode,
+    EndNode,
+    IfElseNode,
+    StartNode,
+    TextViewerNode,
+)
 from rpc_client import popen, read_rpc, readline, send
 
 START = StartNode.qualified_name
@@ -43,6 +51,7 @@ EXPORT = DataExportNode.qualified_name
 END = EndNode.qualified_name
 DELAY = DelayNode.qualified_name
 IFELSE = IfElseNode.qualified_name
+TEXTVIEWER = TextViewerNode.qualified_name
 
 
 def _ready(proc):
@@ -239,6 +248,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert DATAMGR in names
         assert DELAY in names
         assert IFELSE in names
+        assert TEXTVIEWER in names
         assert SOURCE in names
         assert QUERY in names
         assert DROPNA in names
@@ -260,6 +270,9 @@ def test_list_node_types_includes_system_set() -> None:
         assert ifelse["bodyShape"] == "Diamond"
         assert {p["name"] for p in ifelse["outputs"]} == {"true", "false"}
         assert {p["name"] for p in ifelse["inputs"]} == {"condition", "data"}
+        viewer = next(item for item in listed["result"]["types"] if item["qualifiedName"] == TEXTVIEWER)
+        assert any(p["name"] == "value" for p in viewer["inputs"])
+        assert any(p["name"] == "font" and p["type"] == "font" for p in viewer["parameters"])
         send(proc, {"jsonrpc": "2.0", "id": 2, "method": "host.shutdown", "params": {}})
         assert proc.wait(timeout=5) == 0
     finally:

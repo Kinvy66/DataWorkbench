@@ -11,6 +11,7 @@ const props = defineProps<{
     inputs: WorkflowPortSpec[]
     outputs: WorkflowPortSpec[]
     bodyShape?: string
+    displayText?: string
   }
 }>()
 
@@ -38,6 +39,7 @@ function handleTop(index: number, count: number): string {
       :style="{ top: handleTop(index, inputs.length) }"
     />
     <div class="title">{{ data.label }}</div>
+    <pre v-if="data.displayText" class="preview">{{ data.displayText }}</pre>
     <Handle
       v-for="(port, index) in outputs"
       :id="port.name"
@@ -104,5 +106,18 @@ function handleTop(index: number, count: number): string {
 }
 .dw-node.diamond.st-error {
   box-shadow: inset 0 0 0 3px #ce6043;
+}
+.preview {
+  margin: 6px 0 0;
+  max-width: 220px;
+  max-height: 5.4em;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 400;
+  color: #282828;
+  line-height: 1.35;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>

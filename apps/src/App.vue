@@ -71,7 +71,7 @@ onMounted(() => {
   offs.push(
     rpc.on('workflow.nodeState', (params) => {
       const p = params as WorkflowNodeStateParams
-      workflow.applyNodeState(p.workflowId, p.nodeId, p.state)
+      workflow.applyNodeState(p.workflowId, p.nodeId, p.state, p.displayText)
     })
   )
   offs.push(

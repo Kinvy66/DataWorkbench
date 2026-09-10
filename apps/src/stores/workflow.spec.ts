@@ -376,4 +376,30 @@ describe('useWorkflowStore', () => {
     expect(store.canUndo).toBe(false)
     expect(store.canRedo).toBe(false)
   })
+
+  it('copies runtime displayText onto wrapped nodes', () => {
+    const store = useWorkflowStore()
+    store.types = [constantType]
+    store.applyWrappedGraph({
+      workflowId: 'wf-3',
+      name: 'logic',
+      nodes: [
+        {
+          nodeId: 'tv-1',
+          qualifiedName: constantType.qualifiedName,
+          parameters: {},
+          runtimeState: { displayText: 'hello' }
+        }
+      ],
+      connections: []
+    })
+    expect(store.nodes[0]?.data).toMatchObject({ displayText: 'hello' })
+  })
+
+  it('keeps displayText from nodeState after a successful run', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(constantType.qualifiedName)
+    store.applyNodeState('wf-1', 'node-1', 'ok', 'hello')
+    expect(store.nodes[0]?.data).toMatchObject({ state: 'ok', displayText: 'hello' })
+  })
 })

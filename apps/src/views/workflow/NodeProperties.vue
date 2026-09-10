@@ -29,7 +29,7 @@ function report(err: unknown): void {
   ElMessage.error(translateRpcError(err, t, te))
 }
 
-function controlKind(param: WorkflowParamSpec): 'number' | 'switch' | 'select' | 'textarea' | 'input' {
+function controlKind(param: WorkflowParamSpec): 'number' | 'switch' | 'select' | 'textarea' | 'font' | 'input' {
   if (param.choices?.length) {
     return 'select'
   }
@@ -39,10 +39,36 @@ function controlKind(param: WorkflowParamSpec): 'number' | 'switch' | 'select' |
   if (param.type === 'int' || param.type === 'float') {
     return 'number'
   }
+  if (param.type === 'font') {
+    return 'font'
+  }
   if (param.type === 'code' || param.layout === 'below') {
     return 'textarea'
   }
   return 'input'
+}
+
+type FontDraft = {
+  family: string
+  size: number
+  bold: boolean
+  italic: boolean
+  color: string
+}
+
+function fontDraft(raw: unknown): FontDraft {
+  const src = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  return {
+    family: String(src.family ?? 'sans-serif'),
+    size: Number(src.size ?? 9),
+    bold: Boolean(src.bold),
+    italic: Boolean(src.italic),
+    color: String(src.color ?? '#282828')
+  }
+}
+
+function commitFont(name: string, patch: Partial<FontDraft>): void {
+  commit(name, { ...fontDraft(draft.value[name]), ...patch })
 }
 
 function commit(name: string, value: unknown, immediate = false): void {
@@ -107,6 +133,28 @@ function commit(name: string, value: unknown, immediate = false): void {
           :model-value="String(draft[param.name] ?? '')"
           @input="(v: string) => commit(param.name, v)"
         />
+        <div v-else-if="controlKind(param) === 'font'" class="font-edit">
+          <el-input
+            :disabled="!store.canEditGraph"
+            :model-value="fontDraft(draft[param.name]).family"
+            @input="(v: string) => commitFont(param.name, { family: v })"
+          />
+          <el-input-number
+            :model-value="fontDraft(draft[param.name]).size"
+            :min="6"
+            :max="48"
+            :step="1"
+            :precision="0"
+            :disabled="!store.canEditGraph"
+            controls-position="right"
+            @change="(v: number | undefined) => commitFont(param.name, { size: v ?? 9 })"
+          />
+          <el-input
+            :disabled="!store.canEditGraph"
+            :model-value="fontDraft(draft[param.name]).color"
+            @input="(v: string) => commitFont(param.name, { color: v })"
+          />
+        </div>
         <el-input
           v-else
           :disabled="!store.canEditGraph"
@@ -145,6 +193,12 @@ function commit(name: string, value: unknown, immediate = false): void {
 }
 .el-input-number,
 .el-select {
+  width: 100%;
+}
+.font-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
 }
 </style>

@@ -603,6 +603,9 @@ export interface WorkflowGraphNode {
   nodeId: string
   qualifiedName: string
   parameters: Record<string, unknown>
+  runtimeState?: {
+    displayText?: string
+  }
 }
 
 export interface WorkflowGraphConnection {
@@ -630,6 +633,7 @@ export interface WorkflowNodeStateParams {
   nodeId: string
   state: 'idle' | 'running' | 'ok' | 'error'
   message?: string
+  displayText?: string
 }
 
 export interface WorkflowFinishedParams {

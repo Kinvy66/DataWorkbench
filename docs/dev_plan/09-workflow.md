@@ -51,6 +51,7 @@
 - 左侧输入柄、右侧输出柄，id = 端口名
 - 状态：idle 灰 / running 蓝 / ok 绿 / error 红（左边框）
 - Delay 等：不要用 Python `paint()`；用状态文字即可
+- Text Viewer：不要用 Python `paint()`；`execute()` 缓存文本到 `runtime_state.display_text`，Vue 节点体显示。`font` 参数用 family/size/color 简易编辑，不要做 Qt 字体对话框
 
 If/Else：已落地。未匹配分支输出 `None`，执行器不向下游传播（不要另发明 skip 协议）。画布用菱形 CSS `clip-path`（`#E3F2FD` / `#2196F3`），不要用 Python `paint()`。
 
@@ -81,7 +82,7 @@ If/Else：已落地。未匹配分支输出 `None`，执行器不向下游传播
 
 ## 运行时状态
 
-上游 `serialize_runtime_state`（如 TextViewer 文本）P2 不实现 TextViewer。若节点需要，serializer 已有钩子，原样保留即可，前端忽略。
+上游 `serialize_runtime_state`（如 TextViewer 文本）已接到画布：`getGraph.runtimeState.displayText` + `nodeState.displayText`。serializer 钩子原样保留。
 
 ## 测试
 

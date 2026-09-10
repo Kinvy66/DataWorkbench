@@ -38,6 +38,18 @@ def _node_params(node: Any) -> dict[str, Any]:
     return params
 
 
+def _runtime_state_wire(node: Any) -> dict[str, Any]:
+    raw: dict[str, Any] = {}
+    if hasattr(node, "serialize_runtime_state"):
+        try:
+            raw = node.serialize_runtime_state() or {}
+        except Exception:
+            raw = {}
+    if "display_text" not in raw:
+        return {}
+    return {"displayText": str(raw.get("display_text") or "")}
+
+
 _STATE_WIRE = {
     "idle": "idle",
     "waiting": "idle",
@@ -285,13 +297,15 @@ class WorkflowRuntime:
         nodes: list[dict[str, Any]] = []
         for node in session.workflow.get_nodes():
             node_id = getattr(node, "node_id", "")
-            nodes.append(
-                {
-                    "nodeId": node_id,
-                    "qualifiedName": getattr(node, "qualified_name", ""),
-                    "parameters": _node_params(node),
-                }
-            )
+            item: dict[str, Any] = {
+                "nodeId": node_id,
+                "qualifiedName": getattr(node, "qualified_name", ""),
+                "parameters": _node_params(node),
+            }
+            runtime_state = _runtime_state_wire(node)
+            if runtime_state:
+                item["runtimeState"] = runtime_state
+            nodes.append(item)
         connections: list[dict[str, Any]] = []
         for conn in session.workflow.get_connections():
             connections.append(
@@ -404,14 +418,14 @@ class WorkflowRuntime:
             node_id = getattr(node, "node_id", None)
             if not node_id:
                 return
-            self._notify(
-                "workflow.nodeState",
-                {
-                    "workflowId": workflow_id,
-                    "nodeId": node_id,
-                    "state": _STATE_WIRE.get(state, state),
-                },
-            )
+            payload: dict[str, Any] = {
+                "workflowId": workflow_id,
+                "nodeId": node_id,
+                "state": _STATE_WIRE.get(state, state),
+            }
+            if state in ("success", "error"):
+                payload.update(_runtime_state_wire(node))
+            self._notify("workflow.nodeState", payload)
 
         node.set_node_state = hooked
         node._dw_state_hooked = True

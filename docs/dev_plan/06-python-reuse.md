@@ -12,14 +12,14 @@
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/nodes/style_demo_nodes.py` | 可选，仅开发 | 可不上生产 |
 | `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n。`io.py` 已改为 charset-normalizer（`# dw:adapted`），不要无提示覆盖 |
 
-`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地。P3 已 vendor `dw_nodes_analysis/core`（`9dd298fe`），并接入 **Data Source**（从 DataManager 按名/id 取 df，不是上游读文件节点）、**Query**（`query_dataframe`，Ribbon 走 `data.query`）、**Drop NA**（`dropna_impl`，只删行；Ribbon 走 `data.dropNa`）、**Drop Duplicates**（`drop_duplicates_impl`；Ribbon 走 `data.dropDuplicates`）、**Fill NA**（`fillna_impl`，Ribbon 走 `data.fillNa`）、**Interpolate**（`interpolate_impl`；Operate 走 `data.interpolate`；方法对齐上游插值对话框，不要加 `inplace`）、**IQR**（`remove_outliers_iqr_impl`；Operate 走 `data.removeOutliersIqr`；参数对齐上游 IQR 对话框，不要加 `inplace`）、**Z-score**（`remove_outliers_zscore_impl`；Operate 走 `data.removeOutliersZscore`；参数对齐上游 Z-score 对话框，不要加 `inplace`）、**Transform Skewed**（`transform_skewed_impl`；Operate 走 `data.transformSkewed`；方法对齐上游对话框并含 Core 的 `boxcox`，不要加 `inplace`）、**Replace Values**（`replace_values_impl`；RPC 走 `data.replaceValues`，**不上 Ribbon**）、**Threshold Filter**（`threshold_filter_impl`；RPC 走 `data.thresholdFilter`，**不上 Ribbon**；直接暴露 Core `filter_type`，不要抄上游 `>`/`>=` 映射）、**Filter by Column**（`filter_by_column_range`；Ribbon 走 `data.filterByColumn`；保留闭区间，空 min/max=无界，**不要把 0 当不限制**）、**Eval**（`eval_expression`；Ribbon 走 `data.eval`；必须赋值，无赋值返回 Series 会被拒绝）、**Search**（`search_dataframe`；Ribbon 走 `data.search`；正则筛行，不要做成 Qt 查找下一个）、**Sort**（`sort_dataframe`，Ribbon 走 `data.sort`）、**Describe**（`describe_dataframe`，Ribbon 走 `data.describe` 发布新统计表，不改源表）、**Pivot Table**（`create_pivot_table`，Ribbon 走 `data.pivotTable` 发布新透视表，不改源表；参数对齐上游对话框，不要抄 tiny 节点）与 **Data Export**（`export_data` 写连入的 DataFrame；Ribbon `data.export` 仍写当前 DataManager 表）。If/Else 已落地（未匹配分支输出 None，执行器不传播）。尚未做 TextViewer。**Ribbon**：Data 标签只放数据进出；清洗/过滤/统计在 Operate。Replace Values / Threshold Filter 仅节点 + RPC，不要再塞进 Data。Operate 统计已含 Describe 与 Pivot Table，对齐上游 Statistics panel。
+`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地。P3 已 vendor `dw_nodes_analysis/core`（`9dd298fe`），并接入 **Data Source**（从 DataManager 按名/id 取 df，不是上游读文件节点）、**Query**（`query_dataframe`，Ribbon 走 `data.query`）、**Drop NA**（`dropna_impl`，只删行；Ribbon 走 `data.dropNa`）、**Drop Duplicates**（`drop_duplicates_impl`；Ribbon 走 `data.dropDuplicates`）、**Fill NA**（`fillna_impl`，Ribbon 走 `data.fillNa`）、**Interpolate**（`interpolate_impl`；Operate 走 `data.interpolate`；方法对齐上游插值对话框，不要加 `inplace`）、**IQR**（`remove_outliers_iqr_impl`；Operate 走 `data.removeOutliersIqr`；参数对齐上游 IQR 对话框，不要加 `inplace`）、**Z-score**（`remove_outliers_zscore_impl`；Operate 走 `data.removeOutliersZscore`；参数对齐上游 Z-score 对话框，不要加 `inplace`）、**Transform Skewed**（`transform_skewed_impl`；Operate 走 `data.transformSkewed`；方法对齐上游对话框并含 Core 的 `boxcox`，不要加 `inplace`）、**Replace Values**（`replace_values_impl`；RPC 走 `data.replaceValues`，**不上 Ribbon**）、**Threshold Filter**（`threshold_filter_impl`；RPC 走 `data.thresholdFilter`，**不上 Ribbon**；直接暴露 Core `filter_type`，不要抄上游 `>`/`>=` 映射）、**Filter by Column**（`filter_by_column_range`；Ribbon 走 `data.filterByColumn`；保留闭区间，空 min/max=无界，**不要把 0 当不限制**）、**Eval**（`eval_expression`；Ribbon 走 `data.eval`；必须赋值，无赋值返回 Series 会被拒绝）、**Search**（`search_dataframe`；Ribbon 走 `data.search`；正则筛行，不要做成 Qt 查找下一个）、**Sort**（`sort_dataframe`，Ribbon 走 `data.sort`）、**Describe**（`describe_dataframe`，Ribbon 走 `data.describe` 发布新统计表，不改源表）、**Pivot Table**（`create_pivot_table`，Ribbon 走 `data.pivotTable` 发布新透视表，不改源表；参数对齐上游对话框，不要抄 tiny 节点）与 **Data Export**（`export_data` 写连入的 DataFrame；Ribbon `data.export` 仍写当前 DataManager 表）。If/Else 已落地（未匹配分支输出 None，执行器不传播）。TextViewer 已落地（Vue 显示 runtime_state，不要 Python `paint()`）。**Ribbon**：Data 标签只放数据进出；清洗/过滤/统计在 Operate。Replace Values / Threshold Filter 仅节点 + RPC，不要再塞进 Data。Operate 统计已含 Describe 与 Pivot Table，对齐上游 Statistics panel。
 
 ## 移植并改 Host（必须改）
 
 | 上游 | 问题 | 改法 |
 |------|------|------|
 | `plugins/DASystemNodes/.../data_to_manager.py` | `import da_app, da_data` + `callInMainThread` | `from dw_host.api import publish_dataframe`；在 RPC 线程执行 |
-| `plugins/DASystemNodes/.../text_viewer.py` | `paint()` + QPainter 代理 | 一期可用节点状态文本在 Vue 节点体内显示；`paint` 钩子二期再做 Canvas |
+| `plugins/DASystemNodes/.../text_viewer.py` | `paint()` + QPainter 代理 | 已落地：Vue 节点体显示 `runtime_state.display_text`；不要做 Python `paint()` / Canvas |
 | `src/PyScripts/DAWorkbench/DAPyBase/io.py` | 整文件绑 C++ DataManager | 重写为 `dw_host.io.import_path` |
 | `src/PyScripts/DAWorkbench/DAPyBase/app_wrapper.py` | `da_app.getCore()` | 删除或做成 `dw_host.api` 的薄包装以减少节点改动面 |
 
@@ -45,9 +45,9 @@ def get_data_manager():
 | `nodes/delay.py` | 必做 | 验证 stop（`Event.wait` + 会话 cancel，禁止阻塞 `sleep`） |
 | `nodes/data_to_manager.py` | 必做 | 改 API |
 | `nodes/condition_if.py` | 已落地 | 未匹配分支输出 None；菱形 CSS `clip-path` |
-| `nodes/text_viewer.py` | 延期 | 依赖 paint；Vue 节点体显示 runtime_state |
+| `nodes/text_viewer.py` | 已落地 | 无 Python `paint()`；Vue 显示 `runtime_state.display_text` |
 
-P2 必做五项与 If/Else 已落地。P3 剩余 TextViewer。
+P2 必做五项、If/Else、TextViewer 已落地。
 
 图标 SVG：可拷贝 `icon/`，注意上游图标规范（200×200）。Vue 工具箱用同一份 SVG。窗口 / Ribbon 按钮已拷到 `apps/src/assets/icons/`，用法见 [07-ui-shell.md](./07-ui-shell.md)。
 

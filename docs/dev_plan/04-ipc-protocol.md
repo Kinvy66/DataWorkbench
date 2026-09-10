@@ -90,13 +90,13 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `workflow.pause` / `resume` / `stop` | `{workflowId}` | 映射 executor `pause`/`resume`/`terminate` |
 | `workflow.dumpLogic` | `{workflowId, format?: json\|xml}` | `{format, payload}`：json 为 serializer dict，xml 为字符串 |
 | `workflow.loadLogic` | `{payload, format: json\|xml, workflowId?}` | **只** `serializer.from_dict`/`from_xml` 建模型，返回 `{workflowId, name}`。已有 `workflowId` 且空闲则原地替换会话。禁止随后再走 `addNode` 复制同一批节点 |
-| `workflow.getGraph` | `{workflowId}` | wrap 用快照：`{workflowId, name, nodes:[{nodeId, qualifiedName, parameters}], connections:[{connectionId, fromId, fromPort, toId, toPort}]}`。无坐标 |
+| `workflow.getGraph` | `{workflowId}` | wrap 用快照：`{workflowId, name, nodes:[{nodeId, qualifiedName, parameters, runtimeState?}], connections:[{connectionId, fromId, fromPort, toId, toPort}]}`。`runtimeState.displayText` 供 Text Viewer 等在画布上显示缓存文本。无坐标 |
 
 通知：
 
 | 方法 | payload |
 |------|---------|
-| `workflow.nodeState` | `{workflowId, nodeId, state: idle\|running\|ok\|error}`（引擎 `success` 映射为 `ok`） |
+| `workflow.nodeState` | `{workflowId, nodeId, state: idle\|running\|ok\|error, displayText?}`（引擎 `success` 映射为 `ok`）。Text Viewer 在 ok/error 时附带缓存文本 |
 | `workflow.finished` | `{workflowId, ok, error?, cancelled?}`。用户 Stop 时 `ok=false` 且 `cancelled=true`（无 `error`） |
 | `workflow.log` | `{level, message}` |
 

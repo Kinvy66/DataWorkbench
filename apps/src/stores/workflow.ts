@@ -379,7 +379,8 @@ export const useWorkflowStore = defineStore('workflow', {
             state: 'idle' as NodeRunState,
             inputs: spec?.inputs ?? [],
             outputs: spec?.outputs ?? [],
-            bodyShape: spec?.bodyShape
+            bodyShape: spec?.bodyShape,
+            displayText: item.runtimeState?.displayText
           }
         }
       })
@@ -418,7 +419,7 @@ export const useWorkflowStore = defineStore('workflow', {
       }
       await rpc().invoke('workflow.stop', { workflowId: this.workflowId })
     },
-    applyNodeState(workflowId: string, nodeId: string, state: NodeRunState): void {
+    applyNodeState(workflowId: string, nodeId: string, state: NodeRunState, displayText?: string): void {
       if (workflowId !== this.workflowId) {
         return
       }
@@ -426,7 +427,11 @@ export const useWorkflowStore = defineStore('workflow', {
         if (item.id !== nodeId) {
           return item
         }
-        return { ...item, data: { ...item.data, state } }
+        const data = { ...item.data, state } as Record<string, unknown>
+        if (displayText !== undefined) {
+          data.displayText = displayText
+        }
+        return { ...item, data }
       })
     },
     applyFinished(workflowId: string, ok: boolean): void {
