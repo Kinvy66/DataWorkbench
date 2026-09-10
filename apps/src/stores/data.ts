@@ -6,6 +6,7 @@ import type {
   DataImportResult,
   DataListResult,
   DataQueryResult,
+  DataSortResult,
   DatasetListItem
 } from '@dw/rpc-types'
 import { BLOCK_SIZE } from '@/data/blockWindow'
@@ -18,7 +19,8 @@ export const useDataStore = defineStore('data', {
     currentId: null as string | null,
     schema: null as DataGetSchemaResult | null,
     dropNaDialogOpen: false,
-    queryDialogOpen: false
+    queryDialogOpen: false,
+    sortDialogOpen: false
   }),
   getters: {
     current(state): DatasetListItem | null {
@@ -126,6 +128,20 @@ export const useDataStore = defineStore('data', {
         id,
         queryString
       })) as DataQueryResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async sort(options: { columns: string[]; ascending?: boolean }): Promise<DataSortResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.sort', {
+        id,
+        columns: options.columns,
+        ascending: options.ascending ?? true
+      })) as DataSortResult
       await this.refreshList()
       await this.select(id)
       return result

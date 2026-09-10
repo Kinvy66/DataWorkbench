@@ -12,7 +12,7 @@
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/nodes/style_demo_nodes.py` | 可选，仅开发 | 可不上生产 |
 | `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n。`io.py` 已改为 charset-normalizer（`# dw:adapted`），不要无提示覆盖 |
 
-`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地。P3 已 vendor `dw_nodes_analysis/core`（`9dd298fe`），并接入 **Data Source**（从 DataManager 按名/id 取 df，不是上游读文件节点）、**Query**（`query_dataframe`，Ribbon 走 `data.query`）与 **Drop NA**（`dropna_impl`，只删行；Ribbon 走 `data.dropNa`）。尚未做 If/Else、TextViewer、其余清洗节点。
+`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地。P3 已 vendor `dw_nodes_analysis/core`（`9dd298fe`），并接入 **Data Source**（从 DataManager 按名/id 取 df，不是上游读文件节点）、**Query**（`query_dataframe`，Ribbon 走 `data.query`）、**Drop NA**（`dropna_impl`，只删行；Ribbon 走 `data.dropNa`）与 **Sort**（`sort_dataframe`，Ribbon 走 `data.sort`）。尚未做 If/Else、TextViewer、其余清洗节点。
 
 ## 移植并改 Host（必须改）
 
@@ -63,7 +63,7 @@ P2 必做五项已落地。If/Else、TextViewer 仍可延后。
 
 `data_plot_node.py`：**不移植到工作流出图**；注释标明由前端 Chart 模块替代。
 
-**Data Source**：不要移植上游读文件的 `data_source_node.py`。本产品入口是 DataManager 已导入的表（`dataset_name` / `dataset_id`）；读文件继续走 `data.import`。Query 节点包装 `core.operations.query_dataframe`。Drop NA 节点包装 `core.cleaning.dropna_impl`（只删行，不移植上游 `axis=1` 绕过 Core 的删列路径）。
+**Data Source**：不要移植上游读文件的 `data_source_node.py`。本产品入口是 DataManager 已导入的表（`dataset_name` / `dataset_id`）；读文件继续走 `data.import`。Query 节点包装 `core.operations.query_dataframe`。Drop NA 节点包装 `core.cleaning.dropna_impl`（只删行，不移植上游 `axis=1` 绕过 Core 的删列路径）。Sort 节点包装 `core.operations.sort_dataframe`（所有列同一 `ascending`，与 Core 签名一致）。
 
 ## 不要 vendor
 

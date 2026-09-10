@@ -161,6 +161,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/query')
+                  },
+                  {
+                    id: 'data.sort',
+                    type: 'button',
+                    label: t('ribbon.dataSort'),
+                    tooltip: t('ribbon.dataSortTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/sort')
                   }
                 ]
               }

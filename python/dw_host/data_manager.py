@@ -356,7 +356,7 @@ class DataManager:
             ds = self._items.get(dataset_id)
             if ds is None:
                 raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
-            resolved = _resolve_dropna_subset(ds.df, subset)
+            resolved = _resolve_columns(ds.df, subset)
             before = int(len(ds.df))
             cleaned = dropna_impl(ds.df, subset=resolved, how=how_norm, min_non_na=thresh, reindex=True)
             ds.df = cleaned
@@ -399,6 +399,41 @@ class DataManager:
         )
         return result
 
+    def sort(
+        self,
+        dataset_id: str,
+        *,
+        columns: list[str],
+        ascending: bool = True,
+    ) -> dict[str, Any]:
+        """Sort rows in place via the shared Core ``sort_dataframe``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.operations import sort_dataframe
+
+        names = [str(item).strip() for item in columns if str(item).strip()]
+        if not names:
+            raise HostError(ErrorCode.ColumnOrValidation, "columns must not be empty", "data.sortColumnsEmpty")
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, names)
+            if not resolved:
+                raise HostError(ErrorCode.ColumnOrValidation, "columns must not be empty", "data.sortColumnsEmpty")
+            try:
+                sorted_df = sort_dataframe(ds.df, resolved, bool(ascending))
+            except Exception as exc:
+                log.info("data.sort failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to sort dataset",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = sorted_df
+        result = _meta(ds)
+        log.info("data.sort name=%s columns=%s ascending=%s", ds.name, names, ascending)
+        return result
+
     def export_path(self, dataset_id: str, path: str, fmt: str | None = None) -> None:
         _require_pandas()
         ds = self.get(dataset_id)
@@ -415,7 +450,7 @@ class DataManager:
         log.info("data.export name=%s format=%s", ds.name, kind)
 
 
-def _resolve_dropna_subset(df: Any, subset: list[str] | None) -> list[Any] | None:
+def _resolve_columns(df: Any, subset: list[str] | None) -> list[Any] | None:
     if not subset:
         return None
     mapping = {str(col): col for col in df.columns}

@@ -33,6 +33,7 @@ export const RpcMethod = {
   DataRegister: 'data.register',
   DataDropNa: 'data.dropNa',
   DataQuery: 'data.query',
+  DataSort: 'data.sort',
   WorkflowCreate: 'workflow.create',
   WorkflowListNodeTypes: 'workflow.listNodeTypes',
   WorkflowAddNode: 'workflow.addNode',
@@ -220,6 +221,20 @@ export interface DataQueryResult {
   columns: ColumnSchema[]
   matchedCount: number
   removedCount: number
+}
+
+export interface DataSortParams {
+  id: string
+  columns: string[] | string
+  ascending?: boolean
+}
+
+export interface DataSortResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
 }
 
 export interface OkResult {

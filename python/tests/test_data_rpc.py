@@ -299,3 +299,85 @@ def test_data_query_via_rpc(tmp_path: Path) -> None:
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_data_sort_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "people.csv"
+    csv_path.write_text("age,name\n30,c\n10,a\n20,b\n", encoding="utf-8")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        assert imported["result"]["rows"] == 3
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.sort",
+                "params": {"id": dataset_id, "columns": ["age"], "ascending": True},
+            },
+        )
+        sorted_ok = read_rpc(proc)
+        assert "result" in sorted_ok, sorted_ok
+        assert sorted_ok["result"]["rows"] == 3
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "data.fetchBlock",
+                "params": {"id": dataset_id, "startRow": 0, "rowCount": 512},
+            },
+        )
+        header = json.loads(readline(proc))
+        assert header["result"]["encoding"] == "arrow-v1"
+        payload = readexact(proc, int(header["result"]["bytes"]))
+        rows = decode_ipc_rows(payload)
+        assert [int(row[0]) for row in rows] == [10, 20, 30]
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.sort",
+                "params": {"id": dataset_id, "columns": []},
+            },
+        )
+        empty = read_rpc(proc)
+        assert empty["error"]["code"] == 1002
+        assert empty["error"]["data"]["i18nKey"] == "data.sortColumnsEmpty"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "data.sort",
+                "params": {"id": dataset_id, "columns": ["missing"]},
+            },
+        )
+        missing_col = read_rpc(proc)
+        assert missing_col["error"]["code"] == 1002
+        assert missing_col["error"]["data"]["i18nKey"] == "data.columnNotFound"
+
+        send(proc, {"jsonrpc": "2.0", "id": 6, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()

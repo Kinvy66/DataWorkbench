@@ -37,6 +37,8 @@ export default {
     dataDropNaTip: 'Remove rows with missing values from the selected table',
     dataQuery: 'Query',
     dataQueryTip: 'Filter the selected table with a pandas query expression',
+    dataSort: 'Sort',
+    dataSortTip: 'Sort the selected table by one or more columns',
     workflow: 'Workflow',
     workflowRunGroup: 'Run',
     workflowRun: 'Run',
@@ -108,7 +110,15 @@ export default {
     queryEmpty: 'Enter a query expression.',
     invalidQuery: 'The query expression is invalid.',
     queryConfirm: 'Apply',
-    queryCancel: 'Cancel'
+    queryCancel: 'Cancel',
+    sortColumns: 'Columns',
+    sortColumnsHint: 'Select at least one column',
+    sortColumnsEmpty: 'Select at least one column to sort by.',
+    sortOrder: 'Order',
+    sortAscending: 'Ascending',
+    sortDescending: 'Descending',
+    sortConfirm: 'Apply',
+    sortCancel: 'Cancel'
   },
   workflow: {
     unknownType: 'Unknown node type.',
@@ -134,6 +144,7 @@ export default {
     removeOk: 'Dataset removed.',
     dropNaOk: 'Dropped {removed} rows from {name} ({rows} × {cols}).',
     queryOk: 'Queried {name}: {matched} rows kept ({removed} dropped).',
+    sortOk: 'Sorted {name} by {columns} ({order}).',
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'

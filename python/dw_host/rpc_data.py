@@ -75,6 +75,12 @@ class QueryParams(BaseModel):
     queryString: str
 
 
+class SortParams(BaseModel):
+    id: str
+    columns: list[str] | str
+    ascending: bool = True
+
+
 def _subset_list(raw: list[str] | str | None) -> list[str] | None:
     if raw is None:
         return None
@@ -136,4 +142,11 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
     if method == "data.query":
         parsed = QueryParams.model_validate(params)
         return manager.query(parsed.id, parsed.queryString)
+    if method == "data.sort":
+        parsed = SortParams.model_validate(params)
+        return manager.sort(
+            parsed.id,
+            columns=_subset_list(parsed.columns) or [],
+            ascending=parsed.ascending,
+        )
     raise HostError(ErrorCode.MethodNotFound, f"Method not found: {method}")

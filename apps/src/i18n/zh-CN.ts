@@ -37,6 +37,8 @@ export default {
     dataDropNaTip: '从当前表删除含缺失值的行',
     dataQuery: '查询',
     dataQueryTip: '用 pandas query 表达式筛选当前表',
+    dataSort: '排序',
+    dataSortTip: '按一个或多个列对当前表排序',
     workflow: '工作流',
     workflowRunGroup: '运行',
     workflowRun: '运行',
@@ -106,7 +108,15 @@ export default {
     queryEmpty: '请输入查询表达式。',
     invalidQuery: '查询表达式无效。',
     queryConfirm: '应用',
-    queryCancel: '取消'
+    queryCancel: '取消',
+    sortColumns: '排序列',
+    sortColumnsHint: '至少选择一列',
+    sortColumnsEmpty: '请至少选择一列进行排序。',
+    sortOrder: '顺序',
+    sortAscending: '升序',
+    sortDescending: '降序',
+    sortConfirm: '应用',
+    sortCancel: '取消'
   },
   workflow: {
     unknownType: '未知节点类型。',
@@ -132,6 +142,7 @@ export default {
     removeOk: '数据集已移除。',
     dropNaOk: '已从 {name} 删除 {removed} 行（{rows} × {cols}）。',
     queryOk: '已查询 {name}：保留 {matched} 行（去掉 {removed} 行）。',
+    sortOk: '已按 {columns}（{order}）排序 {name}。',
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'
