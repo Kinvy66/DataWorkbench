@@ -48,6 +48,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 - **Interpolate**：节点输出新 df；Operate `data.interpolate` **就地**替换当前数据集（与 `interpolate_impl` 同一函数）。方法列表对齐上游插值对话框；`limit` 为 0/省略=不限制。不要加 `inplace`。需要另存一份时用 Output to DataManager。
 - **IQR**：节点输出新 df；Operate `data.removeOutliersIqr` **就地**替换当前数据集（与 `remove_outliers_iqr_impl` 同一函数）。参数对齐上游 IQR 对话框（删除或替换）；不要加 `inplace`。需要另存一份时用 Output to DataManager。
 - **Z-score**：节点输出新 df；Operate `data.removeOutliersZscore` **就地**替换当前数据集（与 `remove_outliers_zscore_impl` 同一函数）。参数对齐上游 Z-score 对话框（阈值、稳健统计、删除或替换）；不要加 `inplace`。需要另存一份时用 Output to DataManager。
+- **Transform Skewed**：节点输出新 df；Operate `data.transformSkewed` **就地**替换当前数据集（与 `transform_skewed_impl` 同一函数）。方法对齐上游对话框并含 Core 的 `boxcox`；不要加 `inplace`。需要另存一份时用 Output to DataManager。
 - **Replace Values**：节点输出新 df；RPC `data.replaceValues` **就地**替换当前数据集（与 `replace_values_impl` 同一函数）。**不上 Ribbon**（上游无此按钮）。需要另存一份时用 Output to DataManager。
 - **Threshold Filter**：节点输出新 df；RPC `data.thresholdFilter` **就地**替换当前数据集（与 `threshold_filter_impl` 同一函数）。**不上 Ribbon**。直接暴露 Core `filter_type`（`greater_than` 删 `> upper`，`less_than` 删 `< lower`）。空列=全部数值列。需要另存一份时用 Output to DataManager。
 - **Filter by Column**：节点输出新 df；Operate `data.filterByColumn` **就地**替换当前数据集（与 `filter_by_column_range` 同一函数）。**保留**闭区间内的行，不要与 Threshold Filter 合并。`min`/`max` 空=该侧不限制；0 是真实边界。需要另存一份时用 Output to DataManager。
@@ -80,6 +81,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | `test_data_interpolate_via_rpc` / `test_interpolate_node_matches_core` | Operate `data.interpolate` 与节点 Interpolate 与 `interpolate_impl` 同填充数 |
 | `test_data_remove_outliers_iqr_via_rpc` / `test_iqr_node_remove_matches_core` | Operate `data.removeOutliersIqr` 与节点 Remove Outliers IQR 与 `remove_outliers_iqr_impl` 同行数 |
 | `test_data_remove_outliers_zscore_via_rpc` / `test_zscore_node_remove_matches_core` | Operate `data.removeOutliersZscore` 与节点 Remove Outliers Z-Score 与 `remove_outliers_zscore_impl` 同行数 |
+| `test_data_transform_skewed_via_rpc` / `test_transform_skewed_node_log_matches_core` | Operate `data.transformSkewed` 与节点 Transform Skewed 与 `transform_skewed_impl` 同单元格变化 |
 | `test_data_replace_values_via_rpc` / `test_replace_values_node_matches_core` | RPC `data.replaceValues` 与节点 Replace Values 与 `replace_values_impl` 同替换数（不上 Ribbon） |
 | `test_data_threshold_filter_via_rpc` / `test_threshold_filter_node_matches_core` | RPC `data.thresholdFilter` 与节点 Threshold Filter 与 `threshold_filter_impl` 同行数（不上 Ribbon） |
 | `test_data_filter_by_column_via_rpc` / `test_filter_by_column_node_matches_core` | Operate `data.filterByColumn` 与节点 Filter By Column 与 `filter_by_column_range` 同行数；0 是真实下限 |

@@ -227,6 +227,25 @@ export function registerBuiltinCommands(): void {
   )
 
   commandBus.register(
+    'data.transformSkewed',
+    async () => {
+      const data = useDataStore()
+      if (!data.currentId) {
+        return
+      }
+      try {
+        if (!data.schema) {
+          await data.select(data.currentId)
+        }
+        data.transformSkewedDialogOpen = true
+      } catch (err) {
+        reportError(err)
+      }
+    },
+    () => useDataStore().hasSelection
+  )
+
+  commandBus.register(
     'data.replaceValues',
     async () => {
       const data = useDataStore()

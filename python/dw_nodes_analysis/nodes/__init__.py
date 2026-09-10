@@ -11,6 +11,7 @@ from .data_query import DataQueryNode
 from .data_remove_outliers_iqr import DataRemoveOutliersIQRNode
 from .data_remove_outliers_zscore import DataRemoveOutliersZScoreNode
 from .data_replace_values import DataReplaceValuesNode
+from .data_transform_skewed import DataTransformSkewedNode
 from .data_search import DataSearchNode
 from .data_sort import DataSortNode
 from .data_source import DataSourceNode
@@ -27,6 +28,7 @@ __all__ = [
     "DataFilterByColumnNode",
     "DataRemoveOutliersIQRNode",
     "DataRemoveOutliersZScoreNode",
+    "DataTransformSkewedNode",
     "DataQueryNode",
     "DataReplaceValuesNode",
     "DataSearchNode",

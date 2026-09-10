@@ -28,7 +28,7 @@
 | Home | Clipboard | `edit.undo` `edit.redo` | P2 起 |
 | Data | Data Operation | `data.import` `data.remove` `data.rename` | P1（对齐上游 Data：添加/移除/重命名） |
 | Data | Export | `data.export` | P1 |
-| Operate | Data Cleaning | `data.dropNa` `data.dropDuplicates` `data.fillNa` `data.interpolate` `data.removeOutliersIqr` `data.removeOutliersZscore` | P3（对齐上游数据清洗；偏态转换后续按上游同 panel 再加） |
+| Operate | Data Cleaning | `data.dropNa` `data.dropDuplicates` `data.fillNa` `data.interpolate` `data.removeOutliersIqr` `data.removeOutliersZscore` `data.transformSkewed` | P3（对齐上游数据清洗） |
 | Operate | Data Filtering | `data.eval` `data.query` `data.search` `data.filterByColumn` `data.sort` | P3（检索与按列为 medium，其余 large） |
 | Operate | Statistics | `data.describe` | P3（透视表后续按上游同 panel 再加） |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |

@@ -1,4 +1,4 @@
-# dw:adapted — Data Source / Query / DropNA / DropDuplicates / FillNA / Interpolate / IQR / ZScore / ReplaceValues / ThresholdFilter / FilterByColumn / Eval / Search / Sort / Describe / Export; Core lives in .core (vendored DADataAnalysisCore).
+# dw:adapted — Data Source / Query / DropNA / DropDuplicates / FillNA / Interpolate / IQR / ZScore / TransformSkewed / ReplaceValues / ThresholdFilter / FilterByColumn / Eval / Search / Sort / Describe / Export; Core lives in .core (vendored DADataAnalysisCore).
 
 from .i18n import setup_i18n
 
@@ -16,6 +16,7 @@ from .nodes.data_query import DataQueryNode
 from .nodes.data_remove_outliers_iqr import DataRemoveOutliersIQRNode
 from .nodes.data_remove_outliers_zscore import DataRemoveOutliersZScoreNode
 from .nodes.data_replace_values import DataReplaceValuesNode
+from .nodes.data_transform_skewed import DataTransformSkewedNode
 from .nodes.data_search import DataSearchNode
 from .nodes.data_sort import DataSortNode
 from .nodes.data_source import DataSourceNode
@@ -32,6 +33,7 @@ __all__ = [
     "DataFilterByColumnNode",
     "DataRemoveOutliersIQRNode",
     "DataRemoveOutliersZScoreNode",
+    "DataTransformSkewedNode",
     "DataQueryNode",
     "DataReplaceValuesNode",
     "DataSearchNode",
@@ -53,6 +55,7 @@ def register_analysis_nodes(factory) -> None:
         DataFillInterpolateNode,
         DataRemoveOutliersIQRNode,
         DataRemoveOutliersZScoreNode,
+        DataTransformSkewedNode,
         DataReplaceValuesNode,
         DataThresholdFilterNode,
         DataFilterByColumnNode,

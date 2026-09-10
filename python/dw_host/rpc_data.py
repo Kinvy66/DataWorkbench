@@ -133,6 +133,14 @@ class RemoveOutliersZscoreParams(BaseModel):
     subset: list[str] | str | None = None
 
 
+class TransformSkewedParams(BaseModel):
+    id: str
+    method: str = "log"
+    lambdaValue: float = 0.5
+    addOne: bool = True
+    subset: list[str] | str | None = None
+
+
 class ReplaceValuesParams(BaseModel):
     id: str
     oldValues: list[Any] | str | None = None
@@ -286,6 +294,15 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             action=parsed.action,
             custom_value=parsed.customValue,
             reindex=parsed.reindex,
+            subset=_subset_list(parsed.subset),
+        )
+    if method == "data.transformSkewed":
+        parsed = TransformSkewedParams.model_validate(params)
+        return manager.transform_skewed(
+            parsed.id,
+            method=parsed.method,
+            lambda_value=parsed.lambdaValue,
+            add_one=parsed.addOne,
             subset=_subset_list(parsed.subset),
         )
     if method == "data.replaceValues":

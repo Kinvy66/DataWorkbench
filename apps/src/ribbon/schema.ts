@@ -194,6 +194,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/outlierZscore')
+                  },
+                  {
+                    id: 'data.transformSkewed',
+                    type: 'button',
+                    label: t('ribbon.dataTransformSkewed'),
+                    tooltip: t('ribbon.dataTransformSkewedTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/transformSkewed')
                   }
                 ]
               }

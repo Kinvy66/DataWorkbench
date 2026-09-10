@@ -14,6 +14,7 @@ import type {
   DataInterpolateResult,
   DataRemoveOutliersIqrResult,
   DataRemoveOutliersZscoreResult,
+  DataTransformSkewedResult,
   DataReplaceValuesResult,
   DataThresholdFilterResult,
   DataFilterByColumnResult,
@@ -39,6 +40,7 @@ export const useDataStore = defineStore('data', {
     interpolateDialogOpen: false,
     iqrDialogOpen: false,
     zscoreDialogOpen: false,
+    transformSkewedDialogOpen: false,
     replaceValuesDialogOpen: false,
     thresholdFilterDialogOpen: false,
     filterByColumnDialogOpen: false,
@@ -301,6 +303,27 @@ export const useDataStore = defineStore('data', {
         reindex: options?.reindex ?? true,
         subset: options?.subset
       })) as DataRemoveOutliersZscoreResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async transformSkewed(options?: {
+      method?: string
+      lambdaValue?: number
+      addOne?: boolean
+      subset?: string[]
+    }): Promise<DataTransformSkewedResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.transformSkewed', {
+        id,
+        method: options?.method ?? 'log',
+        lambdaValue: options?.lambdaValue ?? 0.5,
+        addOne: options?.addOne ?? true,
+        subset: options?.subset
+      })) as DataTransformSkewedResult
       await this.refreshList()
       await this.select(id)
       return result

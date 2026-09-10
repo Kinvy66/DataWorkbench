@@ -763,6 +763,59 @@ class DataManager:
         )
         return result
 
+    def transform_skewed(
+        self,
+        dataset_id: str,
+        *,
+        method: str = "log",
+        lambda_value: object = 0.5,
+        add_one: object = True,
+        subset: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Transform skewed numeric columns in place via Core ``transform_skewed_impl``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.cleaning import transform_skewed_impl
+
+        method_norm = _normalize_transform_method(method)
+        lambda_norm = _parse_transform_lambda(lambda_value)
+        add_one_norm = _parse_bool(add_one, default=True)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, subset)
+            before = ds.df
+            numeric = resolved if resolved is not None else _numeric_columns(before)
+            transformed_count = sum(1 for col in numeric if pd.api.types.is_numeric_dtype(before[col]))
+            try:
+                transformed = transform_skewed_impl(
+                    before,
+                    columns=resolved,
+                    method=method_norm,
+                    lambda_value=lambda_norm,
+                    add_one=add_one_norm,
+                )
+            except Exception as exc:
+                log.info("data.transformSkewed failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to transform skewed data",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = transformed
+        result = _meta(ds)
+        result["method"] = method_norm
+        result["transformedCount"] = transformed_count
+        result["changedCount"] = _changed_cell_count(before, transformed)
+        log.info(
+            "data.transformSkewed name=%s method=%s columns=%s changed=%s",
+            ds.name,
+            method_norm,
+            result["transformedCount"],
+            result["changedCount"],
+        )
+        return result
+
     def replace_values(
         self,
         dataset_id: str,
@@ -991,6 +1044,7 @@ _FILLNA_ALIASES = {"constant": "value", "ffill": "forward", "bfill": "backward"}
 _IQR_ACTIONS = frozenset(
     {"remove", "replace_mean", "replace_median", "replace_boundary", "replace_custom"}
 )
+_TRANSFORM_METHODS = frozenset({"log", "sqrt", "reciprocal", "power", "boxcox"})
 _INTERPOLATE_METHODS = frozenset(
     {
         "linear",
@@ -1141,6 +1195,23 @@ def _parse_iqr_custom_value(raw: object) -> float:
         raise HostError(ErrorCode.ColumnOrValidation, "Invalid IQR custom value", "data.invalidValue") from exc
     if not math.isfinite(value):
         raise HostError(ErrorCode.ColumnOrValidation, "Invalid IQR custom value", "data.invalidValue")
+    return value
+
+
+def _normalize_transform_method(raw: object) -> str:
+    key = str(raw or "log").strip().lower()
+    if key not in _TRANSFORM_METHODS:
+        raise HostError(ErrorCode.ColumnOrValidation, "Unsupported transform method", "data.invalidValue")
+    return key
+
+
+def _parse_transform_lambda(raw: object) -> float:
+    try:
+        value = float(raw if raw is not None and raw != "" else 0.5)
+    except (TypeError, ValueError) as exc:
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid power lambda", "data.invalidValue") from exc
+    if not math.isfinite(value):
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid power lambda", "data.invalidValue")
     return value
 
 

@@ -41,6 +41,7 @@ export const RpcMethod = {
   DataInterpolate: 'data.interpolate',
   DataRemoveOutliersIqr: 'data.removeOutliersIqr',
   DataRemoveOutliersZscore: 'data.removeOutliersZscore',
+  DataTransformSkewed: 'data.transformSkewed',
   DataReplaceValues: 'data.replaceValues',
   DataThresholdFilter: 'data.thresholdFilter',
   DataFilterByColumn: 'data.filterByColumn',
@@ -366,6 +367,25 @@ export interface DataRemoveOutliersZscoreResult {
   robust: boolean
   removedCount: number
   replacedCount: number
+}
+
+export interface DataTransformSkewedParams {
+  id: string
+  method?: string
+  lambdaValue?: number
+  addOne?: boolean
+  subset?: string[] | string
+}
+
+export interface DataTransformSkewedResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  method: string
+  transformedCount: number
+  changedCount: number
 }
 
 export interface DataReplaceValuesParams {
