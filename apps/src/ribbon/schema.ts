@@ -176,6 +176,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/interpolate')
+                  },
+                  {
+                    id: 'data.removeOutliersIqr',
+                    type: 'button',
+                    label: t('ribbon.dataIqr'),
+                    tooltip: t('ribbon.dataIqrTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/outlierIqr')
                   }
                 ]
               }

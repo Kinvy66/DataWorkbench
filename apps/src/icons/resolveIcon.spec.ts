@@ -26,6 +26,7 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/dropDuplicates')).toMatch(/dropDuplicates\.svg/)
     expect(resolveIconUrl('app/fillNa')).toMatch(/fillNa\.svg/)
     expect(resolveIconUrl('app/interpolate')).toMatch(/interpolate\.svg/)
+    expect(resolveIconUrl('app/outlierIqr')).toMatch(/outlierIqr\.svg/)
     expect(resolveIconUrl('app/replaceValues')).toMatch(/replaceValues\.svg/)
     expect(resolveIconUrl('app/thresholdFilter')).toMatch(/thresholdFilter\.svg/)
     expect(resolveIconUrl('app/filterByColumn')).toMatch(/filterByColumn\.svg/)

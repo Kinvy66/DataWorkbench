@@ -23,6 +23,7 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'data.dropDuplicates'")
     expect(source).toContain("id: 'data.fillNa'")
     expect(source).toContain("id: 'data.interpolate'")
+    expect(source).toContain("id: 'data.removeOutliersIqr'")
     expect(source).toContain("id: 'data.filterByColumn'")
     expect(source).toContain("id: 'data.eval'")
     expect(source).toContain("id: 'data.search'")

@@ -39,6 +39,7 @@ export const RpcMethod = {
   DataSort: 'data.sort',
   DataFillNa: 'data.fillNa',
   DataInterpolate: 'data.interpolate',
+  DataRemoveOutliersIqr: 'data.removeOutliersIqr',
   DataReplaceValues: 'data.replaceValues',
   DataThresholdFilter: 'data.thresholdFilter',
   DataFilterByColumn: 'data.filterByColumn',
@@ -322,6 +323,26 @@ export interface DataInterpolateResult {
   cols: number
   columns: ColumnSchema[]
   filledCount: number
+}
+
+export interface DataRemoveOutliersIqrParams {
+  id: string
+  multiplier?: number
+  action?: string
+  customValue?: number
+  reindex?: boolean
+  subset?: string[] | string
+}
+
+export interface DataRemoveOutliersIqrResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  action: string
+  removedCount: number
+  replacedCount: number
 }
 
 export interface DataReplaceValuesParams {

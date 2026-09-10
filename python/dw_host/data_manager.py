@@ -648,6 +648,61 @@ class DataManager:
         )
         return result
 
+    def remove_outliers_iqr(
+        self,
+        dataset_id: str,
+        *,
+        multiplier: object = 1.5,
+        action: str = "remove",
+        custom_value: object = 0.0,
+        reindex: object = True,
+        subset: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Handle IQR outliers in place via the shared Core ``remove_outliers_iqr_impl``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.cleaning import remove_outliers_iqr_impl
+
+        multiplier_norm = _parse_iqr_multiplier(multiplier)
+        action_norm = _normalize_iqr_action(action)
+        custom_norm = _parse_iqr_custom_value(custom_value)
+        reindex_norm = _parse_bool(reindex, default=True)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, subset)
+            before = ds.df
+            before_rows = int(len(before))
+            try:
+                cleaned = remove_outliers_iqr_impl(
+                    before,
+                    columns=resolved,
+                    multiplier=multiplier_norm,
+                    action=action_norm,
+                    custom_value=custom_norm,
+                    reindex=reindex_norm,
+                )
+            except Exception as exc:
+                log.info("data.removeOutliersIqr failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to handle IQR outliers",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = cleaned
+        result = _meta(ds)
+        result["action"] = action_norm
+        result["removedCount"] = before_rows - int(len(cleaned))
+        result["replacedCount"] = 0 if action_norm == "remove" else _changed_cell_count(before, cleaned)
+        log.info(
+            "data.removeOutliersIqr name=%s action=%s removed=%s replaced=%s",
+            ds.name,
+            action_norm,
+            result["removedCount"],
+            result["replacedCount"],
+        )
+        return result
+
     def replace_values(
         self,
         dataset_id: str,
@@ -873,6 +928,9 @@ class DataManager:
 
 _FILLNA_METHODS = frozenset({"value", "forward", "backward", "mean", "median", "mode"})
 _FILLNA_ALIASES = {"constant": "value", "ffill": "forward", "bfill": "backward"}
+_IQR_ACTIONS = frozenset(
+    {"remove", "replace_mean", "replace_median", "replace_boundary", "replace_custom"}
+)
 _INTERPOLATE_METHODS = frozenset(
     {
         "linear",
@@ -996,6 +1054,33 @@ def _parse_interpolate_order(raw: object) -> int:
         raise HostError(ErrorCode.ColumnOrValidation, "Invalid interpolate order", "data.invalidValue") from exc
     if value < 1 or value > 10:
         raise HostError(ErrorCode.ColumnOrValidation, "Invalid interpolate order", "data.invalidValue")
+    return value
+
+
+def _normalize_iqr_action(raw: object) -> str:
+    key = str(raw or "remove").strip().lower()
+    if key not in _IQR_ACTIONS:
+        raise HostError(ErrorCode.ColumnOrValidation, "Unsupported IQR action", "data.invalidValue")
+    return key
+
+
+def _parse_iqr_multiplier(raw: object) -> float:
+    try:
+        value = float(raw if raw is not None and raw != "" else 1.5)
+    except (TypeError, ValueError) as exc:
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid IQR multiplier", "data.invalidValue") from exc
+    if not math.isfinite(value) or value <= 0:
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid IQR multiplier", "data.invalidValue")
+    return value
+
+
+def _parse_iqr_custom_value(raw: object) -> float:
+    try:
+        value = float(raw if raw is not None and raw != "" else 0.0)
+    except (TypeError, ValueError) as exc:
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid IQR custom value", "data.invalidValue") from exc
+    if not math.isfinite(value):
+        raise HostError(ErrorCode.ColumnOrValidation, "Invalid IQR custom value", "data.invalidValue")
     return value
 
 

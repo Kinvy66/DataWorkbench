@@ -12,6 +12,7 @@ import type {
   DataSortResult,
   DataFillNaResult,
   DataInterpolateResult,
+  DataRemoveOutliersIqrResult,
   DataReplaceValuesResult,
   DataThresholdFilterResult,
   DataFilterByColumnResult,
@@ -35,6 +36,7 @@ export const useDataStore = defineStore('data', {
     sortDialogOpen: false,
     fillNaDialogOpen: false,
     interpolateDialogOpen: false,
+    iqrDialogOpen: false,
     replaceValuesDialogOpen: false,
     thresholdFilterDialogOpen: false,
     filterByColumnDialogOpen: false,
@@ -249,6 +251,29 @@ export const useDataStore = defineStore('data', {
         limit: options?.limit,
         order: options?.order ?? 3
       })) as DataInterpolateResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async removeOutliersIqr(options?: {
+      multiplier?: number
+      action?: string
+      customValue?: number
+      reindex?: boolean
+      subset?: string[]
+    }): Promise<DataRemoveOutliersIqrResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.removeOutliersIqr', {
+        id,
+        multiplier: options?.multiplier ?? 1.5,
+        action: options?.action ?? 'remove',
+        customValue: options?.customValue ?? 0,
+        reindex: options?.reindex ?? true,
+        subset: options?.subset
+      })) as DataRemoveOutliersIqrResult
       await this.refreshList()
       await this.select(id)
       return result

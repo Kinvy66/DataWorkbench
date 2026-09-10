@@ -114,6 +114,15 @@ class InterpolateParams(BaseModel):
     order: int = 3
 
 
+class RemoveOutliersIqrParams(BaseModel):
+    id: str
+    multiplier: float = 1.5
+    action: str = "remove"
+    customValue: float = 0.0
+    reindex: bool = True
+    subset: list[str] | str | None = None
+
+
 class ReplaceValuesParams(BaseModel):
     id: str
     oldValues: list[Any] | str | None = None
@@ -247,6 +256,16 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             subset=_subset_list(parsed.subset),
             limit=parsed.limit,
             order=parsed.order,
+        )
+    if method == "data.removeOutliersIqr":
+        parsed = RemoveOutliersIqrParams.model_validate(params)
+        return manager.remove_outliers_iqr(
+            parsed.id,
+            multiplier=parsed.multiplier,
+            action=parsed.action,
+            custom_value=parsed.customValue,
+            reindex=parsed.reindex,
+            subset=_subset_list(parsed.subset),
         )
     if method == "data.replaceValues":
         parsed = ReplaceValuesParams.model_validate(params)

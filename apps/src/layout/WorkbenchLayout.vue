@@ -15,6 +15,7 @@ import DropNaDialog from '@/views/data/DropNaDialog.vue'
 import DropDuplicatesDialog from '@/views/data/DropDuplicatesDialog.vue'
 import FillNaDialog from '@/views/data/FillNaDialog.vue'
 import InterpolateDialog from '@/views/data/InterpolateDialog.vue'
+import IqrDialog from '@/views/data/IqrDialog.vue'
 import ReplaceValuesDialog from '@/views/data/ReplaceValuesDialog.vue'
 import ThresholdFilterDialog from '@/views/data/ThresholdFilterDialog.vue'
 import FilterByColumnDialog from '@/views/data/FilterByColumnDialog.vue'
@@ -89,6 +90,7 @@ function formatTime(at: number): string {
     <DropDuplicatesDialog />
     <FillNaDialog />
     <InterpolateDialog />
+    <IqrDialog />
     <ReplaceValuesDialog />
     <ThresholdFilterDialog />
     <FilterByColumnDialog />
