@@ -7,6 +7,7 @@ from pathlib import Path
 from dw_nodes_analysis import (
     DataDescribeNode,
     DataDropNaNode,
+    DataExportNode,
     DataFillNaNode,
     DataQueryNode,
     DataSortNode,
@@ -24,6 +25,7 @@ DROPNA = DataDropNaNode.qualified_name
 FILLNA = DataFillNaNode.qualified_name
 SORT = DataSortNode.qualified_name
 DESCRIBE = DataDescribeNode.qualified_name
+EXPORT = DataExportNode.qualified_name
 END = EndNode.qualified_name
 DELAY = DelayNode.qualified_name
 
@@ -227,6 +229,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert FILLNA in names
         assert SORT in names
         assert DESCRIBE in names
+        assert EXPORT in names
         constant = next(item for item in listed["result"]["types"] if item["qualifiedName"] == CONSTANT)
         assert any(p["name"] == "value" for p in constant["outputs"])
         assert any(p["name"] == "value" and p["type"] == "code" for p in constant["parameters"])
