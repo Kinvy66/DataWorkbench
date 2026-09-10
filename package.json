@@ -5,6 +5,7 @@
   "description": "Desktop data workbench: Electron + Vue 3 + Python sidecar",
   "scripts": {
     "dev": "pnpm --filter @dw/app dev",
+    "pack:portable": "pnpm --filter @dw/app pack:portable",
     "test": "pnpm --filter @dw/app test && pnpm test:python",
     "test:python": "python/.venv/Scripts/python.exe -m pytest python/tests -q --junitxml=python/pytest.xml"
   }

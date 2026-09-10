@@ -20,7 +20,7 @@ import {
   wantsNativeApplicationMenu
 } from './windowChrome'
 
-const sidecar = new SidecarBridge()
+const sidecar = new SidecarBridge({ resourcesPath: process.resourcesPath })
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
 
@@ -32,6 +32,7 @@ if (process.platform === 'win32') {
 
 function resolveWindowIcon(): string | undefined {
   const candidates = [
+    path.join(process.resourcesPath, 'icon.ico'),
     path.join(process.cwd(), 'resources', 'icon.ico'),
     path.join(process.cwd(), 'apps', 'resources', 'icon.ico'),
     path.join(__dirname, '../../resources/icon.ico'),

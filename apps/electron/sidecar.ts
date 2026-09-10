@@ -1,57 +1,21 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
-import fs from 'node:fs'
 import path from 'node:path'
 import { parseRpcLine } from './rpc-parse'
 import { RpcError, rpcTimeoutMs } from './rpc-error'
 import { arrowIpcToRows } from './arrow-decode'
 import { StdoutFramer, type StdoutFrame } from './rpc-frame'
 import { shouldRestartSidecar } from './sidecar-watchdog'
+import { findPythonRoot, resolvePythonCommand } from './sidecar-paths'
 
 export type SidecarLog = { stream: 'stderr' | 'protocol'; text: string }
 export type SidecarSpawnFn = () => ChildProcessWithoutNullStreams
-
-function findRepoRoot(startDir: string): string {
-  const starts = [startDir, process.cwd()]
-  for (const start of starts) {
-    let dir = start
-    for (let i = 0; i < 12; i++) {
-      if (fs.existsSync(path.join(dir, 'python', 'dw_host', '__main__.py'))) {
-        return dir
-      }
-      const parent = path.dirname(dir)
-      if (parent === dir) {
-        break
-      }
-      dir = parent
-    }
-  }
-  throw new Error('Cannot find repository root (python/dw_host missing)')
-}
-
-function resolvePython(repoRoot: string): { cmd: string; args: string[] } {
-  const fromEnv = process.env.DW_PYTHON
-  if (fromEnv) {
-    return { cmd: fromEnv, args: [] }
-  }
-  const venvPy = path.join(repoRoot, 'python', '.venv', 'Scripts', 'python.exe')
-  if (fs.existsSync(venvPy)) {
-    return { cmd: venvPy, args: [] }
-  }
-  const venvUnix = path.join(repoRoot, 'python', '.venv', 'bin', 'python')
-  if (fs.existsSync(venvUnix)) {
-    return { cmd: venvUnix, args: [] }
-  }
-  if (process.platform === 'win32') {
-    return { cmd: 'py', args: ['-3.12'] }
-  }
-  return { cmd: 'python3', args: [] }
-}
 
 export type SidecarBridgeOptions = {
   processWaitMs?: number
   spawnProcess?: SidecarSpawnFn
   restartDelayMs?: number
   maxRestarts?: number
+  resourcesPath?: string
 }
 
 export class SidecarBridge {
@@ -71,6 +35,7 @@ export class SidecarBridge {
   private readonly spawnFn: SidecarSpawnFn
   private readonly restartDelayMs: number
   private readonly maxRestarts: number
+  private readonly resourcesPath?: string
   private restartAttempts = 0
   private shuttingDown = false
   private restartTimer: NodeJS.Timeout | null = null
@@ -80,6 +45,7 @@ export class SidecarBridge {
     this.spawnFn = options?.spawnProcess ?? (() => this.spawnDefault())
     this.restartDelayMs = options?.restartDelayMs ?? 200
     this.maxRestarts = options?.maxRestarts ?? 1
+    this.resourcesPath = options?.resourcesPath
   }
 
   onNotify(handler: (method: string, params: unknown) => void): () => void {
@@ -115,9 +81,12 @@ export class SidecarBridge {
   }
 
   private spawnDefault(): ChildProcessWithoutNullStreams {
-    const repoRoot = findRepoRoot(__dirname)
-    const pythonRoot = path.join(repoRoot, 'python')
-    const py = resolvePython(repoRoot)
+    const pythonRoot = findPythonRoot({
+      startDir: __dirname,
+      cwd: process.cwd(),
+      resourcesPath: this.resourcesPath
+    })
+    const py = resolvePythonCommand({ pythonRoot })
     const args = [...py.args, '-u', '-m', 'dw_host']
     const env = {
       ...process.env,

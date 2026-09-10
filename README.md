@@ -51,7 +51,7 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**P0 完成，P1 自动验收完成，P2 画布路径完成，P3 分析节点已齐，P4 图表一期已齐，P5 File 保存/打开已落地**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → 添加数据 / 移除 / 重命名 / 导出；Operate → 数据清洗 / 数据过滤 / 统计（对齐上游，清洗按钮不在 Data 标签）；**Chart → 折线 / 散点 / 柱状 / 直方**（Python `chart.buildSeries` 降采样或分箱，缩放后按视口再取样），导出 PNG/SVG。**File → 新建 / 打开 / 保存 / 另存为**（`.dwproj` ZIP）。sidecar 意外退出会提示并**自动重启一次**（内存数据丢失，请打开已保存工程）。Replace Values 与 Threshold Filter 只在节点箱。P5 其余（NSIS 安装包）尚未做。
+**P0–P5 可验收能力已齐**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → 添加数据 / 移除 / 重命名 / 导出；Operate → 数据清洗 / 数据过滤 / 统计（对齐上游，清洗按钮不在 Data 标签）；**Chart → 折线 / 散点 / 柱状 / 直方**（Python `chart.buildSeries` 降采样或分箱，缩放后按视口再取样），导出 PNG/SVG。**File → 新建 / 打开 / 保存 / 另存为**（`.dwproj` ZIP）。sidecar 意外退出会提示并**自动重启一次**（内存数据丢失，请打开已保存工程）。便携目录：`pnpm pack:portable`（需本机 Python 3.11+，**不嵌入解释器、无 NSIS**）。Replace Values 与 Threshold Filter 只在节点箱。
 
 阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 
@@ -87,6 +87,20 @@ node node_modules/electron/install.js
 
 仍失败时从 `https://cdn.npmmirror.com/binaries/electron/v33.4.11/electron-v33.4.11-win32-x64.zip` 下载 zip，解压进 `node_modules/electron/dist/`，直到 `electron.exe --version` 打出 `v33.4.11`。
 
+### 便携目录（不嵌入 Python）
+
+```powershell
+pnpm pack:portable
+# 或 .\scripts\pack-portable.ps1
+```
+
+产物在 `apps/dist/win-unpacked/`（`DataWorkbench.exe` + `resources/python` 脚本）。**需要本机 Python 3.11 或 3.12**，并安装 sidecar 依赖：
+
+```powershell
+py -3.12 -m pip install -r apps\dist\win-unpacked\resources\python\requirements.txt
+```
+
+可用环境变量 `DW_PYTHON` 指定解释器。不把 `.venv`、测试 csv、`.env` 打进发布目录。一期不做 NSIS 安装包、不嵌入 CPython。
 
 上游 Qt 仓库若在本机，可设 `DAWB_UPSTREAM` 指向该路径，按 [docs/dev_plan/06-python-reuse.md](docs/dev_plan/06-python-reuse.md) 同步纯 Python 引擎（不要 submodule 整个 C++ 工程）。
 

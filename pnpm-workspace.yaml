@@ -5,9 +5,8 @@ packages:
 shamefullyHoist: true
 strictPeerDependencies: false
 
-neverBuiltDependencies: []
-
 allowBuilds:
   electron: true
+  electron-winstaller: false
   esbuild: true
   vue-demi: true

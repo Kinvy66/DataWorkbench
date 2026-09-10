@@ -1,0 +1,37 @@
+appId: org.daworkbench.desktop
+productName: DataWorkbench
+copyright: Copyright (c) 2026 DataWorkbench contributors
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - out/**/*
+  - package.json
+extraResources:
+  - from: ../python
+    to: python
+    filter:
+      - '**/*'
+      - '!.venv/**'
+      - '!tests/**'
+      - '!**/__pycache__/**'
+      - '!**/*.pyc'
+      - '!**/.pytest_cache/**'
+      - '!pytest.xml'
+  - from: ../LICENSE
+    to: LICENSE.txt
+  - from: ../NOTICE
+    to: NOTICE.txt
+  - from: resources/icon.ico
+    to: icon.ico
+  - from: resources/portable-readme.txt
+    to: README.txt
+asar: true
+npmRebuild: false
+win:
+  icon: resources/icon.ico
+  target:
+    - target: dir
+      arch:
+        - x64
