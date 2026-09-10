@@ -24,7 +24,7 @@
 
 | Tab | 分组 | 命令 id | 阶段 |
 |-----|------|---------|------|
-| File | | `file.new` `file.open` `file.save` `file.saveAs` `file.exit` | P5 真正可用，P0 可 disabled |
+| File | | `file.new` `file.open` `file.save` `file.saveAs` `file.exit` | P5 已可用 |
 | Home | Clipboard | `edit.undo` `edit.redo` | P2 起 |
 | Data | Data Operation | `data.import` `data.remove` `data.rename` | P1（对齐上游 Data：添加/移除/重命名） |
 | Data | Export | `data.export` | P1 |

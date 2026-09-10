@@ -256,22 +256,21 @@ class WorkflowRuntime:
             raise HostError(ErrorCode.InvalidParams, f"Unsupported dump format '{fmt}'", "workflow.invalidFormat")
         return {"format": "json", "payload": self._serializer.to_dict(session.workflow)}
 
-    def load_logic(self, payload: Any, fmt: str = "json", workflow_id: str | None = None) -> dict[str, Any]:
+    def parse_logic(self, payload: Any, fmt: str = "json") -> DAWorkflow:
         kind = (fmt or "json").strip().lower()
         try:
             if kind == "xml":
                 if not isinstance(payload, str):
                     raise HostError(ErrorCode.InvalidParams, "XML payload must be a string", "workflow.invalidFormat")
-                workflow = self._serializer.from_xml(payload, self._factory)
-            elif kind == "json":
+                return self._serializer.from_xml(payload, self._factory)
+            if kind == "json":
                 data = payload
                 if isinstance(payload, str):
                     data = json.loads(payload)
                 if not isinstance(data, dict):
                     raise HostError(ErrorCode.InvalidParams, "JSON payload must be an object", "workflow.invalidFormat")
-                workflow = self._serializer.from_dict(data, self._factory)
-            else:
-                raise HostError(ErrorCode.InvalidParams, f"Unsupported load format '{fmt}'", "workflow.invalidFormat")
+                return self._serializer.from_dict(data, self._factory)
+            raise HostError(ErrorCode.InvalidParams, f"Unsupported load format '{fmt}'", "workflow.invalidFormat")
         except HostError:
             raise
         except KeyError as exc:
@@ -279,6 +278,8 @@ class WorkflowRuntime:
         except Exception as exc:
             raise HostError(ErrorCode.InvalidParams, str(exc), "workflow.invalidFormat") from exc
 
+    def load_logic(self, payload: Any, fmt: str = "json", workflow_id: str | None = None) -> dict[str, Any]:
+        workflow = self.parse_logic(payload, fmt)
         assigned = workflow_id or str(uuid.uuid4())
         with self._lock:
             existing = self._sessions.get(assigned)
@@ -290,6 +291,30 @@ class WorkflowRuntime:
         with self._lock:
             self._sessions[assigned] = session
         return {"workflowId": assigned, "name": workflow.name}
+
+    def discard_all(self) -> None:
+        """Drop every session. Stop running executors; do not raise workflow.busy."""
+        with self._lock:
+            sessions = list(self._sessions.values())
+            self._sessions.clear()
+        for session in sessions:
+            if session.cancel is not None:
+                session.cancel.set()
+            if session.executor is not None:
+                try:
+                    session.executor.terminate()
+                except Exception:
+                    pass
+
+    def replace_with(self, workflow: DAWorkflow) -> str:
+        self.discard_all()
+        assigned = str(uuid.uuid4())
+        session = _Session(workflow)
+        for node in workflow.get_nodes():
+            self._hook_node(node, assigned)
+        with self._lock:
+            self._sessions[assigned] = session
+        return assigned
 
     def get_graph(self, workflow_id: str) -> dict[str, Any]:
         """View snapshot for wrap. Positions stay on the frontend."""

@@ -5,7 +5,8 @@ import {
   CHART_MAX_POINTS_DEFAULT,
   type ChartBuildSeriesParams,
   type ChartBuildSeriesResult,
-  type ChartTypeId
+  type ChartTypeId,
+  type ProjectChartsFile
 } from '@dw/rpc-types'
 import {
   canvasToPngDataUrl,
@@ -17,6 +18,7 @@ import {
 import { getDesktopBridge } from '@/rpc/bridge'
 import { isCancelled } from '@/rpc/rpcError'
 import { useDataStore } from './data'
+import { touchProject } from './project'
 import { useWorkflowStore } from './workflow'
 
 export type BindableChartType = ChartTypeId
@@ -154,6 +156,42 @@ export const useChartStore = defineStore('chart', {
         this.currentId = this.charts[0]?.id ?? null
       }
     },
+    clear(): void {
+      this.charts = []
+      this.currentId = null
+      rebuildSeq.clear()
+    },
+    async restoreFromFile(file: ProjectChartsFile): Promise<void> {
+      this.charts = []
+      this.currentId = null
+      for (const spec of file.charts) {
+        let data: ChartBuildSeriesResult | null = null
+        try {
+          data = (await rpc().invoke('chart.buildSeries', seriesParams(spec))) as ChartBuildSeriesResult
+        } catch {
+          data = null
+        }
+        this.charts.push({
+          id: spec.id,
+          type: spec.type,
+          dataId: spec.dataId,
+          x: spec.x,
+          y: spec.y,
+          title: spec.title,
+          xLabel: spec.xLabel,
+          yLabel: spec.yLabel,
+          grid: spec.grid,
+          legend: spec.legend,
+          series: spec.series.map((item) => ({ ...item })),
+          data,
+          window: null
+        })
+      }
+      this.currentId =
+        file.currentId && this.charts.some((item) => item.id === file.currentId)
+          ? file.currentId
+          : (this.charts[0]?.id ?? null)
+    },
     select(id: string): void {
       if (this.charts.some((item) => item.id === id)) {
         this.currentId = id
@@ -165,6 +203,7 @@ export const useChartStore = defineStore('chart', {
       if (this.currentId === id) {
         this.currentId = this.charts[0]?.id ?? null
       }
+      touchProject()
     },
     updateStyle(
       id: string,
@@ -175,6 +214,7 @@ export const useChartStore = defineStore('chart', {
         return
       }
       Object.assign(chart, patch)
+      touchProject()
     },
     updateSeries(id: string, key: string, patch: Partial<ChartSeriesStyle>): void {
       const chart = this.charts.find((item) => item.id === id)
@@ -183,6 +223,7 @@ export const useChartStore = defineStore('chart', {
         return
       }
       Object.assign(series, patch)
+      touchProject()
     },
     async createFromBind(options: {
       type: BindableChartType
@@ -229,6 +270,7 @@ export const useChartStore = defineStore('chart', {
       this.charts.push(spec)
       this.currentId = id
       workflow.centerTab = 'figure'
+      touchProject()
       return spec
     },
     async rebuildWindow(id: string, range?: ViewportWindow): Promise<boolean> {

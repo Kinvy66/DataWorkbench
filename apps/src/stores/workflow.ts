@@ -14,6 +14,7 @@ import type {
   WorkflowParamSpec
 } from '@dw/rpc-types'
 import { getDesktopBridge } from '@/rpc/bridge'
+import { touchProject } from './project'
 import {
   HISTORY_LIMIT,
   samePoint,
@@ -353,6 +354,36 @@ export const useWorkflowStore = defineStore('workflow', {
         workflowId: loaded.workflowId
       })) as WorkflowGetGraphResult
       this.applyWrappedGraph(graph, layout)
+      this.centerTab = 'workflow'
+    },
+    async adoptWorkflow(
+      workflowId: string,
+      layout: Record<string, { x: number; y: number }>
+    ): Promise<void> {
+      if (!this.types.length) {
+        const listed = (await rpc().invoke('workflow.listNodeTypes', {})) as WorkflowListNodeTypesResult
+        this.types = listed.types
+      }
+      const graph = (await rpc().invoke('workflow.getGraph', {
+        workflowId
+      })) as WorkflowGetGraphResult
+      this.applyWrappedGraph(graph, layout)
+    },
+    captureLayout(): Record<string, { x: number; y: number }> {
+      return layoutFromNodes(this.nodes)
+    },
+    resetSession(): void {
+      this.workflowId = null
+      this.nodes = []
+      this.edges = []
+      this.paramValues = {}
+      this.selectedNodeId = null
+      this.undoStack = []
+      this.redoStack = []
+      this.running = false
+      this.centerTab = 'table'
+      this.leftTab = 'datasets'
+      this.nextPlace = { x: 80, y: 80 }
     },
     applyWrappedGraph(graph: WorkflowGetGraphResult, layout?: Record<string, { x: number; y: number }>): void {
       const positions = layout ?? layoutFromNodes(this.nodes)
@@ -399,7 +430,6 @@ export const useWorkflowStore = defineStore('workflow', {
       if (last) {
         this.nextPlace = { x: last.position.x + 36, y: last.position.y + 36 }
       }
-      this.centerTab = 'workflow'
     },
     async run(): Promise<void> {
       if (!this.workflowId) {
@@ -467,6 +497,7 @@ export const useWorkflowStore = defineStore('workflow', {
         await this.playHistory(cmd, 'undo')
         this.undoStack.pop()
         this.redoStack.push(cmd)
+        touchProject()
       } finally {
         this.historyLock -= 1
       }
@@ -484,6 +515,7 @@ export const useWorkflowStore = defineStore('workflow', {
         await this.playHistory(cmd, 'redo')
         this.redoStack.pop()
         this.undoStack.push(cmd)
+        touchProject()
       } finally {
         this.historyLock -= 1
       }
@@ -494,6 +526,7 @@ export const useWorkflowStore = defineStore('workflow', {
     pushHistory(cmd: HistoryCommand): void {
       this.undoStack = [...this.undoStack, cmd].slice(-HISTORY_LIMIT)
       this.redoStack = []
+      touchProject()
     },
     async playHistory(cmd: HistoryCommand, direction: 'undo' | 'redo'): Promise<void> {
       const reverse = direction === 'undo'

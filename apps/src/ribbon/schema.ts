@@ -419,10 +419,10 @@ export function useRibbonSchema() {
   })
 
   const fileMenuItems = computed<FileMenuItemModel[]>(() => [
-    { id: 'file.new', label: t('ribbon.new'), disabled: true },
-    { id: 'file.open', label: t('ribbon.open'), disabled: true },
-    { id: 'file.save', label: t('ribbon.save'), disabled: true },
-    { id: 'file.saveAs', label: t('ribbon.saveAs'), disabled: true },
+    { id: 'file.new', label: t('ribbon.new') },
+    { id: 'file.open', label: t('ribbon.open') },
+    { id: 'file.save', label: t('ribbon.save') },
+    { id: 'file.saveAs', label: t('ribbon.saveAs') },
     { id: 'file.exit', label: t('ribbon.exit'), divided: true }
   ])
 

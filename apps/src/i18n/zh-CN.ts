@@ -129,6 +129,16 @@ export default {
     bridgeMissing: '桌面桥接未加载。请用 pnpm dev 重启应用，不要在浏览器里打开 Vite 地址。',
     sidecarNotRunning: 'Python sidecar 尚未运行。请等 host.ready 后再试。'
   },
+  project: {
+    untitled: '未命名',
+    unsavedTitle: '未保存的更改',
+    unsaved: '继续之前要保存当前工程吗？',
+    save: '保存',
+    discard: '不保存',
+    invalid: '这不是 DataWorkbench 工程文件。',
+    unsupportedFormat: '此工程文件需要更新版本的 DataWorkbench。',
+    dirMissing: '找不到工程目录。'
+  },
   data: {
     remove: '移除数据集',
     removeConfirm: '从内存中移除“{name}”？不会删除源文件。',
@@ -411,6 +421,9 @@ export default {
     pivotTableOk: '已生成 {name}（{rows} × {cols}）。',
     chartOk: '已绘制 {title}（{points} / {source} 点）。',
     chartExportOk: '已导出图表为 {format}。',
+    projectSaved: '工程已保存。',
+    projectOpened: '工程已打开。',
+    projectNew: '已新建工程。',
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'

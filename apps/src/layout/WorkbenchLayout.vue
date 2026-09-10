@@ -4,6 +4,7 @@ import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useI18n } from 'vue-i18n'
 import { useLogStore } from '@/stores/log'
+import { useProjectStore } from '@/stores/project'
 import { useWorkflowStore } from '@/stores/workflow'
 import DatasetList from '@/views/DatasetList.vue'
 import DatasetProperties from '@/views/DatasetProperties.vue'
@@ -34,6 +35,7 @@ import ChartBindDialog from '@/views/chart/ChartBindDialog.vue'
 const { t } = useI18n()
 const log = useLogStore()
 const workflow = useWorkflowStore()
+const project = useProjectStore()
 
 const rightPanel = computed(() => {
   if (workflow.centerTab === 'figure') {
@@ -45,6 +47,20 @@ const rightPanel = computed(() => {
   return 'dataset'
 })
 
+function onMainResized(panes: Array<{ size: number }>): void {
+  if (project.restoring || panes.length < 2) {
+    return
+  }
+  project.setSplits({ main: panes[0]!.size, log: panes[1]!.size })
+}
+
+function onCenterResized(panes: Array<{ size: number }>): void {
+  if (project.restoring || panes.length < 3) {
+    return
+  }
+  project.setSplits({ left: panes[0]!.size, center: panes[1]!.size, properties: panes[2]!.size })
+}
+
 function formatTime(at: number): string {
   return new Date(at).toLocaleTimeString()
 }
@@ -52,10 +68,10 @@ function formatTime(at: number): string {
 
 <template>
   <div class="workbench">
-    <Splitpanes class="default-theme main-split" horizontal>
-      <Pane :size="82" :min-size="40">
-        <Splitpanes class="default-theme">
-          <Pane :size="18" :min-size="12">
+    <Splitpanes class="default-theme main-split" horizontal @resized="onMainResized">
+      <Pane :size="project.splits.main" :min-size="40">
+        <Splitpanes class="default-theme" @resized="onCenterResized">
+          <Pane :size="project.splits.left" :min-size="12">
             <section class="panel">
               <el-tabs v-model="workflow.leftTab" class="panel-tabs">
                 <el-tab-pane :label="t('layout.datasets')" name="datasets">
@@ -67,7 +83,7 @@ function formatTime(at: number): string {
               </el-tabs>
             </section>
           </Pane>
-          <Pane :size="58" :min-size="30">
+          <Pane :size="project.splits.center" :min-size="30">
             <section class="panel">
               <el-tabs v-model="workflow.centerTab" class="panel-tabs">
                 <el-tab-pane :label="t('layout.table')" name="table">
@@ -82,7 +98,7 @@ function formatTime(at: number): string {
               </el-tabs>
             </section>
           </Pane>
-          <Pane :size="24" :min-size="12">
+          <Pane :size="project.splits.properties" :min-size="12">
             <section class="panel">
               <header>{{ t('layout.properties') }}</header>
               <NodeProperties v-if="rightPanel === 'node'" />
@@ -92,7 +108,7 @@ function formatTime(at: number): string {
           </Pane>
         </Splitpanes>
       </Pane>
-      <Pane :size="18" :min-size="10">
+      <Pane :size="project.splits.log" :min-size="10">
         <section class="panel log-panel">
           <header>{{ t('layout.log') }}</header>
           <ol class="log-lines">

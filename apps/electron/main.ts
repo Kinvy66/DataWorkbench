@@ -1,9 +1,16 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
-import { APP_VERSION } from '@dw/rpc-types'
+import { APP_VERSION, type ProjectSaveParams, type ProjectUnpackLogicResult } from '@dw/rpc-types'
 import { writeChartExport } from './chart-export'
-import { chartSaveDialogOptions, dataOpenDialogOptions, dataSaveDialogOptions } from './dialogs'
+import {
+  chartSaveDialogOptions,
+  dataOpenDialogOptions,
+  dataSaveDialogOptions,
+  projectOpenDialogOptions,
+  projectSaveDialogOptions
+} from './dialogs'
+import { openProjectArchive, ProjectFileError, saveProjectArchive, withProjectExtension } from './project-io'
 import { RpcError } from './rpc-error'
 import { SidecarBridge } from './sidecar'
 import {
@@ -104,6 +111,13 @@ function createWindow(): void {
   })
 
   bindWindowState(mainWindow)
+  mainWindow.on('close', (event) => {
+    if (isQuitting) {
+      return
+    }
+    event.preventDefault()
+    forward('app.closeRequested', {})
+  })
   console.error(`[window] preload ${resolvePreload()}`)
   mainWindow.webContents.on('preload-error', (_event, preloadPath, error) => {
     console.error(`[window] preload-error ${preloadPath}: ${error}`)
@@ -259,6 +273,17 @@ async function handleRendererRpc(
     return { ok: true }
   }
   const win = targetWindow(event.sender)
+  if (method === 'app.setDocument') {
+    const p = (params ?? {}) as { displayName?: string; dirty?: boolean }
+    const name = typeof p.displayName === 'string' && p.displayName.trim() ? p.displayName.trim() : 'Untitled'
+    if (win && !win.isDestroyed()) {
+      win.setTitle(`${p.dirty ? '*' : ''}${name} - DataWorkbench`)
+    }
+    return { ok: true }
+  }
+  if (method === 'project.packLogic' || method === 'project.unpackLogic') {
+    throw new RpcError(-32601, `Method not found: ${method}`)
+  }
   if (method === 'data.import') {
     const p = (params ?? {}) as { path?: string; format?: string }
     let filePath = p.path
@@ -329,7 +354,81 @@ async function handleRendererRpc(
       throw new RpcError(3001, message, 'data.ioError')
     }
   }
+  if (method === 'project.save') {
+    const p = (params ?? {}) as ProjectSaveParams
+    if (!p.workflowId) {
+      throw new RpcError(-32602, 'workflowId is required', 'rpc.invalidParams')
+    }
+    let filePath = p.path
+    if (!filePath) {
+      if (!win) {
+        return { cancelled: true }
+      }
+      const picked = await dialog.showSaveDialog(win, projectSaveDialogOptions('Untitled.dwproj'))
+      if (picked.canceled || !picked.filePath) {
+        return { cancelled: true }
+      }
+      filePath = withProjectExtension(picked.filePath)
+    }
+    try {
+      const dumped = (await sidecar.invoke('workflow.dumpLogic', {
+        workflowId: p.workflowId,
+        format: 'json'
+      })) as { payload: unknown }
+      await saveProjectArchive({
+        dest: filePath,
+        workflowLogic: dumped.payload,
+        uiLayout: p.uiLayout,
+        charts: p.charts,
+        packLogic: async (dir) => {
+          await sidecar.invoke('project.packLogic', { dir })
+        }
+      })
+      return { ok: true, path: filePath }
+    } catch (err) {
+      throw projectError(err)
+    }
+  }
+  if (method === 'project.open') {
+    const p = (params ?? {}) as { path?: string }
+    let filePath = p.path
+    if (!filePath) {
+      if (!win) {
+        return { cancelled: true }
+      }
+      const picked = await dialog.showOpenDialog(win, projectOpenDialogOptions())
+      if (picked.canceled || !picked.filePaths[0]) {
+        return { cancelled: true }
+      }
+      filePath = picked.filePaths[0]
+    }
+    try {
+      const opened = await openProjectArchive({
+        src: filePath,
+        unpackLogic: (dir) => sidecar.invoke('project.unpackLogic', { dir }) as Promise<ProjectUnpackLogicResult>
+      })
+      return {
+        path: filePath,
+        workflowId: opened.workflowId,
+        uiLayout: opened.uiLayout,
+        charts: opened.charts
+      }
+    } catch (err) {
+      throw projectError(err)
+    }
+  }
   return sidecar.invoke(method, params)
+}
+
+function projectError(err: unknown): RpcError {
+  if (err instanceof RpcError) {
+    return err
+  }
+  if (err instanceof ProjectFileError) {
+    return new RpcError(err.code, err.message, err.i18nKey)
+  }
+  const message = err instanceof Error ? err.message : String(err)
+  return new RpcError(3001, message, 'data.ioError')
 }
 
 app.on('window-all-closed', () => {

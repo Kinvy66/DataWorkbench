@@ -42,12 +42,10 @@ project.dwproj
 ## 加载顺序（铁律）
 
 1. 解压到临时目录。
-2. 校验 magic/format。
-3. `project.unpackLogic`：读 parquet 进 DataManager（新 id 可保持文件内 id）。
-4. `workflow.loadLogic`。
-5. 渲染进程 wrap 画布 + 恢复 split + 重建图表（`buildSeries`）。
-
-任一步失败：工程视为未打开，临时目录删除，报错。不要半开状态允许保存覆盖用户文件。
+2. 校验 magic/format；主进程先解析 `ui-layout.json` / `charts.json` / `workflow-logic.json`。
+3. `project.unpackLogic`：把 parquet 与 workflow JSON **全部读进内存**，成功后再一次性替换 DataManager **和** workflow sessions。解析失败则当前应用状态不变。
+4. 渲染进程 `data.refreshList` + wrap 画布（`getGraph`，用文件里的节点坐标，禁止 `addNode`）+ 恢复 split/tab + `chart.buildSeries` 重建图（不读入库里的点）。
+5. 删除临时目录。任一步失败：工程视为未打开，临时目录删除，报错。不要半开状态允许保存覆盖用户文件。
 
 ## 与上游 `.dapro` 的关系
 

@@ -21,6 +21,7 @@
     "@vue-flow/core": "^1.48.2",
     "apache-arrow": "^21.2.0",
     "element-plus": "^2.9.0",
+    "fflate": "^0.8.2",
     "pinia": "^2.3.0",
     "splitpanes": "^4.0.0",
     "uplot": "^1.6.32",

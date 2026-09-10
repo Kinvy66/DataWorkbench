@@ -130,6 +130,16 @@ export default {
       'The desktop bridge failed to load. Restart the app with pnpm dev; do not open the Vite URL in a browser.',
     sidecarNotRunning: 'The Python sidecar is not running yet. Wait for host.ready and try again.'
   },
+  project: {
+    untitled: 'Untitled',
+    unsavedTitle: 'Unsaved changes',
+    unsaved: 'Save the current project before continuing?',
+    save: 'Save',
+    discard: "Don't Save",
+    invalid: 'This file is not a DataWorkbench project.',
+    unsupportedFormat: 'This project file needs a newer DataWorkbench.',
+    dirMissing: 'The project folder is missing.'
+  },
   data: {
     remove: 'Remove dataset',
     removeConfirm: 'Remove “{name}” from memory? This does not delete the file.',
@@ -413,6 +423,9 @@ export default {
     pivotTableOk: 'Created {name} ({rows} × {cols}).',
     chartOk: 'Plotted {title} ({points} of {source} points).',
     chartExportOk: 'Chart exported as {format}.',
+    projectSaved: 'Project saved.',
+    projectOpened: 'Project opened.',
+    projectNew: 'New project.',
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'

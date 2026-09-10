@@ -24,6 +24,16 @@ export const CHART_HIST_BINS_DEFAULT = 50
 export const CHART_HIST_BINS_MIN = 5
 export const CHART_HIST_BINS_MAX = 200
 export const CHART_VIEWPORT_DEBOUNCE_MS = 150
+export const PROJECT_MAGIC = 'DataWorkbenchProject'
+export const PROJECT_FORMAT = 1
+export const PROJECT_EXT = 'dwproj'
+export const DEFAULT_PROJECT_SPLITS = {
+  main: 82,
+  left: 18,
+  center: 58,
+  properties: 24,
+  log: 18
+} as const
 
 export const RpcMethod = {
   HostHello: 'host.hello',
@@ -69,7 +79,12 @@ export const RpcMethod = {
   WorkflowGetGraph: 'workflow.getGraph',
   ChartListTypes: 'chart.listTypes',
   ChartBuildSeries: 'chart.buildSeries',
-  ChartSaveExport: 'chart.saveExport'
+  ChartSaveExport: 'chart.saveExport',
+  ProjectSave: 'project.save',
+  ProjectOpen: 'project.open',
+  ProjectPackLogic: 'project.packLogic',
+  ProjectUnpackLogic: 'project.unpackLogic',
+  ProjectClearLogic: 'project.clearLogic'
 } as const
 
 export type JsonRpcId = number | string
@@ -697,4 +712,103 @@ export interface ChartSaveExportParams {
 export interface ChartSaveExportResult {
   ok?: true
   cancelled?: true
+}
+
+export interface ProjectManifest {
+  magic: typeof PROJECT_MAGIC
+  format: number
+  appVersion: string
+}
+
+export interface ProjectNodePosition {
+  x: number
+  y: number
+}
+
+export interface ProjectSplits {
+  main: number
+  left: number
+  center: number
+  properties: number
+  log: number
+}
+
+export interface ProjectUiLayout {
+  centerTab: 'table' | 'workflow' | 'figure'
+  leftTab: 'datasets' | 'nodes'
+  currentDataId: string | null
+  splits: ProjectSplits
+  nodes: Record<string, ProjectNodePosition>
+}
+
+export interface ProjectChartSeriesStyle {
+  key: string
+  color: string
+  width: number
+}
+
+export interface ProjectChartPersist {
+  id: string
+  type: ChartTypeId
+  dataId: string
+  x: string
+  y: string[]
+  title: string
+  xLabel: string
+  yLabel: string
+  grid: boolean
+  legend: boolean
+  series: ProjectChartSeriesStyle[]
+}
+
+export interface ProjectChartsFile {
+  currentId: string | null
+  charts: ProjectChartPersist[]
+}
+
+export interface ProjectSaveParams {
+  path?: string
+  workflowId: string
+  uiLayout: ProjectUiLayout
+  charts: ProjectChartsFile
+}
+
+export interface ProjectSaveResult {
+  ok?: true
+  cancelled?: true
+  path?: string
+}
+
+export interface ProjectOpenParams {
+  path?: string
+}
+
+export interface ProjectOpenResult {
+  cancelled?: true
+  path?: string
+  workflowId?: string
+  uiLayout?: ProjectUiLayout
+  charts?: ProjectChartsFile
+}
+
+export interface ProjectPackLogicParams {
+  dir: string
+}
+
+export interface ProjectPackLogicResult {
+  ok: true
+  count: number
+}
+
+export interface ProjectUnpackLogicParams {
+  dir: string
+}
+
+export interface ProjectUnpackLogicResult {
+  workflowId: string
+  datasets: DatasetListItem[]
+}
+
+export interface ProjectClearLogicResult {
+  ok: true
 }

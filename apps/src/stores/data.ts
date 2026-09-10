@@ -25,6 +25,7 @@ import type {
 import { BLOCK_SIZE } from '@/data/blockWindow'
 import { isCancelled } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
+import { touchProject } from './project'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -81,6 +82,7 @@ export const useDataStore = defineStore('data', {
       const imported = result as DataImportResult
       await this.refreshList()
       await this.select(imported.id)
+      touchProject()
       return imported
     },
     async exportCurrent(): Promise<boolean> {
@@ -102,6 +104,7 @@ export const useDataStore = defineStore('data', {
       await this.refreshList()
       const next = this.datasets[0]?.id ?? null
       await this.select(next)
+      touchProject()
     },
     async rename(id: string, name: string): Promise<void> {
       await getDesktopBridge().rpc.invoke('data.rename', { id, name })
@@ -109,6 +112,7 @@ export const useDataStore = defineStore('data', {
       if (this.currentId === id) {
         await this.select(id)
       }
+      touchProject()
     },
     async fetchBlock(startRow: number, rowCount = BLOCK_SIZE): Promise<DataFetchBlockResult> {
       if (!this.currentId) {
@@ -125,6 +129,7 @@ export const useDataStore = defineStore('data', {
         return
       }
       await getDesktopBridge().rpc.invoke('data.patchCells', { id: this.currentId, patches })
+      touchProject()
     },
     async dropNa(options?: {
       how?: string
@@ -143,6 +148,7 @@ export const useDataStore = defineStore('data', {
       })) as DataDropNaResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async dropDuplicates(options?: {
@@ -160,6 +166,7 @@ export const useDataStore = defineStore('data', {
       })) as DataDropDuplicatesResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async query(queryString: string): Promise<DataQueryResult | null> {
@@ -173,6 +180,7 @@ export const useDataStore = defineStore('data', {
       })) as DataQueryResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async evaluate(expression: string): Promise<DataEvalResult | null> {
@@ -186,6 +194,7 @@ export const useDataStore = defineStore('data', {
       })) as DataEvalResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async search(options: {
@@ -205,6 +214,7 @@ export const useDataStore = defineStore('data', {
       })) as DataSearchResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async sort(options: { columns: string[]; ascending?: boolean }): Promise<DataSortResult | null> {
@@ -219,6 +229,7 @@ export const useDataStore = defineStore('data', {
       })) as DataSortResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async fillNa(options?: {
@@ -238,6 +249,7 @@ export const useDataStore = defineStore('data', {
       })) as DataFillNaResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async interpolate(options?: {
@@ -259,6 +271,7 @@ export const useDataStore = defineStore('data', {
       })) as DataInterpolateResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async removeOutliersIqr(options?: {
@@ -282,6 +295,7 @@ export const useDataStore = defineStore('data', {
       })) as DataRemoveOutliersIqrResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async removeOutliersZscore(options?: {
@@ -307,6 +321,7 @@ export const useDataStore = defineStore('data', {
       })) as DataRemoveOutliersZscoreResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async transformSkewed(options?: {
@@ -328,6 +343,7 @@ export const useDataStore = defineStore('data', {
       })) as DataTransformSkewedResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async replaceValues(options: {
@@ -349,6 +365,7 @@ export const useDataStore = defineStore('data', {
       })) as DataReplaceValuesResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async thresholdFilter(options?: {
@@ -374,6 +391,7 @@ export const useDataStore = defineStore('data', {
       })) as DataThresholdFilterResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async filterByColumn(options: {
@@ -393,6 +411,7 @@ export const useDataStore = defineStore('data', {
       })) as DataFilterByColumnResult
       await this.refreshList()
       await this.select(id)
+      touchProject()
       return result
     },
     async describe(options?: {
@@ -409,6 +428,7 @@ export const useDataStore = defineStore('data', {
       })) as DataDescribeResult
       await this.refreshList()
       await this.select(result.id)
+      touchProject()
       return result
     },
     async pivotTable(options: {
@@ -437,6 +457,7 @@ export const useDataStore = defineStore('data', {
       })) as DataPivotTableResult
       await this.refreshList()
       await this.select(result.id)
+      touchProject()
       return result
     }
   }

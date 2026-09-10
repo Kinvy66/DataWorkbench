@@ -118,5 +118,10 @@ describe('i18n', () => {
     expect(String(i18n.global.t('chart.downsampled', { points: 5000, source: 1000000 }))).toBe(
       '显示 5000 / 1000000 点。缩放后会按视口重新取样。'
     )
+    expect(String(i18n.global.t('project.invalid'))).toBe('这不是 DataWorkbench 工程文件。')
+    i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('log.projectSaved'))).toBe('Project saved.')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('log.projectSaved'))).toBe('工程已保存。')
   })
 })

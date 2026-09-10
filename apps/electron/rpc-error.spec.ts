@@ -5,6 +5,8 @@ describe('rpcTimeoutMs', () => {
   it('gives data.import two minutes', () => {
     expect(rpcTimeoutMs('data.import')).toBe(120_000)
     expect(rpcTimeoutMs('chart.buildSeries')).toBe(120_000)
+    expect(rpcTimeoutMs('project.save')).toBe(120_000)
+    expect(rpcTimeoutMs('project.packLogic')).toBe(120_000)
     expect(rpcTimeoutMs('data.list')).toBe(30_000)
   })
 

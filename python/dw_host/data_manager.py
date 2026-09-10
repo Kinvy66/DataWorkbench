@@ -242,6 +242,15 @@ class DataManager:
             for ds in items
         ]
 
+    def replace_all(self, items: list[tuple[str, str, Any]]) -> None:
+        """Replace every dataset, keeping caller-supplied ids (project load)."""
+        with self._lock:
+            self._items = {dataset_id: Dataset(id=dataset_id, name=name, df=df) for dataset_id, name, df in items}
+
+    def clear(self) -> None:
+        with self._lock:
+            self._items.clear()
+
     def get_schema(self, dataset_id: str) -> dict[str, Any]:
         ds = self.get(dataset_id)
         return {"columns": _column_schema(ds.df), "rowCount": int(len(ds.df))}

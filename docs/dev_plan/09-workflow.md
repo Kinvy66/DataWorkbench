@@ -43,7 +43,7 @@
 2. `workflow.getGraph` `{workflowId}` 返回 `nodes`/`connections`（无坐标）
 3. 前端按 `nodeId` wrap Vue Flow；Pinia 已有布局则复用 `{x,y}`，缺坐标则自动排列（`80+i*36`）
 
-**禁止** load 路径调用 `workflow.addNode`（会工厂再建一份 Python 节点）。P5 工程打开时 layout 来自 `ui-layout.json`；当前 `loadAndWrap` 用画布现有节点位置。
+**禁止** load 路径调用 `workflow.addNode`（会工厂再建一份 Python 节点）。P5 工程打开时 layout 来自 `ui-layout.json`，走 `adoptWorkflow`（`getGraph` + wrap）；当前 `loadAndWrap` 仍用画布现有节点位置。
 
 ## Vue Flow 节点外观
 

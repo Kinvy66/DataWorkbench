@@ -115,14 +115,19 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 - SVG 由当前图的采样点生成矢量（含标题/轴/图例/网格）；PNG 抓当前 uPlot 画布（含缩放）。渲染进程不得 `fs` 写盘。
 
 
-## project 域（P5）
+## project 域
 
 | 方法 | 说明 |
 |------|------|
-| `project.packLogic` | 把当前 DataManager 引用 + workflow dump 写到给定目录 |
-| `project.unpackLogic` | 从目录恢复 |
+| `project.save` | **仅 Electron 主进程**。无路径则 Save 对话框；`workflow.dumpLogic` → sidecar `project.packLogic` 写 parquet → 主进程打 ZIP，`*.tmp` 再 rename。`{ path?, workflowId, uiLayout, charts }` → `{ ok: true, path }` 或 `{ cancelled: true }` |
+| `project.open` | **仅 Electron 主进程**。对话框；解压；校验 magic/format；sidecar `project.unpackLogic` **先解析再整体替换**。返回 `{ path, workflowId, uiLayout, charts }` |
+| `project.packLogic` | sidecar：把当前 DataManager 写成 `datas/<id>.parquet` + `data-manager.json`（主进程调用，渲染进程不可达） |
+| `project.unpackLogic` | sidecar：读 parquet + `workflow-logic.json` 进内存，成功后再 `replace_all` / 替换 sessions |
+| `project.clearLogic` | sidecar：清空数据集并丢弃全部 workflow session（File → New） |
 
-ZIP 的压缩/解压在 **Electron 主进程**（Node `yazl`/`yauzl` 或 `adm-zip`），Python 只认已解压目录。不要让 Python 再依赖 QuaZip。
+ZIP 的压缩/解压在 **Electron 主进程**（`fflate`），Python 只认已解压目录。不要让 Python 再依赖 QuaZip。清单文件是 **`manifest.json`**（`magic: DataWorkbenchProject`, `format: 1`），不是 `project.json`。扩展名 `.dwproj`。不打开上游 `.dapro`。
+
+`project.save` / `project.open` / `project.packLogic` / `project.unpackLogic` 超时 **120s**。失败码沿用 **3001** `data.ioError`，另有 `project.invalid` / `project.unsupportedFormat` / `project.dirMissing`。
 
 ## 错误码
 
@@ -147,7 +152,7 @@ window.dw.rpc.invoke(method: string, params?: unknown): Promise<unknown>
 window.dw.rpc.on(method: string, cb: (params: unknown) => void): () => void
 ```
 
-渲染进程不得使用 `ipcRenderer` 其它频道。超时：普通 RPC 30s；`workflow.execute` 不超时（用 stop）；`data.import` / `chart.buildSeries` 120s。`chart.saveExport` 由主进程写文件，不进 sidecar。
+渲染进程不得使用 `ipcRenderer` 其它频道。超时：普通 RPC 30s；`workflow.execute` 不超时（用 stop）；`data.import` / `chart.buildSeries` / `project.*` 120s。`chart.saveExport`、`project.save`、`project.open` 由主进程处理，不把 ZIP 丢给 sidecar。
 
 ## 调试
 

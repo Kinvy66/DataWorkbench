@@ -161,8 +161,8 @@ gantt
 
 **任务**
 
-1. 主进程 ZIP：`project.json` 清单 + `workflow-logic.json` + `ui-layout.json` + `datas/`。
-2. 脏标记、保存/另存为、打开。
+1. 主进程 ZIP：`manifest.json` 清单 + `workflow-logic.json` + `ui-layout.json` + `charts.json` + `datas/`（**已落地**）。
+2. 脏标记、保存/另存为/打开/新建、Ctrl+S/O/N（**已落地**）。
 3. sidecar 崩溃提示 + 自动重启 1 次。
 4. 便携目录：electron 产物 + `python/` embed 或文档说明「需本机 Python 3.11」。安装包可只做 NSIS 简版。
 5. README 开发启动步骤；补 `docs/dev_plan` 里「已完成」勾选（本文件里程碑表）。

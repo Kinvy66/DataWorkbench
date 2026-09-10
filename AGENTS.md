@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（完成） → P4 图表一期（完成） → P5 工程文件**
 
-P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 图表一期已齐：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar / Histogram，中区 Figure tab + 属性面板，PNG/SVG 导出，缩放后按视口带 `xMin`/`xMax` 再取样（150ms 防抖，窗口仍 5000 点封顶）。不要把图表按钮放到 Data/Operate。不要做自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开属 P5。Home 不要擅自改成对齐 Qt。
+P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 图表一期已齐：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar / Histogram，中区 Figure tab + 属性面板，PNG/SVG 导出，缩放后按视口带 `xMin`/`xMax` 再取样（150ms 防抖，窗口仍 5000 点封顶）。不要把图表按钮放到 Data/Operate。不要做自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。**File 保存/打开 `.dwproj` 已落地**（主进程 ZIP，sidecar 只处理解压目录；打开失败不留下半开数据）。P5 其余：sidecar 崩溃自动重启、便携目录/NSIS 未做。Home 不要擅自改成对齐 Qt。
 
 ## STRUCTURE
 

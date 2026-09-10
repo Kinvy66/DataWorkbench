@@ -8,6 +8,7 @@ import { useChartStore } from '@/stores/chart'
 import { i18n } from '@/i18n'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
+import { confirmAndQuit, newProject, openProject, saveProject } from '@/project/session'
 
 function t(key: string, values?: Record<string, unknown>): string {
   return String(i18n.global.t(key, values as Record<string, string>))
@@ -491,14 +492,21 @@ export function registerBuiltinCommands(): void {
   )
 
   commandBus.register('file.exit', async () => {
-    await getDesktopBridge().rpc.invoke('app.quit')
+    await confirmAndQuit()
   })
 
-  const notYet = () => false
-  commandBus.register('file.new', async () => {}, notYet)
-  commandBus.register('file.open', async () => {}, notYet)
-  commandBus.register('file.save', async () => {}, notYet)
-  commandBus.register('file.saveAs', async () => {}, notYet)
+  commandBus.register('file.new', async () => {
+    await newProject()
+  })
+  commandBus.register('file.open', async () => {
+    await openProject()
+  })
+  commandBus.register('file.save', async () => {
+    await saveProject(false)
+  })
+  commandBus.register('file.saveAs', async () => {
+    await saveProject(true)
+  })
 
   commandBus.register(
     'chart.newLine',

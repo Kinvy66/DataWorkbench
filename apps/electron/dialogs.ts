@@ -40,3 +40,20 @@ export function chartSaveDialogOptions(
         : [{ name: 'SVG', extensions: ['svg'] }]
   }
 }
+
+export function projectOpenDialogOptions(): OpenDialogOptions {
+  return {
+    properties: ['openFile'],
+    filters: [
+      { name: 'DataWorkbench project', extensions: ['dwproj'] },
+      { name: 'All files', extensions: ['*'] }
+    ]
+  }
+}
+
+export function projectSaveDialogOptions(suggestedName?: string): SaveDialogOptions {
+  return {
+    defaultPath: suggestedName,
+    filters: [{ name: 'DataWorkbench project', extensions: ['dwproj'] }]
+  }
+}
