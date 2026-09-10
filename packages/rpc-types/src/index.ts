@@ -23,6 +23,7 @@ export const CHART_MAX_POINTS_MAX = 20000
 export const CHART_HIST_BINS_DEFAULT = 50
 export const CHART_HIST_BINS_MIN = 5
 export const CHART_HIST_BINS_MAX = 200
+export const CHART_VIEWPORT_DEBOUNCE_MS = 150
 
 export const RpcMethod = {
   HostHello: 'host.hello',

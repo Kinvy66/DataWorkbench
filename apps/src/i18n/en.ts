@@ -365,7 +365,7 @@ export default {
     grid: 'Grid',
     legend: 'Legend',
     resetView: 'Reset view',
-    downsampled: 'Overview downsample: {points} of {source} points. Zoom magnifies sampled points.',
+    downsampled: 'Showing {points} of {source} points. Zoom refines the window.',
     columnNotFound: 'Column not found.',
     nonNumeric: 'That column is not numeric. Query or pick a numeric column.',
     emptySeries: 'Not enough numeric points to plot.',

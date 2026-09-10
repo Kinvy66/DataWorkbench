@@ -147,12 +147,12 @@ gantt
 
 范围见 [10-chart.md](./10-chart.md)。
 
-**已落地（第一刀 + 导出 + 直方）**：`chart.listTypes` / `chart.buildSeries`（Python LTTB，默认 5000 点；`kind:"hist"` 在 sidecar 分箱）；Ribbon Chart 标签 New Line / Scatter / Bar / Histogram；中区 Figure tab；属性面板改标题/颜色/线宽/网格/图例。缩放只放大已采样点（UI 提示 overview downsample）。PNG 从 uPlot 画布抓取；SVG 由采样点生成矢量，另存对话框在主进程（`chart.saveExport`）。**尚未做**：视口窗口二次 `buildSeries`。
+**已落地（含视口窗口）**：`chart.listTypes` / `chart.buildSeries`（Python LTTB，默认 5000 点；`kind:"hist"` 在 sidecar 分箱）；Ribbon Chart 标签 New Line / Scatter / Bar / Histogram；中区 Figure tab；属性面板改标题/颜色/线宽/网格/图例。缩放/平移停止 150ms 后带 `xMin`/`xMax` 再取样（小数据不重复请求；复位拉回全列）。PNG 从 uPlot 画布抓取；SVG 由采样点生成矢量，另存对话框在主进程（`chart.saveExport`）。
 
 **验收**
 
 - 当前数据集选 x/y 出折线；改颜色与标题立即生效。
-- 100 万点 y 列：`chart.buildSeries(maxPoints=5000)` 后缩放仍请求新窗口（可先做全列降采样一版，视口细化放本阶段最后一周）。
+- 100 万点 y 列：`chart.buildSeries(maxPoints=5000)` 后缩放仍请求新窗口，渲染进程收不到百万点。
 - 导出 PNG、SVG 能插入 Word（人工看一次即可）。
 
 ## P5 — 工程文件与发布（3 周）

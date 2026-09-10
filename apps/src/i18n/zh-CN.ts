@@ -363,7 +363,7 @@ export default {
     grid: '网格',
     legend: '图例',
     resetView: '复位视图',
-    downsampled: '总览降采样：{points} / {source} 点。缩放只放大已采样点。',
+    downsampled: '显示 {points} / {source} 点。缩放后会按视口重新取样。',
     columnNotFound: '找不到该列。',
     nonNumeric: '该列不是数值列。请先筛选或选择数值列。',
     emptySeries: '没有足够的数值点可以绘图。',

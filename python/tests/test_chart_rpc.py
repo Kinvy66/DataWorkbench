@@ -56,6 +56,30 @@ def test_chart_list_types_and_build_series(tmp_path: Path) -> None:
             proc,
             {
                 "jsonrpc": "2.0",
+                "id": 7,
+                "method": "chart.buildSeries",
+                "params": {
+                    "dataId": dataset_id,
+                    "x": "t",
+                    "y": ["ch1"],
+                    "maxPoints": 5000,
+                    "xMin": 100,
+                    "xMax": 199,
+                },
+            },
+        )
+        windowed = read_rpc(proc)
+        window_result = windowed["result"]
+        assert window_result["sourceCount"] == 100
+        assert window_result["downsampled"] is False
+        assert window_result["pointCount"] == 100
+        assert window_result["x"][0] == 100.0
+        assert window_result["x"][-1] == 199.0
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
                 "id": 6,
                 "method": "chart.buildSeries",
                 "params": {"dataId": dataset_id, "y": ["ch1"], "kind": "hist", "bins": 50},

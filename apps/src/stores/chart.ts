@@ -3,6 +3,7 @@ import { nextTick } from 'vue'
 import {
   CHART_HIST_BINS_DEFAULT,
   CHART_MAX_POINTS_DEFAULT,
+  type ChartBuildSeriesParams,
   type ChartBuildSeriesResult,
   type ChartTypeId
 } from '@dw/rpc-types'
@@ -10,7 +11,8 @@ import {
   canvasToPngDataUrl,
   seriesColor,
   seriesToSvg,
-  suggestedExportName
+  suggestedExportName,
+  type ViewportWindow
 } from '@dw/chart-core'
 import { getDesktopBridge } from '@/rpc/bridge'
 import { isCancelled } from '@/rpc/rpcError'
@@ -38,12 +40,49 @@ export type ChartSpec = {
   legend: boolean
   series: ChartSeriesStyle[]
   data: ChartBuildSeriesResult | null
+  window: ViewportWindow | null
 }
 
 let canvasProvider: (() => HTMLCanvasElement | null) | null = null
+const rebuildSeq = new Map<string, number>()
 
 function rpc() {
   return getDesktopBridge().rpc
+}
+
+function nextRebuildSeq(id: string): number {
+  const token = (rebuildSeq.get(id) ?? 0) + 1
+  rebuildSeq.set(id, token)
+  return token
+}
+
+function isCurrentRebuild(id: string, token: number): boolean {
+  return rebuildSeq.get(id) === token
+}
+
+function seriesParams(
+  chart: Pick<ChartSpec, 'type' | 'dataId' | 'x' | 'y'>,
+  range?: ViewportWindow
+): ChartBuildSeriesParams {
+  const isHist = chart.type === 'hist'
+  const params: ChartBuildSeriesParams = isHist
+    ? {
+        dataId: chart.dataId,
+        y: chart.y,
+        kind: 'hist',
+        bins: CHART_HIST_BINS_DEFAULT
+      }
+    : {
+        dataId: chart.dataId,
+        x: chart.x,
+        y: chart.y,
+        maxPoints: CHART_MAX_POINTS_DEFAULT
+      }
+  if (range) {
+    params.xMin = range.xMin
+    params.xMax = range.xMax
+  }
+  return params
 }
 
 function throwExportMissing(): never {
@@ -105,6 +144,11 @@ export const useChartStore = defineStore('chart', {
     },
     prune(existingIds: string[]): void {
       const keep = new Set(existingIds)
+      for (const item of this.charts) {
+        if (!keep.has(item.dataId)) {
+          rebuildSeq.delete(item.id)
+        }
+      }
       this.charts = this.charts.filter((item) => keep.has(item.dataId))
       if (this.currentId && !this.charts.some((item) => item.id === this.currentId)) {
         this.currentId = this.charts[0]?.id ?? null
@@ -116,6 +160,7 @@ export const useChartStore = defineStore('chart', {
       }
     },
     remove(id: string): void {
+      rebuildSeq.delete(id)
       this.charts = this.charts.filter((item) => item.id !== id)
       if (this.currentId === id) {
         this.currentId = this.charts[0]?.id ?? null
@@ -150,25 +195,18 @@ export const useChartStore = defineStore('chart', {
       const data = useDataStore()
       const workflow = useWorkflowStore()
       const isHist = options.type === 'hist'
+      const xName = isHist ? (options.y[0] ?? '') : (options.x ?? '')
       const result = (await rpc().invoke(
         'chart.buildSeries',
-        isHist
-          ? {
-              dataId: options.dataId,
-              y: options.y,
-              kind: 'hist',
-              bins: CHART_HIST_BINS_DEFAULT
-            }
-          : {
-              dataId: options.dataId,
-              x: options.x,
-              y: options.y,
-              maxPoints: CHART_MAX_POINTS_DEFAULT
-            }
+        seriesParams({
+          type: options.type,
+          dataId: options.dataId,
+          x: xName,
+          y: options.y
+        })
       )) as ChartBuildSeriesResult
       const datasetName = data.datasets.find((item) => item.id === options.dataId)?.name ?? 'chart'
       const id = crypto.randomUUID()
-      const xName = isHist ? (options.y[0] ?? '') : (options.x ?? '')
       const spec: ChartSpec = {
         id,
         type: options.type,
@@ -185,12 +223,41 @@ export const useChartStore = defineStore('chart', {
           color: seriesColor(index),
           width: 1.5
         })),
-        data: result
+        data: result,
+        window: null
       }
       this.charts.push(spec)
       this.currentId = id
       workflow.centerTab = 'figure'
       return spec
+    },
+    async rebuildWindow(id: string, range?: ViewportWindow): Promise<boolean> {
+      const chart = this.charts.find((item) => item.id === id)
+      if (!chart) {
+        return false
+      }
+      const token = nextRebuildSeq(id)
+      try {
+        const result = (await rpc().invoke(
+          'chart.buildSeries',
+          seriesParams(chart, range)
+        )) as ChartBuildSeriesResult
+        if (!isCurrentRebuild(id, token)) {
+          return false
+        }
+        const live = this.charts.find((item) => item.id === id)
+        if (!live) {
+          return false
+        }
+        live.data = result
+        live.window = range ?? null
+        return true
+      } catch {
+        return false
+      }
+    },
+    async resetWindow(id: string): Promise<boolean> {
+      return this.rebuildWindow(id)
     },
     async saveExport(format: 'png' | 'svg'): Promise<boolean> {
       const current = this.current

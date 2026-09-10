@@ -111,7 +111,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 - `maxPoints` 默认 5000，钳制到 2…20000。生产降采样只在 Python（LTTB），前端禁止对百万点 `JSON.parse`。直方分箱同样只在 Python，不要把原始列拉到渲染进程再 `histogram`。
 - 非数值 y（或既非数值也非日期的 x）：error **1002**，`i18nKey=chart.nonNumeric`。缺列：1002 `chart.columnNotFound`。缺数据集：1001 `data.notFound`。
 - 非有限 x 的行丢弃；y 的 NaN 变成 JSON `null`（uPlot 断线）。datetime x 为 epoch **毫秒**，`xKind:"time"`；uPlot 时间轴自行 ÷1000。
-- 第一版全列降采样一次；`xMin`/`xMax` 可筛窗口，视口缩放后重新请求放本阶段后半。
+- uPlot 视口停止 **150ms**（`CHART_VIEWPORT_DEBOUNCE_MS`）后带 `xMin`/`xMax` 再请求 `chart.buildSeries`，仍受 `maxPoints=5000` 限制，不要把窗口内百万点拉进渲染进程。小数据（未降采样且未窗口）不重复请求。时间轴 scale 是秒，协议用毫秒。复位视图省略 `xMin`/`xMax` 拉回全列。
 - SVG 由当前图的采样点生成矢量（含标题/轴/图例/网格）；PNG 抓当前 uPlot 画布（含缩放）。渲染进程不得 `fs` 写盘。
 
 

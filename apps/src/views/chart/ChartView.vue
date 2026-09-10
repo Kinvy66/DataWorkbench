@@ -1,15 +1,45 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { UPlotChart } from '@dw/chart-core'
+import {
+  UPlotChart,
+  dataExtent,
+  debounce,
+  planViewportRequest,
+  type ViewportWindow
+} from '@dw/chart-core'
+import { CHART_VIEWPORT_DEBOUNCE_MS } from '@dw/rpc-types'
 import type { ChartSpec } from '@/stores/chart'
+import { useChartStore } from '@/stores/chart'
 
 const props = defineProps<{
   chart: ChartSpec
 }>()
 
+const chartStore = useChartStore()
 const host = ref<HTMLElement | null>(null)
 let plot: UPlotChart | null = null
 let observer: ResizeObserver | null = null
+let ready = false
+
+const scheduleWindow = debounce((range: ViewportWindow) => {
+  const spec = props.chart
+  if (!spec.data) {
+    return
+  }
+  const next = planViewportRequest({
+    range,
+    currentWindow: spec.window,
+    dataExtent: dataExtent(spec.data.x),
+    downsampled: spec.data.downsampled,
+    sourceCount: spec.data.sourceCount,
+    maxPoints: spec.data.maxPoints,
+    kind: spec.type
+  })
+  if (!next) {
+    return
+  }
+  void chartStore.rebuildWindow(spec.id, next)
+}, CHART_VIEWPORT_DEBOUNCE_MS)
 
 function plotData() {
   const series = props.chart.data
@@ -51,8 +81,23 @@ function render(): void {
     })),
     data,
     width,
-    height
+    height,
+    onXRange: (range) => {
+      scheduleWindow(range)
+    }
   })
+}
+
+function applyData(): void {
+  const data = plotData()
+  if (!data) {
+    return
+  }
+  if (!plot) {
+    render()
+    return
+  }
+  plot.setData(data, props.chart.window == null)
 }
 
 function resetView(): void {
@@ -66,6 +111,7 @@ function canvas(): HTMLCanvasElement | null {
 onMounted(() => {
   void nextTick(() => {
     render()
+    ready = true
     observer = new ResizeObserver(() => {
       const el = host.value
       if (!el || !plot) {
@@ -81,6 +127,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  ready = false
+  scheduleWindow.cancel()
   observer?.disconnect()
   plot?.destroy()
   plot = null
@@ -95,11 +143,21 @@ watch(
     props.chart.grid,
     props.chart.legend,
     props.chart.type,
-    props.chart.series.map((item) => `${item.key}:${item.color}:${item.width}`).join('|'),
-    props.chart.data?.pointCount
+    props.chart.series.map((item) => `${item.key}:${item.color}:${item.width}`).join('|')
   ],
   () => {
-    render()
+    if (ready) {
+      render()
+    }
+  }
+)
+
+watch(
+  () => props.chart.data,
+  () => {
+    if (ready) {
+      applyData()
+    }
   }
 )
 

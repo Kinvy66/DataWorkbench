@@ -41,6 +41,31 @@ def test_build_series_downsamples_and_keeps_numeric_y() -> None:
     assert all(v is None or isinstance(v, float) for v in result["ys"][0])
 
 
+def test_build_series_window_filters_x() -> None:
+    df = pd.DataFrame({"t": np.arange(100, dtype=float), "y": np.arange(100, dtype=float)})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("wave", df)
+    result = build_series(manager, data_id, "t", ["y"], max_points=5000, x_min=10.0, x_max=19.0)
+    assert result["sourceCount"] == 10
+    assert result["downsampled"] is False
+    assert result["pointCount"] == 10
+    assert result["x"][0] == 10.0
+    assert result["x"][-1] == 19.0
+
+
+def test_build_series_window_then_lttb_keeps_window_endpoints() -> None:
+    n = 8000
+    df = pd.DataFrame({"t": np.arange(n, dtype=float), "y": np.sin(np.linspace(0, 20, n))})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("wave", df)
+    result = build_series(manager, data_id, "t", ["y"], max_points=50, x_min=1000.0, x_max=3999.0)
+    assert result["sourceCount"] == 3000
+    assert result["downsampled"] is True
+    assert result["pointCount"] == 50
+    assert result["x"][0] == 1000.0
+    assert result["x"][-1] == 3999.0
+
+
 def test_build_series_datetime_x_is_epoch_ms() -> None:
     times = pd.date_range("2024-01-01", periods=4, freq="h")
     df = pd.DataFrame({"t": times, "y": [1.0, 2.0, 3.0, 4.0]})

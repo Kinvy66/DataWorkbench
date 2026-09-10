@@ -41,4 +41,4 @@ flowchart LR
 
 ## 当前状态
 
-P0 骨架已落地。P1 数据自动验收已完成。P2 画布路径已完成。P3 分析节点已齐（不要移植 `data_plot`）。P4：`chart.buildSeries` 降采样 + Chart 标签折线/散点/柱状/直方 + Figure 主区 + PNG/SVG 导出。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。
+P0 骨架已落地。P1 数据自动验收已完成。P2 画布路径已完成。P3 分析节点已齐（不要移植 `data_plot`）。P4 图表一期已齐：`chart.buildSeries` 降采样 + Chart 标签折线/散点/柱状/直方 + Figure 主区 + PNG/SVG 导出 + 视口窗口二次取样。下一阶段 P5（File 保存/打开）。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。

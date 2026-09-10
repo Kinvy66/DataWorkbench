@@ -11,7 +11,7 @@
 - ✅ 样式：标题、轴标签、线色、线宽、网格开关、图例开关
 - ✅ 交互：缩放、平移（uPlot 内置）、复位
 - ✅ 导出：PNG、SVG（PDF 可用打印到 PDF 或 svg→pdf 库，一期可只 PNG+SVG）
-- ✅ 大数据：`chart.buildSeries` 在 Python 做 min-max 桶或 LTTB，默认上限 5000 点回传
+- ✅ 大数据：`chart.buildSeries` 在 Python 做 min-max 桶或 LTTB，默认上限 5000 点回传；缩放/平移停止 150ms 后按视口带 `xMin`/`xMax` 再取样
 
 ## 一期不做
 
@@ -33,17 +33,18 @@ sequenceDiagram
     UI->>M: chart.buildSeries {dataId,x,y,maxPoints,xMin?,xMax?}
     M->>P: 降采样
     P-->>UI: {x:Float64Array via Arrow或json, ys:[]}
-    UI->>UI: uPlot.setData
+    UI->>UI: uPlot.setData(resetScales=false)
 ```
 
-视口变化停止 150ms 后再请求（可选，P4 最后一周）。第一版可全列降采样一次，缩放只是前端放大已采样点（会失真，需在 UI 提示 “overview downsample”）。
+视口变化停止 150ms 后再请求。窗口请求仍 `maxPoints=5000`。小数据未降采样则不重复请求。复位视图省略 `xMin`/`xMax` 拉回全列（不要只对当前窗口 `setData(..., true)`）。数据更新走 `setData`，不要每次销毁 uPlot（会丢掉缩放）。
 
 ## 前端结构
 
 `packages/chart-core`：
 
 - `downsample.ts` 仅作测试对照；**生产降采样以 Python 为准**（避免双端不一致）
-- `UPlotChart.ts` 封装 setData/setSize
+- `viewport.ts`：scale↔协议 x（时间轴秒→毫秒）、是否该按视口重请求、150ms debounce
+- `UPlotChart.ts` 封装 setData/setSize；`hooks.setScale` 在 x 轴变化时回调（忽略自身 setData/render 触发的 scale）
 - `exportSvg.ts`：由当前采样点生成矢量（标题/轴/图例/网格）；不要把 canvas 栅格化成 SVG
 - `exportPng.ts`：从 uPlot canvas 抓 PNG（含当前缩放）
 

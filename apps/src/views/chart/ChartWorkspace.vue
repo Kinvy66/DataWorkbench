@@ -34,7 +34,11 @@ function onTabRemove(name: string | number): void {
   chart.remove(String(name))
 }
 
-function resetView(): void {
+async function resetView(): Promise<void> {
+  if (!current.value) {
+    return
+  }
+  await chart.resetWindow(current.value.id)
   view.value?.resetView()
 }
 
@@ -58,7 +62,7 @@ onUnmounted(() => {
     </el-tabs>
     <div v-if="current" class="toolbar">
       <el-button size="small" @click="resetView">{{ t('chart.resetView') }}</el-button>
-      <span v-if="current.data?.downsampled" class="hint">
+      <span v-if="current.data && (current.data.downsampled || current.window)" class="hint">
         {{ t('chart.downsampled', { points: current.data.pointCount, source: current.data.sourceCount }) }}
       </span>
     </div>
