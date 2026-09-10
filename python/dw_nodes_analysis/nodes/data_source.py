@@ -17,7 +17,7 @@ log = logging.getLogger("dw_nodes_analysis")
     category=_("Data Analysis"),  # cn:数据分析
     icon=os.path.join(_ICON_DIR, "dataSource.svg"),
     description=_(
-        "Loads a DataFrame from DataManager by display name or dataset id. Import the table first (Data → Import); this node does not read files."
+        "Loads a DataFrame from DataManager by display name or dataset id. Import the table first (Data → Add Data); this node does not read files."
     ),  # cn:按显示名或数据集 id 从 DataManager 取出 DataFrame。请先用「数据 → 导入」导入表；本节点不读文件。
 )
 class DataSourceNode:

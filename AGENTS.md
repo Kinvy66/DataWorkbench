@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（进行中） → P4 图表 → P5 工程文件**
 
-P2 任务 1–8 已落地。P3：已 vendor `dw_nodes_analysis/core`，工具箱含 Data Source（从 DataManager 取表）、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Filter By Column、Eval Expression、Search、Sort、Describe 与 Data Export。Ribbon Data → 清洗 → 删除缺失 / 删除重复 / 填充缺失 / 替换值 / 阈值筛选 / 按列筛选 / 表达式计算 / 搜索 / 查询 / 排序，以及 Data → 分析 → 描述统计，与对应节点共用 Core（Describe 发布新表，不改源表；Eval 必须用赋值表达式如 `c = a + b`，无赋值会返回 Series 并被拒绝）。Data Export 是工作流写盘节点（Core `export_data`）；功能区导出仍是 `data.export`。不要做图表、自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。其余清洗节点仍属 P3 后续。
+P2 任务 1–8 已落地。P3：已 vendor `dw_nodes_analysis/core`，工具箱含 Data Source（从 DataManager 取表）、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Filter By Column、Eval Expression、Search、Sort、Describe 与 Data Export。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签（数据清洗：删除缺失值/删除重复值/填充缺失值；数据过滤：数值计算/条件筛选/数据检索/列数据过滤/数据排序；统计：数据描述）。Replace Values、Threshold Filter 上游无 Ribbon 按钮，只做工作流节点 + RPC。Describe 发布新表，不改源表；Eval 必须用赋值表达式如 `c = a + b`，无赋值会返回 Series 并被拒绝。Data Export 是工作流写盘节点（Core `export_data`）；功能区导出仍是 `data.export`。**不要把每个新节点塞进 Data 标签。** 后续 Ribbon 按钮只加上游同一 panel 已有的 action（插值、IQR、Z-score、偏态转换、透视表）。不要做图表、自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。Home 不要擅自改成对齐 Qt。其余清洗节点仍属 P3 后续。
 
 ## STRUCTURE
 
@@ -111,6 +111,8 @@ Python sidecar 的 **stdout 只能打 JSON-RPC 行**。日志、traceback、`pri
 ### T5. Ribbon 不是业务层
 
 `@mlightcad/ribbon` 只展示 tab/group/item。点击 → `commandBus.dispatch(id)`。不要把业务写进 ribbon schema 闭包。插件以后也注册到 command bus。
+
+**对齐上游菜单**：Data 标签 = 上游 Data（添加/移除/重命名/导出）。清洗、过滤、统计 = 上游 DataFrame 上下文「操作」页，复刻为 **Operate** 标签。Ribbon 按钮只加上游同一 panel 已有的 action。Replace Values / Threshold Filter 上游无按钮，只做节点。不要把每个新 Core 操作塞进 Data。Home 不要擅自改成对齐 Qt。
 
 ### T6. 改 RPC 三处同步
 
@@ -277,6 +279,7 @@ feat: 实现 data.fetchBlock 虚表窗口
 | load 工程时 `addNode` | `loadLogic` + wrap |
 | TS 里 `for` 跑节点 execute | `workflow.execute` |
 | Ribbon `@click` 里写导入逻辑 | `commandBus.dispatch('data.import')` |
+| 每个 Core 节点都做成 Data 标签大按钮 | 对齐上游：Data 只放数据进出；清洗/过滤/统计放 Operate；上游无按钮的只做节点 |
 | sidecar `print` 到 stdout | stderr |
 | UI 字符串写中文 | 英文源 + i18n |
 | 翻译 `@NodeDef(name=)` | name 保持英文 |

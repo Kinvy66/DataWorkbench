@@ -26,16 +26,18 @@
 |-----|------|---------|------|
 | File | | `file.new` `file.open` `file.save` `file.saveAs` `file.exit` | P5 真正可用，P0 可 disabled |
 | Home | Clipboard | `edit.undo` `edit.redo` | P2 起 |
-| Data | Import | `data.import` | P1 |
+| Data | Data Operation | `data.import` `data.remove` `data.rename` | P1（对齐上游 Data：添加/移除/重命名） |
 | Data | Export | `data.export` | P1 |
-| Data | Dataset | `data.rename` `data.remove` | P1 |
-| Data | Clean | `data.dropNa` `data.dropDuplicates` `data.fillNa` `data.replaceValues` `data.thresholdFilter` `data.filterByColumn` `data.eval` `data.search` `data.query` `data.sort` | P3 |
-| Data | Analyze | `data.describe` | P3 |
+| Operate | Data Cleaning | `data.dropNa` `data.dropDuplicates` `data.fillNa` | P3（对齐上游 DataFrame 上下文「操作」→ 数据清洗；插值/IQR/Z-score/偏态转换后续按上游同 panel 再加） |
+| Operate | Data Filtering | `data.eval` `data.query` `data.search` `data.filterByColumn` `data.sort` | P3（检索与按列为 medium，其余 large） |
+| Operate | Statistics | `data.describe` | P3（透视表后续按上游同 panel 再加） |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |
 | Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` | P4 |
 | Chart | Export | `chart.exportPng` `chart.exportSvg` | P4 |
 
-所有 label 走 i18n key，例如 `ribbon.data.import`。英文源：「Import」。默认界面语言 `zh-CN`。
+所有 label 走 i18n key，例如 `ribbon.dataImport`。英文源对齐上游：「Add Data」。默认界面语言 `zh-CN`。
+
+**Ribbon 对齐铁律**：上游 `DAAppRibbonArea` 的 Data 标签只有数据进出；清洗/过滤/统计在 DataAnalysis 插件挂到 DataFrame 上下文「操作」页。复刻版用常驻 **Operate** 标签对应该上下文页。**不要把每个 Core / 工作流节点都做成 Data 标签大按钮。** 上游 Ribbon 没有的 action（Replace Values、Threshold Filter）只做节点 + RPC，功能区不放按钮。Home 不要擅自改成对齐 Qt（除非用户要求）。
 
 File tab 使用 ML Ribbon 的 backstage/file menu（若库支持）；否则用 Element Plus 对话框模拟打开/保存（走 Electron `dialog.showOpenDialog`）。
 

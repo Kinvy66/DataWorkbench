@@ -76,7 +76,7 @@ gantt
 - **自动（pytest）**：`test_export_csv_sees_patch` 改格子后导出含新值。
 - **自动（vitest）**：空状态走 vue-i18n（中/英）；Ribbon extra 有 locale 切换。
 - **自动（vitest）**：虚表只预取当前块 ±1（最多 3×512），`retainCachedBlocks` 丢掉窗外缓存。
-- **手工**：`scripts/gen_large_csv.py` 生成 csv，Data → Import 后滚动不卡死；Chrome 任务管理器中 renderer 堆远小于整表 CSV。无 Electron E2E，此项不进 CI。
+- **手工**：`scripts/gen_large_csv.py` 生成 csv，Data → 添加数据后滚动不卡死；Chrome 任务管理器中 renderer 堆远小于整表 CSV。无 Electron E2E，此项不进 CI。
 
 ## P2 — 工作流（5 周）
 
@@ -107,7 +107,7 @@ gantt
 
 1. Vendor `DADataAnalysisCore` 纯函数。
 2. 移植节点，按下表优先级；每个节点补一条 pytest（无 Qt）。
-3. Ribbon Data 分组：Import、Query 对话框、DropNA 对话框（调 Core，结果 `data.register`）。
+3. Ribbon 对齐上游：Data 标签只放添加/移除/重命名/导出；Query、DropNA 等对话框挂在 **Operate** 标签（调 Core，就地改写当前表，不是空 `data.register`）。
 4. 数据源节点：从 DataManager 按名取 df 作为工作流输入。
 
 **节点优先级**
@@ -120,23 +120,23 @@ gantt
 
 上游 `data_plot_node` 依赖 C++ 图，P3 **不要**移植；出图走 P4 前端。
 
-**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query 节点与 Ribbon「查询」对话框（均调用 `query_dataframe`，Ribbon 经 `data.query` **就地**改写当前表）；Drop NA 节点与 Ribbon「删除缺失」对话框（均调用 `dropna_impl`，Ribbon 经 `data.dropNa` 就地改写）；Drop Duplicates 节点与 Ribbon「删除重复」对话框（均调用 `drop_duplicates_impl`，Ribbon 经 `data.dropDuplicates` 就地改写）；Fill NA 节点与 Ribbon「填充缺失」对话框（均调用 `fillna_impl`，Ribbon 经 `data.fillNa` 就地改写）；Replace Values 节点与 Ribbon「替换值」对话框（均调用 `replace_values_impl`，Ribbon 经 `data.replaceValues` 就地改写）；Threshold Filter 节点与 Ribbon「阈值筛选」对话框（均调用 `threshold_filter_impl`，Ribbon 经 `data.thresholdFilter` 就地改写；直接暴露 Core `filter_type`，不要抄上游运算符映射）；Filter by Column 节点与 Ribbon「按列筛选」对话框（均调用 `filter_by_column_range`，Ribbon 经 `data.filterByColumn` 就地改写；**保留**闭区间，不要与 Threshold Filter 合并；空 min/max=无界，0 是真实边界）；Eval 节点与 Ribbon「表达式计算」对话框（均调用 `eval_expression`，Ribbon 经 `data.eval` 就地改写；必须赋值，无赋值返回 Series 会被拒绝）；Search 节点与 Ribbon「搜索」对话框（均调用 `search_dataframe`，Ribbon 经 `data.search` 就地改写；正则筛行，不要做成 Qt 查找下一个）；Sort 节点与 Ribbon「排序」对话框（均调用 `sort_dataframe`，Ribbon 经 `data.sort` 就地改写）；Describe 节点与 Ribbon「描述统计」对话框（均调用 `describe_dataframe`，Ribbon 经 `data.describe` **发布新统计表**，源表不变；统计名展平为 `stat` 列）；Data Export 节点（`export_data` 写连入的 DataFrame；Ribbon `data.export` 仍导出当前 DataManager 表）。批次 A 完成（`data_filter` 与 Query 重叠，不单独做）。批次 B 已做 drop_duplicates、replace_values、threshold_filter、filter_by_column、eval、search。
+**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query 节点与 Operate「条件筛选」对话框（均调用 `query_dataframe`，经 `data.query` **就地**改写当前表）；Drop NA 节点与 Operate「删除缺失值」（`dropna_impl` / `data.dropNa`）；Drop Duplicates（`drop_duplicates_impl` / `data.dropDuplicates`）；Fill NA（`fillna_impl` / `data.fillNa`）；Replace Values 节点与 RPC `data.replaceValues`（**不上 Ribbon**，对齐上游无此按钮）；Threshold Filter 节点与 RPC `data.thresholdFilter`（**不上 Ribbon**；直接暴露 Core `filter_type`，不要抄上游运算符映射）；Filter by Column 与 Operate「列数据过滤」（`filter_by_column_range` / `data.filterByColumn`；**保留**闭区间，不要与 Threshold Filter 合并；空 min/max=无界，0 是真实边界）；Eval 与 Operate「数值计算」（`eval_expression` / `data.eval`；必须赋值，无赋值返回 Series 会被拒绝）；Search 与 Operate「数据检索」（`search_dataframe` / `data.search`；正则筛行，不要做成 Qt 查找下一个）；Sort 与 Operate「数据排序」（`sort_dataframe` / `data.sort`）；Describe 与 Operate「数据描述」（`describe_dataframe` / `data.describe` **发布新统计表**，源表不变；统计名展平为 `stat` 列）；Data Export 节点（`export_data` 写连入的 DataFrame；Data 标签 `data.export` 仍导出当前 DataManager 表）。Ribbon **Data** 只放添加/移除/重命名/导出；清洗/过滤/统计在 **Operate**。批次 A 完成（`data_filter` 与 Query 重叠，不单独做）。批次 B 已做 drop_duplicates、replace_values、threshold_filter、filter_by_column、eval、search。
 
 **验收**
 
 - 导入表 → 工作流 data_source → query → DataToManager → 虚表看到筛选结果。
-- Ribbon DropNA 与节点 DropNA 调用同一 Core 函数。
-- Ribbon Drop Duplicates 与节点 Drop Duplicates 调用同一 Core 函数。
-- Ribbon FillNA 与节点 FillNA 调用同一 Core 函数。
-- Ribbon Replace Values 与节点 Replace Values 调用同一 Core 函数。
-- Ribbon Threshold Filter 与节点 Threshold Filter 调用同一 Core 函数（直接用 Core `filter_type`）。
-- Ribbon Filter by Column 与节点 Filter By Column 调用同一 Core 函数（保留闭区间；不要与 Threshold Filter 合并）。
-- Ribbon Eval 与节点 Eval Expression 调用同一 Core 函数（必须赋值；无赋值返回 Series 会被拒绝）。
-- Ribbon Search 与节点 Search 调用同一 Core 函数（正则筛行；不要做成 Qt 查找下一个）。
-- Ribbon Query 与节点 Query 调用同一 Core 函数。
-- Ribbon Sort 与节点 Sort 调用同一 Core 函数。
-- Ribbon Describe 与节点 Describe 调用同一 Core 函数（Ribbon 发布新表）。
-- Ribbon Export 仍走 `data.export`；工作流 Data Export 节点走同一 Core `export_data` 写连入的表。
+- Data 标签只有添加/移除/重命名/导出；清洗/过滤/统计在 Operate（对齐上游）。
+- Operate DropNA 与节点 DropNA 调用同一 Core 函数。
+- Operate Drop Duplicates 与节点 Drop Duplicates 调用同一 Core 函数。
+- Operate FillNA 与节点 FillNA 调用同一 Core 函数。
+- Replace Values / Threshold Filter：节点 + RPC 与 Core 同一函数；**不上 Ribbon**（上游无对应按钮）。
+- Operate Filter by Column 与节点 Filter By Column 调用同一 Core 函数（保留闭区间；不要与 Threshold Filter 合并）。
+- Operate Eval 与节点 Eval Expression 调用同一 Core 函数（必须赋值；无赋值返回 Series 会被拒绝）。
+- Operate Search 与节点 Search 调用同一 Core 函数（正则筛行；不要做成 Qt 查找下一个）。
+- Operate Query 与节点 Query 调用同一 Core 函数。
+- Operate Sort 与节点 Sort 调用同一 Core 函数。
+- Operate Describe 与节点 Describe 调用同一 Core 函数（发布新表）。
+- Data 标签 Export 仍走 `data.export`；工作流 Data Export 节点走同一 Core `export_data` 写连入的表。
 
 ## P4 — 图表一期（5 周）
 

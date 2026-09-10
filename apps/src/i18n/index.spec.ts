@@ -9,10 +9,10 @@ describe('i18n', () => {
   })
 
   it('uses vue-i18n for the empty dataset copy instead of a P1 placeholder', () => {
-    expect(String(i18n.global.t('layout.datasetsEmpty'))).toContain('导入')
+    expect(String(i18n.global.t('layout.datasetsEmpty'))).toContain('添加数据')
     expect(String(i18n.global.t('layout.datasetsEmpty'))).not.toContain('P1')
     i18n.global.locale.value = 'en'
-    expect(String(i18n.global.t('layout.datasetsEmpty'))).toContain('Import')
+    expect(String(i18n.global.t('layout.datasetsEmpty'))).toContain('Add Data')
     i18n.global.locale.value = 'zh-CN'
   })
 
@@ -30,17 +30,23 @@ describe('i18n', () => {
     expect(String(i18n.global.t('log.workflowStopped'))).toBe('工作流已停止。')
     expect(String(i18n.global.t('ribbon.undo'))).toBe('撤销')
     i18n.global.locale.value = 'en'
-    expect(String(i18n.global.t('ribbon.dataDropNa'))).toBe('Drop NA')
+    expect(String(i18n.global.t('ribbon.dataOperate'))).toBe('Data Operation')
+    expect(String(i18n.global.t('ribbon.operate'))).toBe('Operate')
+    expect(String(i18n.global.t('ribbon.dataImport'))).toBe('Add Data')
+    expect(String(i18n.global.t('ribbon.dataDropNa'))).toBe('Drop None')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataDropNa'))).toBe('删除缺失')
+    expect(String(i18n.global.t('ribbon.dataOperate'))).toBe('数据操作')
+    expect(String(i18n.global.t('ribbon.operate'))).toBe('操作')
+    expect(String(i18n.global.t('ribbon.dataImport'))).toBe('添加数据')
+    expect(String(i18n.global.t('ribbon.dataDropNa'))).toBe('删除缺失值')
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataDropDuplicates'))).toBe('Drop Duplicates')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataDropDuplicates'))).toBe('删除重复')
+    expect(String(i18n.global.t('ribbon.dataDropDuplicates'))).toBe('删除重复值')
     i18n.global.locale.value = 'en'
-    expect(String(i18n.global.t('ribbon.dataFillNa'))).toBe('Fill NA')
+    expect(String(i18n.global.t('ribbon.dataFillNa'))).toBe('Fill None')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataFillNa'))).toBe('填充缺失')
+    expect(String(i18n.global.t('ribbon.dataFillNa'))).toBe('填充缺失值')
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataReplaceValues'))).toBe('Replace Values')
     i18n.global.locale.value = 'zh-CN'
@@ -52,27 +58,29 @@ describe('i18n', () => {
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataFilterByColumn'))).toBe('Filter by Column')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataFilterByColumn'))).toBe('按列筛选')
+    expect(String(i18n.global.t('ribbon.dataFilterByColumn'))).toBe('列数据过滤')
     i18n.global.locale.value = 'en'
-    expect(String(i18n.global.t('ribbon.dataEval'))).toBe('Eval')
+    expect(String(i18n.global.t('ribbon.dataEval'))).toBe('Eval Data')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataEval'))).toBe('表达式计算')
+    expect(String(i18n.global.t('ribbon.dataEval'))).toBe('数值计算')
     i18n.global.locale.value = 'en'
-    expect(String(i18n.global.t('ribbon.dataSearch'))).toBe('Search')
+    expect(String(i18n.global.t('ribbon.dataSearch'))).toBe('Data Retrieval')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataSearch'))).toBe('搜索')
+    expect(String(i18n.global.t('ribbon.dataSearch'))).toBe('数据检索')
     i18n.global.locale.value = 'en'
-    expect(String(i18n.global.t('ribbon.dataQuery'))).toBe('Query')
+    expect(String(i18n.global.t('ribbon.dataQuery'))).toBe('Query Data')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataQuery'))).toBe('查询')
+    expect(String(i18n.global.t('ribbon.dataQuery'))).toBe('条件筛选')
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataSort'))).toBe('Sort')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataSort'))).toBe('排序')
+    expect(String(i18n.global.t('ribbon.dataSort'))).toBe('数据排序')
     i18n.global.locale.value = 'en'
-    expect(String(i18n.global.t('ribbon.dataDescribe'))).toBe('Describe')
+    expect(String(i18n.global.t('ribbon.dataDescribe'))).toBe('Data Description')
     i18n.global.locale.value = 'zh-CN'
-    expect(String(i18n.global.t('ribbon.dataDescribe'))).toBe('描述统计')
-    expect(String(i18n.global.t('ribbon.dataAnalyze'))).toBe('分析')
+    expect(String(i18n.global.t('ribbon.dataDescribe'))).toBe('数据描述')
+    expect(String(i18n.global.t('ribbon.dataClean'))).toBe('数据清洗')
+    expect(String(i18n.global.t('ribbon.dataFilter'))).toBe('数据过滤')
+    expect(String(i18n.global.t('ribbon.dataStatistic'))).toBe('统计')
   })
 })

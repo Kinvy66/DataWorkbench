@@ -42,18 +42,18 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 ## 与工作流衔接
 
 - **data_source 节点**：参数 `dataset_name` 或 `dataset_id`，`execute` 时从 DataManager 取 df 的**副本**写入 `_output_data`。不是上游那个读文件的 Data Source。
-- **Drop NA**：节点输出新 df；Ribbon `data.dropNa` **就地**替换当前数据集（与 `dropna_impl` 同一函数）。需要另存一份时用 Output to DataManager。
-- **Drop Duplicates**：节点输出新 df；Ribbon `data.dropDuplicates` **就地**替换当前数据集（与 `drop_duplicates_impl` 同一函数）。需要另存一份时用 Output to DataManager。
-- **Fill NA**：节点输出新 df；Ribbon `data.fillNa` **就地**替换当前数据集（与 `fillna_impl` 同一函数）。需要另存一份时用 Output to DataManager。
-- **Replace Values**：节点输出新 df；Ribbon `data.replaceValues` **就地**替换当前数据集（与 `replace_values_impl` 同一函数）。需要另存一份时用 Output to DataManager。
-- **Threshold Filter**：节点输出新 df；Ribbon `data.thresholdFilter` **就地**替换当前数据集（与 `threshold_filter_impl` 同一函数）。直接暴露 Core `filter_type`（`greater_than` 删 `> upper`，`less_than` 删 `< lower`）。空列=全部数值列。需要另存一份时用 Output to DataManager。
-- **Filter by Column**：节点输出新 df；Ribbon `data.filterByColumn` **就地**替换当前数据集（与 `filter_by_column_range` 同一函数）。**保留**闭区间内的行，不要与 Threshold Filter 合并。`min`/`max` 空=该侧不限制；0 是真实边界。需要另存一份时用 Output to DataManager。
-- **Eval**：节点输出新 df；Ribbon `data.eval` **就地**替换当前数据集（与 `eval_expression` 同一函数）。表达式必须是赋值（`c = a + b`）；无赋值会返回 Series，不能覆盖整表。需要另存一份时用 Output to DataManager。
-- **Search**：节点输出新 df；Ribbon `data.search` **就地**替换当前数据集（与 `search_dataframe` 同一函数）。按列正则**保留**匹配行。不要做成上游 Qt 的单元格「查找下一个」。需要另存一份时用 Output to DataManager。
-- **Query**：节点输出新 df；Ribbon `data.query` **就地**替换当前数据集（与 `query_dataframe` 同一函数）。
-- **Sort**：节点输出新 df；Ribbon `data.sort` **就地**替换当前数据集（与 `sort_dataframe` 同一函数）。需要另存一份时用 Output to DataManager。
-- **Describe**：节点输出统计表；Ribbon `data.describe` **发布新数据集**（默认名 `{源表} describe`），不改源表。两端都把 `describe()` 的索引展平为 `stat` 列，否则虚表 `iloc` 看不到统计名。
-- **Data Export**：节点把连入的 DataFrame 写到 `file_path`（Core `export_data`）。Ribbon `data.export` 仍导出**当前选中**的 DataManager 表（主进程对话框 + sidecar `_write_frame`）。两者入口不同，不要混用。
+- **Drop NA**：节点输出新 df；Operate `data.dropNa` **就地**替换当前数据集（与 `dropna_impl` 同一函数）。需要另存一份时用 Output to DataManager。
+- **Drop Duplicates**：节点输出新 df；Operate `data.dropDuplicates` **就地**替换当前数据集（与 `drop_duplicates_impl` 同一函数）。需要另存一份时用 Output to DataManager。
+- **Fill NA**：节点输出新 df；Operate `data.fillNa` **就地**替换当前数据集（与 `fillna_impl` 同一函数）。需要另存一份时用 Output to DataManager。
+- **Replace Values**：节点输出新 df；RPC `data.replaceValues` **就地**替换当前数据集（与 `replace_values_impl` 同一函数）。**不上 Ribbon**（上游无此按钮）。需要另存一份时用 Output to DataManager。
+- **Threshold Filter**：节点输出新 df；RPC `data.thresholdFilter` **就地**替换当前数据集（与 `threshold_filter_impl` 同一函数）。**不上 Ribbon**。直接暴露 Core `filter_type`（`greater_than` 删 `> upper`，`less_than` 删 `< lower`）。空列=全部数值列。需要另存一份时用 Output to DataManager。
+- **Filter by Column**：节点输出新 df；Operate `data.filterByColumn` **就地**替换当前数据集（与 `filter_by_column_range` 同一函数）。**保留**闭区间内的行，不要与 Threshold Filter 合并。`min`/`max` 空=该侧不限制；0 是真实边界。需要另存一份时用 Output to DataManager。
+- **Eval**：节点输出新 df；Operate `data.eval` **就地**替换当前数据集（与 `eval_expression` 同一函数）。表达式必须是赋值（`c = a + b`）；无赋值会返回 Series，不能覆盖整表。需要另存一份时用 Output to DataManager。
+- **Search**：节点输出新 df；Operate `data.search` **就地**替换当前数据集（与 `search_dataframe` 同一函数）。按列正则**保留**匹配行。不要做成上游 Qt 的单元格「查找下一个」。需要另存一份时用 Output to DataManager。
+- **Query**：节点输出新 df；Operate `data.query` **就地**替换当前数据集（与 `query_dataframe` 同一函数）。
+- **Sort**：节点输出新 df；Operate `data.sort` **就地**替换当前数据集（与 `sort_dataframe` 同一函数）。需要另存一份时用 Output to DataManager。
+- **Describe**：节点输出统计表；Operate `data.describe` **发布新数据集**（默认名 `{源表} describe`），不改源表。两端都把 `describe()` 的索引展平为 `stat` 列，否则虚表 `iloc` 看不到统计名。
+- **Data Export**：节点把连入的 DataFrame 写到 `file_path`（Core `export_data`）。Data 标签 `data.export` 仍导出**当前选中**的 DataManager 表（主进程对话框 + sidecar `_write_frame`）。两者入口不同，不要混用。
 - **Output to DataManager**：见 [06-python-reuse.md](./06-python-reuse.md)。
 - 执行结束后前端 `data.list` 刷新。不要靠猜测 df 是否变化。
 
@@ -71,24 +71,24 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | `test_fetch_block_caps_row_count` | `rowCount` 上限 2048 |
 | `test_patch_rollback` | 非法 float 写入数值列 → error 且原值不变 |
 | `test_import_csv_utf8` / `test_import_txt_semicolon` / `test_import_csv_gb18030` | utf-8 / txt 分号 / GB18030 |
-| `test_data_dropna_via_rpc` / `test_dropna_node_matches_core` | Ribbon `data.dropNa` 与节点 Drop NA 与 `dropna_impl` 同行数 |
-| `test_data_drop_duplicates_via_rpc` / `test_drop_duplicates_node_matches_core` | Ribbon `data.dropDuplicates` 与节点 Drop Duplicates 与 `drop_duplicates_impl` 同行数 |
-| `test_data_fillna_via_rpc` / `test_fillna_node_matches_core` | Ribbon `data.fillNa` 与节点 Fill NA 与 `fillna_impl` 同填充数 |
-| `test_data_replace_values_via_rpc` / `test_replace_values_node_matches_core` | Ribbon `data.replaceValues` 与节点 Replace Values 与 `replace_values_impl` 同替换数 |
-| `test_data_threshold_filter_via_rpc` / `test_threshold_filter_node_matches_core` | Ribbon `data.thresholdFilter` 与节点 Threshold Filter 与 `threshold_filter_impl` 同行数 |
-| `test_data_filter_by_column_via_rpc` / `test_filter_by_column_node_matches_core` | Ribbon `data.filterByColumn` 与节点 Filter By Column 与 `filter_by_column_range` 同行数；0 是真实下限 |
-| `test_data_eval_via_rpc` / `test_eval_node_matches_core` | Ribbon `data.eval` 与节点 Eval Expression 与 `eval_expression` 同列；无赋值 Series 被拒绝 |
-| `test_data_search_via_rpc` / `test_search_node_matches_core` | Ribbon `data.search` 与节点 Search 与 `search_dataframe` 同行数；非文本列/非法正则拒绝 |
-| `test_data_query_via_rpc` / `test_query_node_matches_core` | Ribbon `data.query` 与节点 Query 与 `query_dataframe` 同行数 |
-| `test_data_sort_via_rpc` / `test_sort_node_matches_core` | Ribbon `data.sort` 与节点 Sort 与 `sort_dataframe` 同顺序 |
-| `test_data_describe_via_rpc` / `test_describe_node_matches_core` | Ribbon `data.describe` 与节点 Describe 与 `describe_dataframe` 同统计表；源表行数不变 |
+| `test_data_dropna_via_rpc` / `test_dropna_node_matches_core` | Operate `data.dropNa` 与节点 Drop NA 与 `dropna_impl` 同行数 |
+| `test_data_drop_duplicates_via_rpc` / `test_drop_duplicates_node_matches_core` | Operate `data.dropDuplicates` 与节点 Drop Duplicates 与 `drop_duplicates_impl` 同行数 |
+| `test_data_fillna_via_rpc` / `test_fillna_node_matches_core` | Operate `data.fillNa` 与节点 Fill NA 与 `fillna_impl` 同填充数 |
+| `test_data_replace_values_via_rpc` / `test_replace_values_node_matches_core` | RPC `data.replaceValues` 与节点 Replace Values 与 `replace_values_impl` 同替换数（不上 Ribbon） |
+| `test_data_threshold_filter_via_rpc` / `test_threshold_filter_node_matches_core` | RPC `data.thresholdFilter` 与节点 Threshold Filter 与 `threshold_filter_impl` 同行数（不上 Ribbon） |
+| `test_data_filter_by_column_via_rpc` / `test_filter_by_column_node_matches_core` | Operate `data.filterByColumn` 与节点 Filter By Column 与 `filter_by_column_range` 同行数；0 是真实下限 |
+| `test_data_eval_via_rpc` / `test_eval_node_matches_core` | Operate `data.eval` 与节点 Eval Expression 与 `eval_expression` 同列；无赋值 Series 被拒绝 |
+| `test_data_search_via_rpc` / `test_search_node_matches_core` | Operate `data.search` 与节点 Search 与 `search_dataframe` 同行数；非文本列/非法正则拒绝 |
+| `test_data_query_via_rpc` / `test_query_node_matches_core` | Operate `data.query` 与节点 Query 与 `query_dataframe` 同行数 |
+| `test_data_sort_via_rpc` / `test_sort_node_matches_core` | Operate `data.sort` 与节点 Sort 与 `sort_dataframe` 同顺序 |
+| `test_data_describe_via_rpc` / `test_describe_node_matches_core` | Operate `data.describe` 与节点 Describe 与 `describe_dataframe` 同统计表；源表行数不变 |
 | `test_export_node_matches_core` | 节点 Data Export 与 Core `export_data` 同文件字节；pickle 被拒绝 |
 | `test_xlsx_roundtrip` / `test_parquet_roundtrip` | 导入再导出内容一致 |
 | `test_pickle_rejected` / `test_pickle_import_rejected_via_rpc` | pickle 关（内存路径 + stdio 3001） |
 | `test_data_import_list_fetch_via_rpc` | 每个 `data.*` 方法至少一正一反（stdio）；`fetchBlock` 头为 `arrow-v1` |
 | `test_arrow_block` | IPC 往返与体积小于同内容 JSON |
 
-手工：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（**不要提交该文件**），Data → Import 后滚动虚表。无 Electron E2E，此项不进 CI；不阻塞 P2 引擎 vendor。
+手工：`python/.venv/Scripts/python.exe scripts/gen_large_csv.py` 生成 50 万行 csv（**不要提交该文件**），Data → 添加数据后滚动虚表。无 Electron E2E，此项不进 CI；不阻塞 P2 引擎 vendor。
 
 ## 明确延期
 

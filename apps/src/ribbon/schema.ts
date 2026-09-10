@@ -72,11 +72,11 @@ export function useRibbonSchema() {
         title: t('ribbon.data'),
         groups: [
           {
-            id: 'data-import',
-            title: t('ribbon.dataImportGroup'),
+            id: 'data-operate',
+            title: t('ribbon.dataOperate'),
             collections: [
               {
-                id: 'data-import-actions',
+                id: 'data-operate-actions',
                 items: [
                   {
                     id: 'data.import',
@@ -85,6 +85,24 @@ export function useRibbonSchema() {
                     tooltip: t('ribbon.dataImportTip'),
                     size: 'large',
                     icon: ribbonIcon('app/addData')
+                  },
+                  {
+                    id: 'data.remove',
+                    type: 'button',
+                    label: t('ribbon.dataRemove'),
+                    tooltip: t('ribbon.dataRemoveTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/removeData')
+                  },
+                  {
+                    id: 'data.rename',
+                    type: 'button',
+                    label: t('ribbon.dataRename'),
+                    tooltip: t('ribbon.dataRenameTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/renameColumns')
                   }
                 ]
               }
@@ -109,40 +127,19 @@ export function useRibbonSchema() {
                 ]
               }
             ]
-          },
+          }
+        ]
+      },
+      {
+        id: 'operate',
+        title: t('ribbon.operate'),
+        groups: [
           {
-            id: 'data-dataset',
-            title: t('ribbon.dataDataset'),
-            collections: [
-              {
-                id: 'data-dataset-actions',
-                items: [
-                  {
-                    id: 'data.rename',
-                    type: 'button',
-                    label: t('ribbon.dataRename'),
-                    tooltip: t('ribbon.dataRenameTip'),
-                    disabled: !hasDataset,
-                    icon: ribbonIcon('app/renameColumns')
-                  },
-                  {
-                    id: 'data.remove',
-                    type: 'button',
-                    label: t('ribbon.dataRemove'),
-                    tooltip: t('ribbon.dataRemoveTip'),
-                    disabled: !hasDataset,
-                    icon: ribbonIcon('app/removeData')
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            id: 'data-clean',
+            id: 'operate-clean',
             title: t('ribbon.dataClean'),
             collections: [
               {
-                id: 'data-clean-actions',
+                id: 'operate-clean-actions',
                 items: [
                   {
                     id: 'data.dropNa',
@@ -170,34 +167,18 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/fillNa')
-                  },
-                  {
-                    id: 'data.replaceValues',
-                    type: 'button',
-                    label: t('ribbon.dataReplaceValues'),
-                    tooltip: t('ribbon.dataReplaceValuesTip'),
-                    size: 'large',
-                    disabled: !hasDataset,
-                    icon: ribbonIcon('app/replaceValues')
-                  },
-                  {
-                    id: 'data.thresholdFilter',
-                    type: 'button',
-                    label: t('ribbon.dataThresholdFilter'),
-                    tooltip: t('ribbon.dataThresholdFilterTip'),
-                    size: 'large',
-                    disabled: !hasDataset,
-                    icon: ribbonIcon('app/thresholdFilter')
-                  },
-                  {
-                    id: 'data.filterByColumn',
-                    type: 'button',
-                    label: t('ribbon.dataFilterByColumn'),
-                    tooltip: t('ribbon.dataFilterByColumnTip'),
-                    size: 'large',
-                    disabled: !hasDataset,
-                    icon: ribbonIcon('app/filterByColumn')
-                  },
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'operate-filter',
+            title: t('ribbon.dataFilter'),
+            collections: [
+              {
+                id: 'operate-filter-actions',
+                items: [
                   {
                     id: 'data.eval',
                     type: 'button',
@@ -208,15 +189,6 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/eval')
                   },
                   {
-                    id: 'data.search',
-                    type: 'button',
-                    label: t('ribbon.dataSearch'),
-                    tooltip: t('ribbon.dataSearchTip'),
-                    size: 'large',
-                    disabled: !hasDataset,
-                    icon: ribbonIcon('app/search')
-                  },
-                  {
                     id: 'data.query',
                     type: 'button',
                     label: t('ribbon.dataQuery'),
@@ -224,6 +196,24 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/query')
+                  },
+                  {
+                    id: 'data.search',
+                    type: 'button',
+                    label: t('ribbon.dataSearch'),
+                    tooltip: t('ribbon.dataSearchTip'),
+                    size: 'medium',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/search')
+                  },
+                  {
+                    id: 'data.filterByColumn',
+                    type: 'button',
+                    label: t('ribbon.dataFilterByColumn'),
+                    tooltip: t('ribbon.dataFilterByColumnTip'),
+                    size: 'medium',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/filterByColumn')
                   },
                   {
                     id: 'data.sort',
@@ -239,11 +229,11 @@ export function useRibbonSchema() {
             ]
           },
           {
-            id: 'data-analyze',
-            title: t('ribbon.dataAnalyze'),
+            id: 'operate-stats',
+            title: t('ribbon.dataStatistic'),
             collections: [
               {
-                id: 'data-analyze-actions',
+                id: 'operate-stats-actions',
                 items: [
                   {
                     id: 'data.describe',
