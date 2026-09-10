@@ -60,6 +60,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `data.fillNa` | `{id, method?, subset?, value?}` | `{id, name, rows, cols, columns, filledCount}` | **就地**改写当前表，调用 Core `fillna_impl`。`method` 为 `value`/`forward`/`backward`/`mean`/`median`/`mode`（默认 `value`，亦接受 `constant`/`ffill`/`bfill`）；`subset` 空=全部列；`value` 在 `method=value` 时生效（数字或字符串，默认 `0`）。非法 method → 1002/`data.invalidValue`；未知列 → 1002/`data.columnNotFound` |
 | `data.query` | `{id, queryString}` | `{id, name, rows, cols, columns, matchedCount, removedCount}` | **就地**改写当前表，调用 Core `query_dataframe`。空表达式 → 1002/`data.queryEmpty`；非法 pandas query → 1002/`data.invalidQuery` |
 | `data.sort` | `{id, columns, ascending?}` | `{id, name, rows, cols, columns}` | **就地**改写当前表，调用 Core `sort_dataframe`。`columns` 为列名数组或逗号分隔字符串；`ascending` 默认 `true`（所有列同一方向）。空列 → 1002/`data.sortColumnsEmpty`；未知列 → 1002/`data.columnNotFound` |
+| `data.describe` | `{id, percentiles?, name?}` | `{id, name, rows, cols, columns}` | **发布新数据集**，调用 Core `describe_dataframe`（不改源表）。`percentiles` 为 `[0,1]` 数组或逗号分隔字符串，默认 `"0.25,0.5,0.75"`，空=pandas 默认；非法/越界/重复 → 1002/`data.invalidValue`。结果名默认 `{源表} describe`，重名走 `name (2)`。返回表把统计名展平为首列 `stat`，供虚表显示 |
 
 `id` 为 UUID 字符串。显示名可重复策略：导入时若重名自动 `name (2)`（与 Excel 类似），节点发布同名则**覆盖值**（对齐上游 DataToManager）。
 

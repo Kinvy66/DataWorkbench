@@ -30,6 +30,7 @@
 | Data | Export | `data.export` | P1 |
 | Data | Dataset | `data.rename` `data.remove` | P1 |
 | Data | Clean | `data.dropNa` `data.fillNa` `data.query` `data.sort` | P3 |
+| Data | Analyze | `data.describe` | P3 |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |
 | Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` | P4 |
 | Chart | Export | `chart.exportPng` `chart.exportSvg` | P4 |

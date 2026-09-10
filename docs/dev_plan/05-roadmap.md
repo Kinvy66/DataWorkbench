@@ -120,7 +120,7 @@ gantt
 
 上游 `data_plot_node` 依赖 C++ 图，P3 **不要**移植；出图走 P4 前端。
 
-**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query 节点与 Ribbon「查询」对话框（均调用 `query_dataframe`，Ribbon 经 `data.query` **就地**改写当前表）；Drop NA 节点与 Ribbon「删除缺失」对话框（均调用 `dropna_impl`，Ribbon 经 `data.dropNa` 就地改写）；Fill NA 节点与 Ribbon「填充缺失」对话框（均调用 `fillna_impl`，Ribbon 经 `data.fillNa` 就地改写）；Sort 节点与 Ribbon「排序」对话框（均调用 `sort_dataframe`，Ribbon 经 `data.sort` 就地改写）。其余批次 A 节点未做（`data_filter` 与 Query 重叠，暂不单独做）。
+**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query 节点与 Ribbon「查询」对话框（均调用 `query_dataframe`，Ribbon 经 `data.query` **就地**改写当前表）；Drop NA 节点与 Ribbon「删除缺失」对话框（均调用 `dropna_impl`，Ribbon 经 `data.dropNa` 就地改写）；Fill NA 节点与 Ribbon「填充缺失」对话框（均调用 `fillna_impl`，Ribbon 经 `data.fillNa` 就地改写）；Sort 节点与 Ribbon「排序」对话框（均调用 `sort_dataframe`，Ribbon 经 `data.sort` 就地改写）；Describe 节点与 Ribbon「描述统计」对话框（均调用 `describe_dataframe`，Ribbon 经 `data.describe` **发布新统计表**，源表不变；统计名展平为 `stat` 列）。其余批次 A 节点未做（`data_filter` 与 Query 重叠，暂不单独做；`data_export` 工作流节点仍待做，Ribbon 导出已有）。
 
 **验收**
 

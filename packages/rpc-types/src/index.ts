@@ -35,6 +35,7 @@ export const RpcMethod = {
   DataQuery: 'data.query',
   DataSort: 'data.sort',
   DataFillNa: 'data.fillNa',
+  DataDescribe: 'data.describe',
   WorkflowCreate: 'workflow.create',
   WorkflowListNodeTypes: 'workflow.listNodeTypes',
   WorkflowAddNode: 'workflow.addNode',
@@ -252,6 +253,20 @@ export interface DataFillNaResult {
   cols: number
   columns: ColumnSchema[]
   filledCount: number
+}
+
+export interface DataDescribeParams {
+  id: string
+  percentiles?: number[] | string
+  name?: string
+}
+
+export interface DataDescribeResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
 }
 
 export interface OkResult {

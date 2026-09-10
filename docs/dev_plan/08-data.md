@@ -46,6 +46,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 - **Fill NA**：节点输出新 df；Ribbon `data.fillNa` **就地**替换当前数据集（与 `fillna_impl` 同一函数）。需要另存一份时用 Output to DataManager。
 - **Query**：节点输出新 df；Ribbon `data.query` **就地**替换当前数据集（与 `query_dataframe` 同一函数）。
 - **Sort**：节点输出新 df；Ribbon `data.sort` **就地**替换当前数据集（与 `sort_dataframe` 同一函数）。需要另存一份时用 Output to DataManager。
+- **Describe**：节点输出统计表；Ribbon `data.describe` **发布新数据集**（默认名 `{源表} describe`），不改源表。两端都把 `describe()` 的索引展平为 `stat` 列，否则虚表 `iloc` 看不到统计名。
 - **Output to DataManager**：见 [06-python-reuse.md](./06-python-reuse.md)。
 - 执行结束后前端 `data.list` 刷新。不要靠猜测 df 是否变化。
 
@@ -67,6 +68,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | `test_data_fillna_via_rpc` / `test_fillna_node_matches_core` | Ribbon `data.fillNa` 与节点 Fill NA 与 `fillna_impl` 同填充数 |
 | `test_data_query_via_rpc` / `test_query_node_matches_core` | Ribbon `data.query` 与节点 Query 与 `query_dataframe` 同行数 |
 | `test_data_sort_via_rpc` / `test_sort_node_matches_core` | Ribbon `data.sort` 与节点 Sort 与 `sort_dataframe` 同顺序 |
+| `test_data_describe_via_rpc` / `test_describe_node_matches_core` | Ribbon `data.describe` 与节点 Describe 与 `describe_dataframe` 同统计表；源表行数不变 |
 | `test_xlsx_roundtrip` / `test_parquet_roundtrip` | 导入再导出内容一致 |
 | `test_pickle_rejected` / `test_pickle_import_rejected_via_rpc` | pickle 关（内存路径 + stdio 3001） |
 | `test_data_import_list_fetch_via_rpc` | 每个 `data.*` 方法至少一正一反（stdio）；`fetchBlock` 头为 `arrow-v1` |

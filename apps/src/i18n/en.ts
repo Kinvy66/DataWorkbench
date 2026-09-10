@@ -41,6 +41,9 @@ export default {
     dataQueryTip: 'Filter the selected table with a pandas query expression',
     dataSort: 'Sort',
     dataSortTip: 'Sort the selected table by one or more columns',
+    dataAnalyze: 'Analyze',
+    dataDescribe: 'Describe',
+    dataDescribeTip: 'Create a descriptive statistics table from the selected dataset',
     workflow: 'Workflow',
     workflowRunGroup: 'Run',
     workflowRun: 'Run',
@@ -132,7 +135,13 @@ export default {
     sortAscending: 'Ascending',
     sortDescending: 'Descending',
     sortConfirm: 'Apply',
-    sortCancel: 'Cancel'
+    sortCancel: 'Cancel',
+    describePercentiles: 'Percentiles',
+    describePercentilesHint: '0.25, 0.5, 0.75',
+    describeName: 'Result name',
+    describeNameHint: 'Leave empty to use “{name} describe”',
+    describeConfirm: 'Create',
+    describeCancel: 'Cancel'
   },
   workflow: {
     unknownType: 'Unknown node type.',
@@ -160,6 +169,7 @@ export default {
     fillNaOk: 'Filled {filled} missing values in {name}.',
     queryOk: 'Queried {name}: {matched} rows kept ({removed} dropped).',
     sortOk: 'Sorted {name} by {columns} ({order}).',
+    describeOk: 'Created {name} ({rows} × {cols}).',
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'

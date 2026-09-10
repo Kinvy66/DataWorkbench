@@ -8,6 +8,7 @@ import type {
   DataQueryResult,
   DataSortResult,
   DataFillNaResult,
+  DataDescribeResult,
   DatasetListItem
 } from '@dw/rpc-types'
 import { BLOCK_SIZE } from '@/data/blockWindow'
@@ -22,7 +23,8 @@ export const useDataStore = defineStore('data', {
     dropNaDialogOpen: false,
     queryDialogOpen: false,
     sortDialogOpen: false,
-    fillNaDialogOpen: false
+    fillNaDialogOpen: false,
+    describeDialogOpen: false
   }),
   getters: {
     current(state): DatasetListItem | null {
@@ -165,6 +167,22 @@ export const useDataStore = defineStore('data', {
       })) as DataFillNaResult
       await this.refreshList()
       await this.select(id)
+      return result
+    },
+    async describe(options?: {
+      percentiles?: number[] | string
+      name?: string
+    }): Promise<DataDescribeResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const result = (await getDesktopBridge().rpc.invoke('data.describe', {
+        id: this.currentId,
+        percentiles: options?.percentiles ?? '0.25,0.5,0.75',
+        name: options?.name
+      })) as DataDescribeResult
+      await this.refreshList()
+      await this.select(result.id)
       return result
     }
   }

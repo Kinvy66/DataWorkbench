@@ -449,3 +449,70 @@ def test_data_fillna_via_rpc(tmp_path: Path) -> None:
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_data_describe_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "nums.csv"
+    csv_path.write_text("a,b\n1,10\n2,20\n3,30\n4,40\n", encoding="utf-8")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        source_rows = imported["result"]["rows"]
+        assert source_rows == 4
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.describe",
+                "params": {"id": dataset_id},
+            },
+        )
+        described = read_rpc(proc)
+        assert "result" in described, described
+        stats_id = described["result"]["id"]
+        assert stats_id != dataset_id
+        assert described["result"]["name"].endswith("describe")
+        assert described["result"]["columns"][0]["name"] == "stat"
+        assert described["result"]["rows"] >= 1
+
+        send(proc, {"jsonrpc": "2.0", "id": 3, "method": "data.getSchema", "params": {"id": dataset_id}})
+        source_schema = read_rpc(proc)
+        assert source_schema["result"]["rowCount"] == source_rows
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.describe",
+                "params": {"id": dataset_id, "percentiles": "2"},
+            },
+        )
+        invalid = read_rpc(proc)
+        assert invalid["error"]["code"] == 1002
+        assert invalid["error"]["data"]["i18nKey"] == "data.invalidValue"
+
+        send(proc, {"jsonrpc": "2.0", "id": 5, "method": "data.describe", "params": {"id": "missing"}})
+        missing = read_rpc(proc)
+        assert missing["error"]["code"] == 1001
+
+        send(proc, {"jsonrpc": "2.0", "id": 6, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()

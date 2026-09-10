@@ -183,6 +183,26 @@ export function useRibbonSchema() {
                 ]
               }
             ]
+          },
+          {
+            id: 'data-analyze',
+            title: t('ribbon.dataAnalyze'),
+            collections: [
+              {
+                id: 'data-analyze-actions',
+                items: [
+                  {
+                    id: 'data.describe',
+                    type: 'button',
+                    label: t('ribbon.dataDescribe'),
+                    tooltip: t('ribbon.dataDescribeTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/describe')
+                  }
+                ]
+              }
+            ]
           }
         ]
       },

@@ -88,6 +88,12 @@ class FillNaParams(BaseModel):
     value: Any = 0.0
 
 
+class DescribeParams(BaseModel):
+    id: str
+    percentiles: list[float] | str | None = "0.25,0.5,0.75"
+    name: str | None = None
+
+
 def _subset_list(raw: list[str] | str | None) -> list[str] | None:
     if raw is None:
         return None
@@ -164,4 +170,7 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             subset=_subset_list(parsed.subset),
             value=parsed.value,
         )
+    if method == "data.describe":
+        parsed = DescribeParams.model_validate(params)
+        return manager.describe(parsed.id, percentiles=parsed.percentiles, name=parsed.name)
     raise HostError(ErrorCode.MethodNotFound, f"Method not found: {method}")

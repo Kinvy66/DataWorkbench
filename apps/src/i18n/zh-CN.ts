@@ -41,6 +41,9 @@ export default {
     dataQueryTip: '用 pandas query 表达式筛选当前表',
     dataSort: '排序',
     dataSortTip: '按一个或多个列对当前表排序',
+    dataAnalyze: '分析',
+    dataDescribe: '描述统计',
+    dataDescribeTip: '根据当前数据集生成描述性统计表',
     workflow: '工作流',
     workflowRunGroup: '运行',
     workflowRun: '运行',
@@ -130,7 +133,13 @@ export default {
     sortAscending: '升序',
     sortDescending: '降序',
     sortConfirm: '应用',
-    sortCancel: '取消'
+    sortCancel: '取消',
+    describePercentiles: '分位数',
+    describePercentilesHint: '0.25, 0.5, 0.75',
+    describeName: '结果名称',
+    describeNameHint: '留空则使用「{name} describe」',
+    describeConfirm: '生成',
+    describeCancel: '取消'
   },
   workflow: {
     unknownType: '未知节点类型。',
@@ -158,6 +167,7 @@ export default {
     fillNaOk: '已在 {name} 填充 {filled} 个缺失值。',
     queryOk: '已查询 {name}：保留 {matched} 行（去掉 {removed} 行）。',
     sortOk: '已按 {columns}（{order}）排序 {name}。',
+    describeOk: '已生成 {name}（{rows} × {cols}）。',
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'

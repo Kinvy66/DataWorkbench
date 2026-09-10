@@ -469,6 +469,46 @@ class DataManager:
         log.info("data.fillNa name=%s method=%s filled=%s", ds.name, method_norm, result["filledCount"])
         return result
 
+    def describe(
+        self,
+        dataset_id: str,
+        *,
+        percentiles: list[float] | str | None = "0.25,0.5,0.75",
+        name: str | None = None,
+    ) -> dict[str, Any]:
+        """Publish a new statistics table via Core ``describe_dataframe``; source is unchanged."""
+        _require_pandas()
+        from dw_nodes_analysis.core.operations import describe_dataframe
+
+        try:
+            pcts = _parse_percentiles(percentiles)
+        except ValueError as exc:
+            raise HostError(
+                ErrorCode.ColumnOrValidation,
+                "Invalid percentiles",
+                "data.invalidValue",
+            ) from exc
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            source_name = ds.name
+            try:
+                table = _flatten_describe(describe_dataframe(ds.df, percentiles=pcts))
+            except Exception as exc:
+                log.info("data.describe failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to describe dataset",
+                    "data.invalidValue",
+                ) from exc
+            base = (name or "").strip() or f"{source_name} describe"
+            display = _unique_display_name(self._names(), base)
+            new_ds = self._insert(display, table)
+        result = _meta(new_ds)
+        log.info("data.describe source=%s name=%s rows=%s cols=%s", source_name, new_ds.name, result["rows"], result["cols"])
+        return result
+
     def export_path(self, dataset_id: str, path: str, fmt: str | None = None) -> None:
         _require_pandas()
         ds = self.get(dataset_id)
@@ -509,6 +549,41 @@ def _parse_fill_value(raw: Any) -> Any:
         return float(text)
     except (TypeError, ValueError):
         return text
+
+
+def _parse_percentiles(raw: object) -> list[float] | None:
+    """Parse comma-separated or list percentiles in [0, 1]. Empty means pandas default."""
+    if raw is None:
+        return None
+    if isinstance(raw, (list, tuple)):
+        parts = list(raw)
+    else:
+        text = str(raw).strip()
+        if not text:
+            return None
+        parts = [p.strip() for p in text.split(",") if p.strip()]
+        if not parts:
+            return None
+    out: list[float] = []
+    seen: set[float] = set()
+    for part in parts:
+        try:
+            value = float(part)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"invalid percentile {part!r}") from exc
+        if value < 0.0 or value > 1.0:
+            raise ValueError(f"percentile out of range: {value}")
+        if value in seen:
+            raise ValueError(f"duplicate percentile: {value}")
+        seen.add(value)
+        out.append(value)
+    return out
+
+
+def _flatten_describe(stats: Any) -> Any:
+    table = stats.reset_index()
+    first = table.columns[0]
+    return table.rename(columns={first: "stat"})
 
 
 def _na_cell_count(df: Any) -> int:

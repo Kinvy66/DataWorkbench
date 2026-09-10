@@ -45,5 +45,10 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.dataSort'))).toBe('Sort')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataSort'))).toBe('排序')
+    i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.dataDescribe'))).toBe('Describe')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.dataDescribe'))).toBe('描述统计')
+    expect(String(i18n.global.t('ribbon.dataAnalyze'))).toBe('分析')
   })
 })
