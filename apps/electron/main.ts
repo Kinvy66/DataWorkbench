@@ -11,6 +11,7 @@ import {
   projectSaveDialogOptions
 } from './dialogs'
 import { openProjectArchive, ProjectFileError, saveProjectArchive, withProjectExtension } from './project-io'
+import { AppFileLog, type AppLogKind } from './app-log'
 import { RpcError } from './rpc-error'
 import { SidecarBridge } from './sidecar'
 import {
@@ -23,6 +24,15 @@ import {
 const sidecar = new SidecarBridge({ resourcesPath: process.resourcesPath })
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
+let appLog: AppFileLog | null = null
+
+function fileLog(kind: AppLogKind, text: string): void {
+  try {
+    appLog?.write(kind, text)
+  } catch {
+    // Logging must never break RPC or window startup.
+  }
+}
 
 // Hidden windows on Windows + titleBarOverlay often never paint, so ready-to-show
 // never fires and the UI stays invisible. Disable occlusion and always have a show fallback.
@@ -175,6 +185,7 @@ function createWindow(): void {
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : String(err)
         forward('log.line', { level: 'error', message: `Sidecar start failed: ${message}` })
+        fileLog('main', `Sidecar start failed: ${message}`)
       })
   })
 
@@ -232,16 +243,23 @@ function onWindowChrome(sender: Electron.WebContents, action: unknown) {
 }
 
 app.whenReady().then(() => {
+  appLog = new AppFileLog({ userDataDir: app.getPath('userData') })
+  fileLog('main', 'App ready')
   installApplicationMenu()
   sidecar.onLog((entry) => {
     const level = entry.stream === 'protocol' ? 'warning' : 'info'
     console.error(`[sidecar ${entry.stream}] ${entry.text}`)
+    fileLog('sidecar', `${entry.stream} ${entry.text}`)
     forward('log.line', { level, message: entry.text })
   })
   sidecar.onNotify((method, params) => {
+    if (method === 'host.crashed') {
+      fileLog('main', `Sidecar crashed ${JSON.stringify(params)}`)
+    }
     forward(method, params)
   })
   sidecar.start()
+  fileLog('main', 'Sidecar spawn requested')
   createWindow()
 })
 
@@ -385,8 +403,10 @@ async function handleRendererRpc(
           await sidecar.invoke('project.packLogic', { dir })
         }
       })
+      fileLog('main', `Project saved ${filePath}`)
       return { ok: true, path: filePath }
     } catch (err) {
+      fileLog('main', `Project save failed ${filePath}: ${err instanceof Error ? err.message : String(err)}`)
       throw projectError(err)
     }
   }
@@ -408,6 +428,7 @@ async function handleRendererRpc(
         src: filePath,
         unpackLogic: (dir) => sidecar.invoke('project.unpackLogic', { dir }) as Promise<ProjectUnpackLogicResult>
       })
+      fileLog('main', `Project opened ${filePath}`)
       return {
         path: filePath,
         workflowId: opened.workflowId,
@@ -415,6 +436,7 @@ async function handleRendererRpc(
         charts: opened.charts
       }
     } catch (err) {
+      fileLog('main', `Project open failed ${filePath}: ${err instanceof Error ? err.message : String(err)}`)
       throw projectError(err)
     }
   }
@@ -442,6 +464,7 @@ app.on('before-quit', (event) => {
   }
   event.preventDefault()
   isQuitting = true
+  fileLog('main', 'App quitting')
   void sidecar.shutdown().finally(() => {
     app.exit(0)
   })

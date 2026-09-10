@@ -13,7 +13,7 @@
 | P2 工作流 | 5 周 | 画布 + 执行复用 DAWorkFlowPy | 拖 5 类节点连线执行，结果进 DataManager |
 | P3 分析能力 | 4 周 | 移植清洗算法与节点、少量对话框 | 21 节点中至少 12 个可执行；dropna/query 有 GUI |
 | P4 图表一期 | 5 周 | 2D + 属性面板 + 导出 | 折线/散点/柱/直方；PNG+SVG；100 万点降采样 |
-| P5 工程与发布 | 3 周 | ZIP 工程、安装、崩溃看护 | 验收红线第 4–6 条 |
+| P5 工程与发布 | 3 周 | ZIP 工程、安装、崩溃看护 | 验收红线第 4–6 条（**完成**；便携目录代替 NSIS） |
 
 合计 **22 周**。可砍到 16 周的办法：P3 只留 8 个节点、P4 不做直方、P5 不做安装包只 zip 便携目录。
 
@@ -167,7 +167,9 @@ gantt
 4. 便携目录：electron 产物 + `python/` 脚本（**已落地**：`pnpm pack:portable` / `scripts/pack-portable.ps1` 产出 `apps/dist/win-unpacked`；**不嵌入** Python 解释器，需本机 3.11+；NSIS 安装包不做）。
 5. README 开发启动步骤；补 `docs/dev_plan` 里「已完成」勾选（本文件里程碑表）（**已落地**）。
 
-**验收**：关闭软件重开工程，工作流与至少一份导入数据还在（数据可 pickle 进 `datas/`，不追求惰性数据库）。
+**验收**：关闭软件重开工程，工作流与至少一份导入数据还在（数据可 pickle 进 `datas/`，不追求惰性数据库）（**已落地**：ZIP 往返测试 + File 打开；文件日志 `userData/logs/main.log` 与 `sidecar.log`）。
+
+P5 阶段完成。NSIS / 嵌入 CPython 按砍范围不做。二期（图表标注、PDF、自由停靠、AG Grid）**未排期**，未经明确要求不要开工。
 
 ## 并行规则
 

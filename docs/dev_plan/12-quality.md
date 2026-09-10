@@ -31,8 +31,10 @@ Windows 上 pytest 输出若被吞，用 `--junitxml=pytest.xml` 再读文件，
 |------|--------|------|
 | sidecar stdout | **仅 JSON-RPC** | 禁止日志 |
 | sidecar stderr | 主进程转发 → 日志面板 + `userData/logs/sidecar.log` | 英文技术信息 |
-| 主进程 | `userData/logs/main.log` | spawn/重启/ZIP |
+| 主进程 | `userData/logs/main.log` | spawn/重启/ZIP（`AppFileLog`，超 2MB 转 `*.log.1`） |
 | 渲染进程 | 日志面板 | 用户可读；走 i18n |
+
+`AppFileLog` 在 `app.whenReady` 后写入 `%userData%/logs/`；一行一事，换行压成空格。只记 spawn/重启、sidecar stderr、ZIP 保存/打开，不记每条 RPC。写文件失败不得打断启动。
 
 用户可见失败用 Element Plus `ElMessage`，文案 i18n；细节进日志。不要把 Python traceback 整段作为唯一 UI 文案（可折叠「详情」）。
 
