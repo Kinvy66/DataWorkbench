@@ -106,9 +106,12 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.chart'))).toBe('Chart')
     expect(String(i18n.global.t('ribbon.chartLine'))).toBe('Line')
     expect(String(i18n.global.t('layout.figure'))).toBe('Figure')
+    expect(String(i18n.global.t('ribbon.chartExportPngTip'))).toBe('Export the current chart as PNG')
+    expect(String(i18n.global.t('log.chartExportOk', { format: 'SVG' }))).toBe('Chart exported as SVG.')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.chart'))).toBe('图表')
     expect(String(i18n.global.t('ribbon.chartLine'))).toBe('折线')
     expect(String(i18n.global.t('layout.figure'))).toBe('绘图')
+    expect(String(i18n.global.t('chart.exportMissing'))).toBe('请先绘图再导出。')
   })
 })

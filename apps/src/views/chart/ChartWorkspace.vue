@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import 'uplot/dist/uPlot.min.css'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useChartStore } from '@/stores/chart'
 import { useDataStore } from '@/stores/data'
@@ -10,7 +10,7 @@ import ChartView from './ChartView.vue'
 const { t } = useI18n()
 const chart = useChartStore()
 const data = useDataStore()
-const view = ref<{ resetView: () => void } | null>(null)
+const view = ref<{ resetView: () => void; canvas: () => HTMLCanvasElement | null } | null>(null)
 
 const current = computed(() => chart.current)
 
@@ -37,6 +37,14 @@ function onTabRemove(name: string | number): void {
 function resetView(): void {
   view.value?.resetView()
 }
+
+onMounted(() => {
+  chart.setCanvasProvider(() => view.value?.canvas() ?? null)
+})
+
+onUnmounted(() => {
+  chart.setCanvasProvider(null)
+})
 </script>
 
 <template>

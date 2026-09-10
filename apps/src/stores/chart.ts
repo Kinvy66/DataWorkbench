@@ -1,11 +1,18 @@
 import { defineStore } from 'pinia'
+import { nextTick } from 'vue'
 import {
   CHART_MAX_POINTS_DEFAULT,
   type ChartBuildSeriesResult,
   type ChartTypeId
 } from '@dw/rpc-types'
-import { seriesColor } from '@dw/chart-core'
+import {
+  canvasToPngDataUrl,
+  seriesColor,
+  seriesToSvg,
+  suggestedExportName
+} from '@dw/chart-core'
 import { getDesktopBridge } from '@/rpc/bridge'
+import { isCancelled } from '@/rpc/rpcError'
 import { useDataStore } from './data'
 import { useWorkflowStore } from './workflow'
 
@@ -32,8 +39,47 @@ export type ChartSpec = {
   data: ChartBuildSeriesResult | null
 }
 
+let canvasProvider: (() => HTMLCanvasElement | null) | null = null
+
 function rpc() {
   return getDesktopBridge().rpc
+}
+
+function throwExportMissing(): never {
+  const err = new Error('Plot a chart before exporting. [@@chart.exportMissing]')
+  ;(err as Error & { i18nKey: string }).i18nKey = 'chart.exportMissing'
+  throw err
+}
+
+function afterPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      return
+    }
+    resolve()
+  })
+}
+
+async function waitForCanvas(
+  getCanvas: () => HTMLCanvasElement | null,
+  tries = 20
+): Promise<HTMLCanvasElement | null> {
+  const first = getCanvas()
+  if (first && first.width > 0 && first.height > 0) {
+    return first
+  }
+  if (typeof requestAnimationFrame !== 'function') {
+    return first
+  }
+  for (let i = 0; i < tries; i++) {
+    await afterPaint()
+    const canvas = getCanvas()
+    if (canvas && canvas.width > 0 && canvas.height > 0) {
+      return canvas
+    }
+  }
+  return getCanvas()
 }
 
 export const useChartStore = defineStore('chart', {
@@ -49,6 +95,9 @@ export const useChartStore = defineStore('chart', {
     }
   },
   actions: {
+    setCanvasProvider(provider: (() => HTMLCanvasElement | null) | null): void {
+      canvasProvider = provider
+    },
     openBindDialog(type: BindableChartType): void {
       this.pendingType = type
       this.bindDialogOpen = true
@@ -128,6 +177,48 @@ export const useChartStore = defineStore('chart', {
       this.currentId = id
       workflow.centerTab = 'figure'
       return spec
+    },
+    async saveExport(format: 'png' | 'svg'): Promise<boolean> {
+      const current = this.current
+      if (!current?.data) {
+        throwExportMissing()
+      }
+      const workflow = useWorkflowStore()
+      workflow.centerTab = 'figure'
+      let content: string
+      if (format === 'svg') {
+        content = seriesToSvg({
+          kind: current.type,
+          title: current.title,
+          xLabel: current.xLabel,
+          yLabel: current.yLabel,
+          legend: current.legend,
+          grid: current.grid,
+          styles: current.series.map((item) => ({
+            label: item.key,
+            color: item.color,
+            width: item.width
+          })),
+          data: {
+            x: current.data.x.map((value) => (value == null ? Number.NaN : value)),
+            ys: current.data.ys,
+            xKind: current.data.xKind
+          }
+        })
+      } else {
+        await nextTick()
+        const canvas = await waitForCanvas(() => canvasProvider?.() ?? null)
+        if (!canvas || canvas.width < 1 || canvas.height < 1) {
+          throwExportMissing()
+        }
+        content = canvasToPngDataUrl(canvas)
+      }
+      const result = await rpc().invoke('chart.saveExport', {
+        format,
+        suggestedName: suggestedExportName(current.title, format),
+        content
+      })
+      return !isCancelled(result)
     }
   }
 })

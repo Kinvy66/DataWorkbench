@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（完成） → P4 图表（进行中） → P5 工程文件**
 
-P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 第一刀：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar，中区 Figure tab + 属性面板。不要把图表按钮放到 Data/Operate。PNG/SVG 导出、直方 UI、视口窗口二次采样尚未做。不要做自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。Home 不要擅自改成对齐 Qt。
+P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 第一刀：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar，中区 Figure tab + 属性面板。PNG/SVG 导出已接 Ribbon（无图时禁用）。不要把图表按钮放到 Data/Operate。直方 UI、视口窗口二次采样尚未做。不要做自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。Home 不要擅自改成对齐 Qt。
 
 ## STRUCTURE
 
@@ -224,9 +224,11 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 ### 图表（P4 进行中）
 
 - 一期：line / scatter / bar / hist + 属性面板 + PNG/SVG
+- PNG 从当前 uPlot 画布抓取；SVG 由采样点生成矢量（Inkscape 可打开）；保存走主进程 `chart.saveExport`，不要把图片经 Python sidecar
 - 生产降采样以 Python `chart.buildSeries` 为准（LTTB，默认 5000）；不要对百万点 `JSON.parse`
 - 不做 3D、画布拖标注、与 Qwt `charts.xml` 互导
 - 图表按钮只在 Chart 标签，不要放到 Data / Operate
+- 直方 UI、视口窗口二次 `buildSeries` 尚未做
 
 ## COMMANDS
 

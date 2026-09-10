@@ -59,6 +59,10 @@ function resetView(): void {
   plot?.resetView()
 }
 
+function canvas(): HTMLCanvasElement | null {
+  return plot?.canvas() ?? null
+}
+
 onMounted(() => {
   void nextTick(() => {
     render()
@@ -99,7 +103,7 @@ watch(
   }
 )
 
-defineExpose({ resetView })
+defineExpose({ resetView, canvas })
 </script>
 
 <template>

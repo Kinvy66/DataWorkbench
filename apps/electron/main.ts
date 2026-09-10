@@ -2,7 +2,8 @@ import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { APP_VERSION } from '@dw/rpc-types'
-import { dataOpenDialogOptions, dataSaveDialogOptions } from './dialogs'
+import { writeChartExport } from './chart-export'
+import { chartSaveDialogOptions, dataOpenDialogOptions, dataSaveDialogOptions } from './dialogs'
 import { RpcError } from './rpc-error'
 import { SidecarBridge } from './sidecar'
 import {
@@ -294,6 +295,39 @@ async function handleRendererRpc(
     }
     const format = p.format ?? path.extname(filePath).replace(/^\./, '').toLowerCase()
     return sidecar.invoke('data.export', { id: p.id, path: filePath, format })
+  }
+  if (method === 'chart.saveExport') {
+    const p = (params ?? {}) as {
+      format?: string
+      suggestedName?: string
+      path?: string
+      content?: string
+    }
+    const format = p.format === 'svg' || p.format === 'png' ? p.format : null
+    if (!format) {
+      throw new RpcError(-32602, 'format must be png or svg', 'rpc.invalidParams')
+    }
+    if (typeof p.content !== 'string' || p.content.length === 0) {
+      throw new RpcError(-32602, 'content is required', 'rpc.invalidParams')
+    }
+    let filePath = p.path
+    if (!filePath) {
+      if (!win) {
+        return { cancelled: true }
+      }
+      const picked = await dialog.showSaveDialog(win, chartSaveDialogOptions(format, p.suggestedName))
+      if (picked.canceled || !picked.filePath) {
+        return { cancelled: true }
+      }
+      filePath = picked.filePath
+    }
+    try {
+      writeChartExport(filePath, format, p.content)
+      return { ok: true }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      throw new RpcError(3001, message, 'data.ioError')
+    }
   }
   return sidecar.invoke(method, params)
 }

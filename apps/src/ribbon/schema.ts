@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FileMenuItemModel, RibbonTabModel } from '@mlightcad/ribbon'
 import { ribbonIcon } from '@/icons/resolveIcon'
+import { useChartStore } from '@/stores/chart'
 import { useDataStore } from '@/stores/data'
 import { useWorkflowStore } from '@/stores/workflow'
 
@@ -9,9 +10,11 @@ export function useRibbonSchema() {
   const { t } = useI18n()
   const data = useDataStore()
   const workflow = useWorkflowStore()
+  const chart = useChartStore()
 
   const tabs = computed<RibbonTabModel[]>(() => {
     const hasDataset = Boolean(data.currentId)
+    const hasChart = Boolean(chart.currentId)
     return [
       {
         id: 'home',
@@ -385,7 +388,7 @@ export function useRibbonSchema() {
                     label: t('ribbon.chartExportPng'),
                     tooltip: t('ribbon.chartExportPngTip'),
                     size: 'large',
-                    disabled: true,
+                    disabled: !hasChart,
                     icon: ribbonIcon('app/save')
                   },
                   {
@@ -394,7 +397,7 @@ export function useRibbonSchema() {
                     label: t('ribbon.chartExportSvg'),
                     tooltip: t('ribbon.chartExportSvgTip'),
                     size: 'large',
-                    disabled: true,
+                    disabled: !hasChart,
                     icon: ribbonIcon('app/save')
                   }
                 ]

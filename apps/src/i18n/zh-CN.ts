@@ -85,9 +85,9 @@ export default {
     chartBarTip: '用当前数据集绘制柱状图',
     chartExport: '导出',
     chartExportPng: 'PNG',
-    chartExportPngTip: '导出当前图为 PNG（尚未实现）',
+    chartExportPngTip: '导出当前图为 PNG',
     chartExportSvg: 'SVG',
-    chartExportSvgTip: '导出当前图为 SVG（尚未实现）',
+    chartExportSvgTip: '导出当前图为 SVG',
     layoutSwitcher: '切换功能区布局',
     minimizeRibbon: '最小化功能区',
     keyTips: '快捷提示',
@@ -361,7 +361,8 @@ export default {
     downsampled: '总览降采样：{points} / {source} 点。缩放只放大已采样点。',
     columnNotFound: '找不到该列。',
     nonNumeric: '该列不是数值列。请先筛选或选择数值列。',
-    emptySeries: '没有足够的数值点可以绘图。'
+    emptySeries: '没有足够的数值点可以绘图。',
+    exportMissing: '请先绘图再导出。'
   },
   workflow: {
     unknownType: '未知节点类型。',
@@ -404,6 +405,7 @@ export default {
     describeOk: '已生成 {name}（{rows} × {cols}）。',
     pivotTableOk: '已生成 {name}（{rows} × {cols}）。',
     chartOk: '已绘制 {title}（{points} / {source} 点）。',
+    chartExportOk: '已导出图表为 {format}。',
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'

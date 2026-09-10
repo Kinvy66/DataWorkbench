@@ -74,4 +74,79 @@ describe('useChartStore', () => {
     expect(chart.charts).toEqual([])
     expect(chart.currentId).toBeNull()
   })
+
+  it('saves svg via chart.saveExport', async () => {
+    invoke.mockImplementation(async (method: string) => {
+      if (method === 'chart.buildSeries') {
+        return {
+          x: [0, 1, 2],
+          ys: [[1, 2, 3]],
+          pointCount: 3,
+          sourceCount: 3,
+          downsampled: false,
+          xKind: 'number',
+          maxPoints: 5000
+        }
+      }
+      if (method === 'chart.saveExport') {
+        return { ok: true }
+      }
+      return {}
+    })
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 3, cols: 2 }]
+    const chart = useChartStore()
+    await chart.createFromBind({
+      type: 'line',
+      dataId: 'ds-1',
+      x: 't',
+      y: ['ch1'],
+      title: 'Run 01'
+    })
+    const ok = await chart.saveExport('svg')
+    expect(ok).toBe(true)
+    expect(invoke).toHaveBeenCalledWith(
+      'chart.saveExport',
+      expect.objectContaining({
+        format: 'svg',
+        suggestedName: 'Run 01.svg',
+        content: expect.stringContaining('<svg')
+      })
+    )
+    const payload = invoke.mock.calls.find((call) => call[0] === 'chart.saveExport')?.[1] as {
+      content: string
+    }
+    expect(payload.content).toContain('Run 01')
+    expect(payload.content).toContain('<path')
+  })
+
+  it('returns false when the save dialog is cancelled', async () => {
+    invoke.mockImplementation(async (method: string) => {
+      if (method === 'chart.buildSeries') {
+        return {
+          x: [0, 1],
+          ys: [[1, 2]],
+          pointCount: 2,
+          sourceCount: 2,
+          downsampled: false,
+          xKind: 'number',
+          maxPoints: 5000
+        }
+      }
+      if (method === 'chart.saveExport') {
+        return { cancelled: true }
+      }
+      return {}
+    })
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 2, cols: 2 }]
+    const chart = useChartStore()
+    await chart.createFromBind({ type: 'line', dataId: 'ds-1', x: 't', y: ['ch1'] })
+    expect(await chart.saveExport('svg')).toBe(false)
+  })
+
+  it('throws when there is no chart to export', async () => {
+    const chart = useChartStore()
+    await expect(chart.saveExport('svg')).rejects.toMatchObject({ i18nKey: 'chart.exportMissing' })
+  })
 })

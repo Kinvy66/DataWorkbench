@@ -44,7 +44,10 @@ sequenceDiagram
 
 - `downsample.ts` 仅作测试对照；**生产降采样以 Python 为准**（避免双端不一致）
 - `UPlotChart.ts` 封装 setData/setSize
-- `exportSvg.ts` / `exportPng.ts`
+- `exportSvg.ts`：由当前采样点生成矢量（标题/轴/图例/网格）；不要把 canvas 栅格化成 SVG
+- `exportPng.ts`：从 uPlot canvas 抓 PNG（含当前缩放）
+
+保存走 Electron 主进程 `chart.saveExport`（另存对话框 + 写字节）。不要把图片经 Python sidecar。
 
 `apps/src/views/chart`：工具条 + 画布 + 绑定对话框（选列）。
 

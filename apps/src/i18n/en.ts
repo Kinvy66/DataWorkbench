@@ -85,9 +85,9 @@ export default {
     chartBarTip: 'Plot a bar chart from the selected dataset',
     chartExport: 'Export',
     chartExportPng: 'PNG',
-    chartExportPngTip: 'Export the current chart as PNG (not yet)',
+    chartExportPngTip: 'Export the current chart as PNG',
     chartExportSvg: 'SVG',
-    chartExportSvgTip: 'Export the current chart as SVG (not yet)',
+    chartExportSvgTip: 'Export the current chart as SVG',
     layoutSwitcher: 'Switch ribbon layout',
     minimizeRibbon: 'Minimize ribbon',
     keyTips: 'Key Tips',
@@ -363,7 +363,8 @@ export default {
     downsampled: 'Overview downsample: {points} of {source} points. Zoom magnifies sampled points.',
     columnNotFound: 'Column not found.',
     nonNumeric: 'That column is not numeric. Query or pick a numeric column.',
-    emptySeries: 'Not enough numeric points to plot.'
+    emptySeries: 'Not enough numeric points to plot.',
+    exportMissing: 'Plot a chart before exporting.'
   },
   workflow: {
     unknownType: 'Unknown node type.',
@@ -406,6 +407,7 @@ export default {
     describeOk: 'Created {name} ({rows} × {cols}).',
     pivotTableOk: 'Created {name} ({rows} × {cols}).',
     chartOk: 'Plotted {title} ({points} of {source} points).',
+    chartExportOk: 'Chart exported as {format}.',
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'

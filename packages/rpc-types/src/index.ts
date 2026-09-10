@@ -64,7 +64,8 @@ export const RpcMethod = {
   WorkflowLoadLogic: 'workflow.loadLogic',
   WorkflowGetGraph: 'workflow.getGraph',
   ChartListTypes: 'chart.listTypes',
-  ChartBuildSeries: 'chart.buildSeries'
+  ChartBuildSeries: 'chart.buildSeries',
+  ChartSaveExport: 'chart.saveExport'
 } as const
 
 export type JsonRpcId = number | string
@@ -676,4 +677,18 @@ export interface ChartBuildSeriesResult {
   downsampled: boolean
   xKind: ChartXKind
   maxPoints: number
+}
+
+export type ChartExportFormat = 'png' | 'svg'
+
+export interface ChartSaveExportParams {
+  format: ChartExportFormat
+  content: string
+  suggestedName?: string
+  path?: string
+}
+
+export interface ChartSaveExportResult {
+  ok?: true
+  cancelled?: true
 }

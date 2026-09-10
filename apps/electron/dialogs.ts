@@ -27,3 +27,16 @@ export function dataSaveDialogOptions(suggestedName?: string): SaveDialogOptions
     filters: DATA_SAVE_FILTERS
   }
 }
+
+export function chartSaveDialogOptions(
+  format: 'png' | 'svg',
+  suggestedName?: string
+): SaveDialogOptions {
+  return {
+    defaultPath: suggestedName,
+    filters:
+      format === 'png'
+        ? [{ name: 'PNG', extensions: ['png'] }]
+        : [{ name: 'SVG', extensions: ['svg'] }]
+  }
+}

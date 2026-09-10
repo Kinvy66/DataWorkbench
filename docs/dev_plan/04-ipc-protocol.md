@@ -106,11 +106,13 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 |------|------|
 | `chart.listTypes` | `{types:[{id,name}]}`，一期 id：`line` / `scatter` / `bar` / `hist` |
 | `chart.buildSeries` | `{dataId, x, y[], maxPoints?, xMin?, xMax?}` → `{x, ys, pointCount, sourceCount, downsampled, xKind, maxPoints}` |
+| `chart.saveExport` | **仅 Electron 主进程**（不转发 sidecar）。`{format:'png'\|'svg', content, suggestedName?, path?}` → `{ok:true}` 或 `{cancelled:true}`。PNG 的 `content` 为 `data:image/png;base64,...`；SVG 为 UTF-8 标记。无 `path` 时弹出另存对话框。写失败 **3001** `data.ioError`。 |
 
 - `maxPoints` 默认 5000，钳制到 2…20000。生产降采样只在 Python（LTTB），前端禁止对百万点 `JSON.parse`。
 - 非数值 y（或既非数值也非日期的 x）：error **1002**，`i18nKey=chart.nonNumeric`。缺列：1002 `chart.columnNotFound`。缺数据集：1001 `data.notFound`。
 - 非有限 x 的行丢弃；y 的 NaN 变成 JSON `null`（uPlot 断线）。datetime x 为 epoch **毫秒**，`xKind:"time"`；uPlot 时间轴自行 ÷1000。
 - 第一版全列降采样一次；`xMin`/`xMax` 可筛窗口，视口缩放后重新请求放本阶段后半。
+- SVG 由当前图的采样点生成矢量（含标题/轴/图例/网格）；PNG 抓当前 uPlot 画布（含缩放）。渲染进程不得 `fs` 写盘。
 
 
 ## project 域（P5）
@@ -145,7 +147,7 @@ window.dw.rpc.invoke(method: string, params?: unknown): Promise<unknown>
 window.dw.rpc.on(method: string, cb: (params: unknown) => void): () => void
 ```
 
-渲染进程不得使用 `ipcRenderer` 其它频道。超时：普通 RPC 30s；`workflow.execute` 不超时（用 stop）；`data.import` 120s。
+渲染进程不得使用 `ipcRenderer` 其它频道。超时：普通 RPC 30s；`workflow.execute` 不超时（用 stop）；`data.import` / `chart.buildSeries` 120s。`chart.saveExport` 由主进程写文件，不进 sidecar。
 
 ## 调试
 
