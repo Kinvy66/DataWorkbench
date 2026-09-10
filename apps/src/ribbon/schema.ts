@@ -152,6 +152,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/dropNa')
+                  },
+                  {
+                    id: 'data.query',
+                    type: 'button',
+                    label: t('ribbon.dataQuery'),
+                    tooltip: t('ribbon.dataQueryTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/query')
                   }
                 ]
               }

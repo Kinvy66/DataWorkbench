@@ -5,6 +5,7 @@ import type {
   DataGetSchemaResult,
   DataImportResult,
   DataListResult,
+  DataQueryResult,
   DatasetListItem
 } from '@dw/rpc-types'
 import { BLOCK_SIZE } from '@/data/blockWindow'
@@ -16,7 +17,8 @@ export const useDataStore = defineStore('data', {
     datasets: [] as DatasetListItem[],
     currentId: null as string | null,
     schema: null as DataGetSchemaResult | null,
-    dropNaDialogOpen: false
+    dropNaDialogOpen: false,
+    queryDialogOpen: false
   }),
   getters: {
     current(state): DatasetListItem | null {
@@ -111,6 +113,19 @@ export const useDataStore = defineStore('data', {
         subset: options?.subset,
         minNonNa: options?.minNonNa ?? 0
       })) as DataDropNaResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async query(queryString: string): Promise<DataQueryResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.query', {
+        id,
+        queryString
+      })) as DataQueryResult
       await this.refreshList()
       await this.select(id)
       return result

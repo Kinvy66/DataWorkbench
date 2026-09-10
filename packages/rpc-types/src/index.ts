@@ -32,6 +32,7 @@ export const RpcMethod = {
   DataExport: 'data.export',
   DataRegister: 'data.register',
   DataDropNa: 'data.dropNa',
+  DataQuery: 'data.query',
   WorkflowCreate: 'workflow.create',
   WorkflowListNodeTypes: 'workflow.listNodeTypes',
   WorkflowAddNode: 'workflow.addNode',
@@ -203,6 +204,21 @@ export interface DataDropNaResult {
   rows: number
   cols: number
   columns: ColumnSchema[]
+  removedCount: number
+}
+
+export interface DataQueryParams {
+  id: string
+  queryString: string
+}
+
+export interface DataQueryResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  matchedCount: number
   removedCount: number
 }
 

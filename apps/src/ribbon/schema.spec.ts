@@ -13,6 +13,7 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'data.rename'")
     expect(source).toContain("id: 'data.remove'")
     expect(source).toContain("id: 'data.dropNa'")
+    expect(source).toContain("id: 'data.query'")
     expect(source).toContain("id: 'data-clean'")
     expect(source).toContain("id: 'workflow.run'")
     expect(source).toContain("id: 'workflow.stop'")

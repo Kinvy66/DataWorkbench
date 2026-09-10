@@ -35,6 +35,8 @@ export default {
     dataClean: 'Clean',
     dataDropNa: 'Drop NA',
     dataDropNaTip: 'Remove rows with missing values from the selected table',
+    dataQuery: 'Query',
+    dataQueryTip: 'Filter the selected table with a pandas query expression',
     workflow: 'Workflow',
     workflowRunGroup: 'Run',
     workflowRun: 'Run',
@@ -98,7 +100,15 @@ export default {
     dropNaSubsetHint: 'All columns',
     dropNaMinNonNa: 'Minimum non-missing values (0 = unused)',
     dropNaConfirm: 'Apply',
-    dropNaCancel: 'Cancel'
+    dropNaCancel: 'Cancel',
+    queryExpression: 'Query expression',
+    queryPlaceholder: "age > 25 and name == 'John'",
+    queryHint:
+      'Use pandas query syntax. Surround names with spaces or punctuation in backticks, e.g. `Area (cm^2)`.',
+    queryEmpty: 'Enter a query expression.',
+    invalidQuery: 'The query expression is invalid.',
+    queryConfirm: 'Apply',
+    queryCancel: 'Cancel'
   },
   workflow: {
     unknownType: 'Unknown node type.',
@@ -123,6 +133,7 @@ export default {
     renameOk: 'Dataset renamed to {name}.',
     removeOk: 'Dataset removed.',
     dropNaOk: 'Dropped {removed} rows from {name} ({rows} × {cols}).',
+    queryOk: 'Queried {name}: {matched} rows kept ({removed} dropped).',
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'

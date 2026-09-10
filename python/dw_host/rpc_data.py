@@ -70,6 +70,11 @@ class DropNaParams(BaseModel):
     minNonNa: int = 0
 
 
+class QueryParams(BaseModel):
+    id: str
+    queryString: str
+
+
 def _subset_list(raw: list[str] | str | None) -> list[str] | None:
     if raw is None:
         return None
@@ -128,4 +133,7 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             subset=_subset_list(parsed.subset),
             min_non_na=parsed.minNonNa,
         )
+    if method == "data.query":
+        parsed = QueryParams.model_validate(params)
+        return manager.query(parsed.id, parsed.queryString)
     raise HostError(ErrorCode.MethodNotFound, f"Method not found: {method}")

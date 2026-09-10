@@ -11,7 +11,7 @@ export default {
   },
   ribbon: {
     file: '文件',
-    home: '开始',
+    home: '主页',
     sidecar: 'Sidecar',
     ping: 'Ping',
     pingTip: '调用 Python sidecar 的 host.hello',
@@ -35,6 +35,8 @@ export default {
     dataClean: '清洗',
     dataDropNa: '删除缺失',
     dataDropNaTip: '从当前表删除含缺失值的行',
+    dataQuery: '查询',
+    dataQueryTip: '用 pandas query 表达式筛选当前表',
     workflow: '工作流',
     workflowRunGroup: '运行',
     workflowRun: '运行',
@@ -97,7 +99,14 @@ export default {
     dropNaSubsetHint: '全部列',
     dropNaMinNonNa: '最少非缺失值（0 表示不启用）',
     dropNaConfirm: '应用',
-    dropNaCancel: '取消'
+    dropNaCancel: '取消',
+    queryExpression: '查询表达式',
+    queryPlaceholder: "age > 25 and name == 'John'",
+    queryHint: '使用 pandas query 语法。含空格或标点的列名请用反引号包裹，例如 `Area (cm^2)`。',
+    queryEmpty: '请输入查询表达式。',
+    invalidQuery: '查询表达式无效。',
+    queryConfirm: '应用',
+    queryCancel: '取消'
   },
   workflow: {
     unknownType: '未知节点类型。',
@@ -122,6 +131,7 @@ export default {
     renameOk: '数据集已重命名为 {name}。',
     removeOk: '数据集已移除。',
     dropNaOk: '已从 {name} 删除 {removed} 行（{rows} × {cols}）。',
+    queryOk: '已查询 {name}：保留 {matched} 行（去掉 {removed} 行）。',
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'

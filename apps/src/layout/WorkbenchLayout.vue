@@ -12,6 +12,7 @@ import NodeToolbox from '@/views/workflow/NodeToolbox.vue'
 import NodeProperties from '@/views/workflow/NodeProperties.vue'
 import WorkflowCanvas from '@/views/workflow/WorkflowCanvas.vue'
 import DropNaDialog from '@/views/data/DropNaDialog.vue'
+import QueryDialog from '@/views/data/QueryDialog.vue'
 
 const { t } = useI18n()
 const log = useLogStore()
@@ -75,6 +76,7 @@ function formatTime(at: number): string {
       </Pane>
     </Splitpanes>
     <DropNaDialog />
+    <QueryDialog />
   </div>
 </template>
 

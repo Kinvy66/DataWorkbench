@@ -57,6 +57,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `data.export` | `{id, path, format}` | `{ok}` | csv/xlsx/parquet。渲染进程可省略 `path`：主进程弹出保存对话框 |
 | `data.register` | `{name, handle?}` | `{id}` | 供节点 DataToManager 内部调用；同名覆盖。JSON-RPC 一期仅 `{name}` 建空表 |
 | `data.dropNa` | `{id, how?, subset?, minNonNa?}` | `{id, name, rows, cols, columns, removedCount}` | **就地**改写当前表，调用 Core `dropna_impl`（只删行）。`how` 为 `any`/`all`（默认 `any`）；`subset` 为列名数组或逗号分隔字符串，空=全部列；`minNonNa` 为最少非缺失值，`0` 表示不启用。未知列 → 1002/`data.columnNotFound` |
+| `data.query` | `{id, queryString}` | `{id, name, rows, cols, columns, matchedCount, removedCount}` | **就地**改写当前表，调用 Core `query_dataframe`。空表达式 → 1002/`data.queryEmpty`；非法 pandas query → 1002/`data.invalidQuery` |
 
 `id` 为 UUID 字符串。显示名可重复策略：导入时若重名自动 `name (2)`（与 Excel 类似），节点发布同名则**覆盖值**（对齐上游 DataToManager）。
 

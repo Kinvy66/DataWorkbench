@@ -230,3 +230,72 @@ def test_data_dropna_via_rpc(tmp_path: Path) -> None:
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_data_query_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "people.csv"
+    csv_path.write_text("age,name\n10,a\n30,b\n", encoding="utf-8")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        assert imported["result"]["rows"] == 2
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.query",
+                "params": {"id": dataset_id, "queryString": "age > 20"},
+            },
+        )
+        queried = read_rpc(proc)
+        assert "result" in queried, queried
+        assert queried["result"]["rows"] == 1
+        assert queried["result"]["matchedCount"] == 1
+        assert queried["result"]["removedCount"] == 1
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "data.query",
+                "params": {"id": dataset_id, "queryString": "   "},
+            },
+        )
+        empty = read_rpc(proc)
+        assert empty["error"]["code"] == 1002
+        assert empty["error"]["data"]["i18nKey"] == "data.queryEmpty"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.query",
+                "params": {"id": dataset_id, "queryString": "not_a_column > 1"},
+            },
+        )
+        invalid = read_rpc(proc)
+        assert invalid["error"]["code"] == 1002
+        assert invalid["error"]["data"]["i18nKey"] == "data.invalidQuery"
+
+        send(proc, {"jsonrpc": "2.0", "id": 5, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()

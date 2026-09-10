@@ -365,6 +365,40 @@ class DataManager:
         log.info("data.dropNa name=%s removed=%s rows=%s", ds.name, result["removedCount"], result["rows"])
         return result
 
+    def query(self, dataset_id: str, query_string: str) -> dict[str, Any]:
+        """Filter rows in place via the shared Core ``query_dataframe``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.operations import query_dataframe
+
+        expr = str(query_string or "").strip()
+        if not expr:
+            raise HostError(ErrorCode.ColumnOrValidation, "queryString must not be empty", "data.queryEmpty")
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            before = int(len(ds.df))
+            try:
+                filtered = query_dataframe(ds.df, expr)
+            except Exception as exc:
+                log.info("data.query failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Invalid query expression",
+                    "data.invalidQuery",
+                ) from exc
+            ds.df = filtered
+        result = _meta(ds)
+        result["matchedCount"] = int(len(filtered))
+        result["removedCount"] = before - int(len(filtered))
+        log.info(
+            "data.query name=%s matched=%s removed=%s",
+            ds.name,
+            result["matchedCount"],
+            result["removedCount"],
+        )
+        return result
+
     def export_path(self, dataset_id: str, path: str, fmt: str | None = None) -> None:
         _require_pandas()
         ds = self.get(dataset_id)

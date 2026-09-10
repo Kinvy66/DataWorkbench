@@ -12,7 +12,7 @@
 | `src/PyScripts/DAWorkbench/DAWorkFlowPy/nodes/style_demo_nodes.py` | 可选，仅开发 | 可不上生产 |
 | `plugins/DataAnalysis/PyScripts/DADataAnalysisCore/` | `python/dw_nodes_analysis/core/` | 保持纯函数、无 i18n。`io.py` 已改为 charset-normalizer（`# dw:adapted`），不要无提示覆盖 |
 
-`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地。P3 已 vendor `dw_nodes_analysis/core`（`9dd298fe`），并接入 **Data Source**（从 DataManager 按名/id 取 df，不是上游读文件节点）、**Query**（`query_dataframe`）与 **Drop NA**（`dropna_impl`，只删行；Ribbon 走 `data.dropNa`）。尚未做 If/Else、TextViewer、其余清洗节点与 Ribbon Query 对话框。
+`DAWorkFlowPy` 声明可脱离 C++ 运行（架构 P1）。P2 引擎、sidecar RPC、DataToManager、dump/load wrap、Delay Stop 与工作流 undo 已落地。P3 已 vendor `dw_nodes_analysis/core`（`9dd298fe`），并接入 **Data Source**（从 DataManager 按名/id 取 df，不是上游读文件节点）、**Query**（`query_dataframe`，Ribbon 走 `data.query`）与 **Drop NA**（`dropna_impl`，只删行；Ribbon 走 `data.dropNa`）。尚未做 If/Else、TextViewer、其余清洗节点。
 
 ## 移植并改 Host（必须改）
 
