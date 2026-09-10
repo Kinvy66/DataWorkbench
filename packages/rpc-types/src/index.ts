@@ -18,6 +18,8 @@ export const JsonRpcErrorCode = {
 
 export const FETCH_BLOCK_DEFAULT = 512
 export const FETCH_BLOCK_MAX = 2048
+export const CHART_MAX_POINTS_DEFAULT = 5000
+export const CHART_MAX_POINTS_MAX = 20000
 
 export const RpcMethod = {
   HostHello: 'host.hello',
@@ -60,7 +62,9 @@ export const RpcMethod = {
   WorkflowStop: 'workflow.stop',
   WorkflowDumpLogic: 'workflow.dumpLogic',
   WorkflowLoadLogic: 'workflow.loadLogic',
-  WorkflowGetGraph: 'workflow.getGraph'
+  WorkflowGetGraph: 'workflow.getGraph',
+  ChartListTypes: 'chart.listTypes',
+  ChartBuildSeries: 'chart.buildSeries'
 } as const
 
 export type JsonRpcId = number | string
@@ -641,4 +645,35 @@ export interface WorkflowFinishedParams {
   ok: boolean
   error?: string
   cancelled?: boolean
+}
+
+export type ChartTypeId = 'line' | 'scatter' | 'bar' | 'hist'
+export type ChartXKind = 'number' | 'time'
+
+export interface ChartTypeItem {
+  id: ChartTypeId
+  name: string
+}
+
+export interface ChartListTypesResult {
+  types: ChartTypeItem[]
+}
+
+export interface ChartBuildSeriesParams {
+  dataId: string
+  x: string
+  y: string[]
+  maxPoints?: number
+  xMin?: number
+  xMax?: number
+}
+
+export interface ChartBuildSeriesResult {
+  x: Array<number | null>
+  ys: Array<Array<number | null>>
+  pointCount: number
+  sourceCount: number
+  downsampled: boolean
+  xKind: ChartXKind
+  maxPoints: number
 }

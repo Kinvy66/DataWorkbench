@@ -1,0 +1,116 @@
+<script setup lang="ts">
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { UPlotChart } from '@dw/chart-core'
+import type { ChartSpec } from '@/stores/chart'
+
+const props = defineProps<{
+  chart: ChartSpec
+}>()
+
+const host = ref<HTMLElement | null>(null)
+let plot: UPlotChart | null = null
+let observer: ResizeObserver | null = null
+
+function plotData() {
+  const series = props.chart.data
+  if (!series) {
+    return null
+  }
+  return {
+    x: series.x.map((value) => (value == null ? Number.NaN : value)),
+    ys: series.ys,
+    xKind: series.xKind
+  }
+}
+
+function render(): void {
+  const el = host.value
+  const data = plotData()
+  if (!el || !data) {
+    return
+  }
+  const width = el.clientWidth
+  const height = el.clientHeight
+  if (width < 40 || height < 40) {
+    return
+  }
+  if (!plot) {
+    plot = new UPlotChart(el)
+  }
+  plot.render({
+    title: props.chart.title,
+    xLabel: props.chart.xLabel,
+    yLabel: props.chart.yLabel,
+    legend: props.chart.legend,
+    grid: props.chart.grid,
+    kind: props.chart.type,
+    styles: props.chart.series.map((item) => ({
+      label: item.key,
+      color: item.color,
+      width: item.width
+    })),
+    data,
+    width,
+    height
+  })
+}
+
+function resetView(): void {
+  plot?.resetView()
+}
+
+onMounted(() => {
+  void nextTick(() => {
+    render()
+    observer = new ResizeObserver(() => {
+      const el = host.value
+      if (!el || !plot) {
+        render()
+        return
+      }
+      plot.setSize(el.clientWidth, el.clientHeight)
+    })
+    if (host.value) {
+      observer.observe(host.value)
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  plot?.destroy()
+  plot = null
+})
+
+watch(
+  () => [
+    props.chart.id,
+    props.chart.title,
+    props.chart.xLabel,
+    props.chart.yLabel,
+    props.chart.grid,
+    props.chart.legend,
+    props.chart.type,
+    props.chart.series.map((item) => `${item.key}:${item.color}:${item.width}`).join('|'),
+    props.chart.data?.pointCount
+  ],
+  () => {
+    render()
+  }
+)
+
+defineExpose({ resetView })
+</script>
+
+<template>
+  <div ref="host" class="chart-host" />
+</template>
+
+<style scoped>
+.chart-host {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+</style>

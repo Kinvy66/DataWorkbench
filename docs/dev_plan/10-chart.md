@@ -51,7 +51,7 @@ sequenceDiagram
 ## Python `chart.buildSeries`
 
 - 非数值列：error 1002，提示先 query 或选数值列（对齐上游 Agent 工具的错误策略，但无 Agent）
-- NaN：断开折线或跳点，与 pandas 行为一致并在文档写死一种
+- NaN：**丢掉非有限 x 的行**；y 的 NaN 序列化为 JSON `null`，uPlot 断线。不要改成插值填缝。
 - datetime x：转 epoch ms，uPlot 用 time 轴
 
 ## 样式对象（存入工程 `charts.json`）

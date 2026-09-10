@@ -104,10 +104,14 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 
 | 方法 | 说明 |
 |------|------|
-| `chart.buildSeries` | `{dataId, x, y[], maxPoints}` → 降采样后的 `{x:number[], ys:number[][]}` |
-| `chart.listTypes` | 一期：`line` / `scatter` / `bar` / `hist` |
+| `chart.listTypes` | `{types:[{id,name}]}`，一期 id：`line` / `scatter` / `bar` / `hist` |
+| `chart.buildSeries` | `{dataId, x, y[], maxPoints?, xMin?, xMax?}` → `{x, ys, pointCount, sourceCount, downsampled, xKind, maxPoints}` |
 
-前端禁止自己对全列做 `JSON.parse` 百万点；必须走 `buildSeries`。
+- `maxPoints` 默认 5000，钳制到 2…20000。生产降采样只在 Python（LTTB），前端禁止对百万点 `JSON.parse`。
+- 非数值 y（或既非数值也非日期的 x）：error **1002**，`i18nKey=chart.nonNumeric`。缺列：1002 `chart.columnNotFound`。缺数据集：1001 `data.notFound`。
+- 非有限 x 的行丢弃；y 的 NaN 变成 JSON `null`（uPlot 断线）。datetime x 为 epoch **毫秒**，`xKind:"time"`；uPlot 时间轴自行 ÷1000。
+- 第一版全列降采样一次；`xMin`/`xMax` 可筛窗口，视口缩放后重新请求放本阶段后半。
+
 
 ## project 域（P5）
 

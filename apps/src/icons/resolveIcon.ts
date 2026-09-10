@@ -33,6 +33,11 @@ import iconRedo from '@/assets/icons/app/redo.svg?url'
 import iconZoomIn from '@/assets/icons/app/zoomIn.svg?url'
 import iconZoomOut from '@/assets/icons/app/zoomOut.svg?url'
 import iconViewAll from '@/assets/icons/app/viewAll.svg?url'
+import iconChartCurve from '@/assets/icons/app/chart-type/chart-curve.svg?url'
+import iconChartScatter from '@/assets/icons/app/chart-type/chart-scatter.svg?url'
+import iconChartBar from '@/assets/icons/app/chart-type/chart-bar.svg?url'
+import iconShowChart from '@/assets/icons/app/showChart.svg?url'
+import iconChart from '@/assets/icons/gui/chart.svg?url'
 
 const urls: Record<string, string> = {
   'app/icon': iconApp,
@@ -64,10 +69,15 @@ const urls: Record<string, string> = {
   'app/zoomIn': iconZoomIn,
   'app/zoomOut': iconZoomOut,
   'app/viewAll': iconViewAll,
+  'app/chart-type/chart-curve': iconChartCurve,
+  'app/chart-type/chart-scatter': iconChartScatter,
+  'app/chart-type/chart-bar': iconChartBar,
+  'app/showChart': iconShowChart,
   'gui/data': iconData,
   'gui/data-table': iconDataTable,
   'gui/workflow': iconWorkflow,
-  'gui/setting': iconSetting
+  'gui/setting': iconSetting,
+  'gui/chart': iconChart
 }
 
 export function resolveIconUrl(name: string): string {

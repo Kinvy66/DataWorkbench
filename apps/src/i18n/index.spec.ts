@@ -102,5 +102,13 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.dataClean'))).toBe('数据清洗')
     expect(String(i18n.global.t('ribbon.dataFilter'))).toBe('数据过滤')
     expect(String(i18n.global.t('ribbon.dataStatistic'))).toBe('统计')
+    i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.chart'))).toBe('Chart')
+    expect(String(i18n.global.t('ribbon.chartLine'))).toBe('Line')
+    expect(String(i18n.global.t('layout.figure'))).toBe('Figure')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.chart'))).toBe('图表')
+    expect(String(i18n.global.t('ribbon.chartLine'))).toBe('折线')
+    expect(String(i18n.global.t('layout.figure'))).toBe('绘图')
   })
 })

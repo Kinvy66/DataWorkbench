@@ -27,12 +27,23 @@ import DescribeDialog from '@/views/data/DescribeDialog.vue'
 import PivotTableDialog from '@/views/data/PivotTableDialog.vue'
 import QueryDialog from '@/views/data/QueryDialog.vue'
 import SortDialog from '@/views/data/SortDialog.vue'
+import ChartWorkspace from '@/views/chart/ChartWorkspace.vue'
+import ChartProperties from '@/views/chart/ChartProperties.vue'
+import ChartBindDialog from '@/views/chart/ChartBindDialog.vue'
 
 const { t } = useI18n()
 const log = useLogStore()
 const workflow = useWorkflowStore()
 
-const rightPanel = computed(() => (workflow.selectedNodeId ? 'node' : 'dataset'))
+const rightPanel = computed(() => {
+  if (workflow.centerTab === 'figure') {
+    return 'chart'
+  }
+  if (workflow.selectedNodeId) {
+    return 'node'
+  }
+  return 'dataset'
+})
 
 function formatTime(at: number): string {
   return new Date(at).toLocaleTimeString()
@@ -65,6 +76,9 @@ function formatTime(at: number): string {
                 <el-tab-pane :label="t('layout.workflow')" name="workflow">
                   <WorkflowCanvas />
                 </el-tab-pane>
+                <el-tab-pane :label="t('layout.figure')" name="figure">
+                  <ChartWorkspace />
+                </el-tab-pane>
               </el-tabs>
             </section>
           </Pane>
@@ -72,6 +86,7 @@ function formatTime(at: number): string {
             <section class="panel">
               <header>{{ t('layout.properties') }}</header>
               <NodeProperties v-if="rightPanel === 'node'" />
+              <ChartProperties v-else-if="rightPanel === 'chart'" />
               <DatasetProperties v-else />
             </section>
           </Pane>
@@ -105,6 +120,7 @@ function formatTime(at: number): string {
     <PivotTableDialog />
     <QueryDialog />
     <SortDialog />
+    <ChartBindDialog />
   </div>
 </template>
 

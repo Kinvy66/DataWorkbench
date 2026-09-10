@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 from dw_host.arrow_block import ArrowBlock
 from dw_host.data_manager import DataManager
 from dw_host.errors import ErrorCode, HostError
+from dw_host.rpc_chart import dispatch as dispatch_chart
 from dw_host.rpc_data import dispatch as dispatch_data
 from dw_host.rpc_workflow import dispatch as dispatch_workflow
 from dw_host.workflow_runtime import DeferredStart, WorkflowRuntime
@@ -155,6 +156,17 @@ def _handle(req: dict[str, Any], pandas_ok: bool, manager: DataManager, runtime:
             _emit_arrow(req_id, result)
         else:
             _emit({"jsonrpc": "2.0", "id": req_id, "result": result})
+        return True
+    if method.startswith("chart."):
+        try:
+            result = dispatch_chart(method, params, manager, pandas_ok)
+        except ValidationError as exc:
+            _error(req_id, ErrorCode.InvalidParams, str(exc), "rpc.invalidParams")
+            return True
+        except HostError as exc:
+            _error(req_id, exc.code, str(exc), exc.i18n_key)
+            return True
+        _emit({"jsonrpc": "2.0", "id": req_id, "result": result})
         return True
     if method.startswith("workflow."):
         try:

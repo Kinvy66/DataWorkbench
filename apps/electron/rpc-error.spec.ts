@@ -4,6 +4,7 @@ import { encodeRpcErrorMessage, isDwRpcErrorPayload, rpcTimeoutMs } from './rpc-
 describe('rpcTimeoutMs', () => {
   it('gives data.import two minutes', () => {
     expect(rpcTimeoutMs('data.import')).toBe(120_000)
+    expect(rpcTimeoutMs('chart.buildSeries')).toBe(120_000)
     expect(rpcTimeoutMs('data.list')).toBe(30_000)
   })
 

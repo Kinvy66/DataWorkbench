@@ -4,6 +4,7 @@ import { commandBus } from './commandBus'
 import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
 import { useWorkflowStore } from '@/stores/workflow'
+import { useChartStore } from '@/stores/chart'
 import { i18n } from '@/i18n'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
@@ -498,4 +499,28 @@ export function registerBuiltinCommands(): void {
   commandBus.register('file.open', async () => {}, notYet)
   commandBus.register('file.save', async () => {}, notYet)
   commandBus.register('file.saveAs', async () => {}, notYet)
+
+  commandBus.register(
+    'chart.newLine',
+    async () => {
+      useChartStore().openBindDialog('line')
+    },
+    () => useDataStore().hasSelection
+  )
+  commandBus.register(
+    'chart.newScatter',
+    async () => {
+      useChartStore().openBindDialog('scatter')
+    },
+    () => useDataStore().hasSelection
+  )
+  commandBus.register(
+    'chart.newBar',
+    async () => {
+      useChartStore().openBindDialog('bar')
+    },
+    () => useDataStore().hasSelection
+  )
+  commandBus.register('chart.exportPng', async () => {}, notYet)
+  commandBus.register('chart.exportSvg', async () => {}, notYet)
 }

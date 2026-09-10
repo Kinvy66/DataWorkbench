@@ -63,7 +63,7 @@ export const useWorkflowStore = defineStore('workflow', {
     selectedNodeId: null as string | null,
     running: false,
     paramValues: {} as Record<string, Record<string, unknown>>,
-    centerTab: 'table' as 'table' | 'workflow',
+    centerTab: 'table' as 'table' | 'workflow' | 'figure',
     leftTab: 'datasets' as 'datasets' | 'nodes',
     nextPlace: { x: 80, y: 80 },
     undoStack: [] as HistoryCommand[],

@@ -26,9 +26,9 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 以 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md) 为准。P0 骨架（窗口 + Ribbon + `host.hello`）已落地。执行顺序：
 
-**P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（进行中） → P4 图表 → P5 工程文件**
+**P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（完成） → P4 图表（进行中） → P5 工程文件**
 
-P2 任务 1–8 已落地。P3：已 vendor `dw_nodes_analysis/core`，工具箱含 Data Source（从 DataManager 取表）、Query、Drop NA、Drop Duplicates、Fill NA、Interpolate、Remove Outliers IQR、Remove Outliers Z-Score、Transform Skewed、Replace Values、Threshold Filter、Filter By Column、Eval Expression、Search、Sort、Describe、Pivot Table、Data Export、If / Else 与 Text Viewer。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签（数据清洗：删除缺失值/删除重复值/填充缺失值/插值填充/IQR异常值处理/Z-Score异常值处理/转换偏态数据；数据过滤：数值计算/条件筛选/数据检索/列数据过滤/数据排序；统计：数据描述/数据透视表）。Replace Values、Threshold Filter 上游无 Ribbon 按钮，只做工作流节点 + RPC。Describe 与 Pivot Table 发布新表，不改源表；Eval 必须用赋值表达式如 `c = a + b`，无赋值会返回 Series 并被拒绝。Data Export 是工作流写盘节点（Core `export_data`）；功能区导出仍是 `data.export`。If / Else 未匹配分支输出 None，执行器不向下游传播；画布菱形 CSS，不要用 Python `paint()`。Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** Operate 清洗/过滤/统计已对齐上游。不要做图表、自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。Home 不要擅自改成对齐 Qt。P3 分析节点已齐（不要移植 `data_plot`）。
+P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 第一刀：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar，中区 Figure tab + 属性面板。不要把图表按钮放到 Data/Operate。PNG/SVG 导出、直方 UI、视口窗口二次采样尚未做。不要做自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。Home 不要擅自改成对齐 Qt。
 
 ## STRUCTURE
 
@@ -221,11 +221,12 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 - Host 变更在 RPC 事件循环线程执行（替代上游 `callInMainThread`）
 - vendor 文件保留 LGPL 版权头
 
-### 图表（P4 才做）
+### 图表（P4 进行中）
 
 - 一期：line / scatter / bar / hist + 属性面板 + PNG/SVG
+- 生产降采样以 Python `chart.buildSeries` 为准（LTTB，默认 5000）；不要对百万点 `JSON.parse`
 - 不做 3D、画布拖标注、与 Qwt `charts.xml` 互导
-- 生产降采样以 Python `chart.buildSeries` 为准
+- 图表按钮只在 Chart 标签，不要放到 Data / Operate
 
 ## COMMANDS
 

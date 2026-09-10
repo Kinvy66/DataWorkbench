@@ -38,6 +38,8 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/sort')).toMatch(/sort\.svg/)
     expect(resolveIconUrl('app/describe')).toMatch(/describe\.svg/)
     expect(resolveIconUrl('app/pivotTable')).toMatch(/pivotTable\.svg/)
+    expect(resolveIconUrl('app/chart-type/chart-curve')).toMatch(/chart-curve\.svg/)
+    expect(resolveIconUrl('gui/chart')).toMatch(/chart\.svg/)
   })
 
   it('returns empty string for a missing name', () => {

@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 
 const root = dirname(fileURLToPath(import.meta.url))
 const rpcTypes = resolve(root, '../packages/rpc-types/src/index.ts')
+const chartCore = resolve(root, '../packages/chart-core/src/index.ts')
 
 export default defineConfig({
   main: {
@@ -44,7 +45,8 @@ export default defineConfig({
     resolve: {
       alias: {
         '@': resolve(root, 'src'),
-        '@dw/rpc-types': rpcTypes
+        '@dw/rpc-types': rpcTypes,
+        '@dw/chart-core': chartCore
       }
     },
     build: {

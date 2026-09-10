@@ -40,7 +40,7 @@ export function encodeRpcErrorMessage(message: string, i18nKey?: string): string
 }
 
 export function rpcTimeoutMs(method: string): number {
-  if (method === 'data.import') {
+    if (method === 'data.import' || method === 'chart.buildSeries') {
     return 120_000
   }
   if (method === 'workflow.execute') {

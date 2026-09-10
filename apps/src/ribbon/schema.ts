@@ -329,6 +329,79 @@ export function useRibbonSchema() {
             ]
           }
         ]
+      },
+      {
+        id: 'chart',
+        title: t('ribbon.chart'),
+        groups: [
+          {
+            id: 'chart-new',
+            title: t('ribbon.chartNew'),
+            collections: [
+              {
+                id: 'chart-new-actions',
+                items: [
+                  {
+                    id: 'chart.newLine',
+                    type: 'button',
+                    label: t('ribbon.chartLine'),
+                    tooltip: t('ribbon.chartLineTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/chart-type/chart-curve')
+                  },
+                  {
+                    id: 'chart.newScatter',
+                    type: 'button',
+                    label: t('ribbon.chartScatter'),
+                    tooltip: t('ribbon.chartScatterTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/chart-type/chart-scatter')
+                  },
+                  {
+                    id: 'chart.newBar',
+                    type: 'button',
+                    label: t('ribbon.chartBar'),
+                    tooltip: t('ribbon.chartBarTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/chart-type/chart-bar')
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'chart-export',
+            title: t('ribbon.chartExport'),
+            collections: [
+              {
+                id: 'chart-export-actions',
+                items: [
+                  {
+                    id: 'chart.exportPng',
+                    type: 'button',
+                    label: t('ribbon.chartExportPng'),
+                    tooltip: t('ribbon.chartExportPngTip'),
+                    size: 'large',
+                    disabled: true,
+                    icon: ribbonIcon('app/save')
+                  },
+                  {
+                    id: 'chart.exportSvg',
+                    type: 'button',
+                    label: t('ribbon.chartExportSvg'),
+                    tooltip: t('ribbon.chartExportSvgTip'),
+                    size: 'large',
+                    disabled: true,
+                    icon: ribbonIcon('app/save')
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     ]
   })
