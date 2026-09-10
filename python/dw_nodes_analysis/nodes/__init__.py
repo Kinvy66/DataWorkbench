@@ -1,5 +1,6 @@
 # dw:adapted
 from .data_describe import DataDescribeNode
+from .data_drop_duplicates import DataDropDuplicatesNode
 from .data_dropna import DataDropNaNode
 from .data_export import DataExportNode
 from .data_fillna import DataFillNaNode
@@ -9,6 +10,7 @@ from .data_source import DataSourceNode
 
 __all__ = [
     "DataDescribeNode",
+    "DataDropDuplicatesNode",
     "DataDropNaNode",
     "DataExportNode",
     "DataFillNaNode",

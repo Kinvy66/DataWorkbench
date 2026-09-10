@@ -32,6 +32,7 @@ export const RpcMethod = {
   DataExport: 'data.export',
   DataRegister: 'data.register',
   DataDropNa: 'data.dropNa',
+  DataDropDuplicates: 'data.dropDuplicates',
   DataQuery: 'data.query',
   DataSort: 'data.sort',
   DataFillNa: 'data.fillNa',
@@ -202,6 +203,21 @@ export interface DataDropNaParams {
 }
 
 export interface DataDropNaResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  removedCount: number
+}
+
+export interface DataDropDuplicatesParams {
+  id: string
+  keep?: 'first' | 'last' | 'none' | string | boolean
+  subset?: string[] | string
+}
+
+export interface DataDropDuplicatesResult {
   id: string
   name: string
   rows: number

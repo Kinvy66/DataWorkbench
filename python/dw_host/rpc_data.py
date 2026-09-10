@@ -70,6 +70,12 @@ class DropNaParams(BaseModel):
     minNonNa: int = 0
 
 
+class DropDuplicatesParams(BaseModel):
+    id: str
+    keep: str | bool = "first"
+    subset: list[str] | str | None = None
+
+
 class QueryParams(BaseModel):
     id: str
     queryString: str
@@ -151,6 +157,13 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             how=parsed.how,
             subset=_subset_list(parsed.subset),
             min_non_na=parsed.minNonNa,
+        )
+    if method == "data.dropDuplicates":
+        parsed = DropDuplicatesParams.model_validate(params)
+        return manager.drop_duplicates(
+            parsed.id,
+            keep=parsed.keep,
+            subset=_subset_list(parsed.subset),
         )
     if method == "data.query":
         parsed = QueryParams.model_validate(params)

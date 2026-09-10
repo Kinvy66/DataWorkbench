@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type {
   DataDropNaResult,
+  DataDropDuplicatesResult,
   DataFetchBlockResult,
   DataGetSchemaResult,
   DataImportResult,
@@ -21,6 +22,7 @@ export const useDataStore = defineStore('data', {
     currentId: null as string | null,
     schema: null as DataGetSchemaResult | null,
     dropNaDialogOpen: false,
+    dropDuplicatesDialogOpen: false,
     queryDialogOpen: false,
     sortDialogOpen: false,
     fillNaDialogOpen: false,
@@ -119,6 +121,23 @@ export const useDataStore = defineStore('data', {
         subset: options?.subset,
         minNonNa: options?.minNonNa ?? 0
       })) as DataDropNaResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async dropDuplicates(options?: {
+      keep?: string
+      subset?: string[]
+    }): Promise<DataDropDuplicatesResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.dropDuplicates', {
+        id,
+        keep: options?.keep ?? 'first',
+        subset: options?.subset
+      })) as DataDropDuplicatesResult
       await this.refreshList()
       await this.select(id)
       return result

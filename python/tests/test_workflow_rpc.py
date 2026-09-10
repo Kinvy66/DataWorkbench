@@ -6,6 +6,7 @@ from pathlib import Path
 
 from dw_nodes_analysis import (
     DataDescribeNode,
+    DataDropDuplicatesNode,
     DataDropNaNode,
     DataExportNode,
     DataFillNaNode,
@@ -22,6 +23,7 @@ DATAMGR = DataToManagerNode.qualified_name
 SOURCE = DataSourceNode.qualified_name
 QUERY = DataQueryNode.qualified_name
 DROPNA = DataDropNaNode.qualified_name
+DROPDUPE = DataDropDuplicatesNode.qualified_name
 FILLNA = DataFillNaNode.qualified_name
 SORT = DataSortNode.qualified_name
 DESCRIBE = DataDescribeNode.qualified_name
@@ -226,6 +228,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert SOURCE in names
         assert QUERY in names
         assert DROPNA in names
+        assert DROPDUPE in names
         assert FILLNA in names
         assert SORT in names
         assert DESCRIBE in names

@@ -154,6 +154,15 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/dropNa')
                   },
                   {
+                    id: 'data.dropDuplicates',
+                    type: 'button',
+                    label: t('ribbon.dataDropDuplicates'),
+                    tooltip: t('ribbon.dataDropDuplicatesTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/dropDuplicates')
+                  },
+                  {
                     id: 'data.fillNa',
                     type: 'button',
                     label: t('ribbon.dataFillNa'),

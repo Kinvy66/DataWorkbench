@@ -365,6 +365,45 @@ class DataManager:
         log.info("data.dropNa name=%s removed=%s rows=%s", ds.name, result["removedCount"], result["rows"])
         return result
 
+    def drop_duplicates(
+        self,
+        dataset_id: str,
+        *,
+        keep: object = "first",
+        subset: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Drop duplicate rows in place via the shared Core ``drop_duplicates_impl``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.cleaning import drop_duplicates_impl
+
+        keep_norm = _normalize_keep(keep)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, subset)
+            before = int(len(ds.df))
+            try:
+                cleaned = drop_duplicates_impl(ds.df, subset=resolved, keep=keep_norm, ignore_index=True)
+            except Exception as exc:
+                log.info("data.dropDuplicates failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to drop duplicates",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = cleaned
+        result = _meta(ds)
+        result["removedCount"] = before - int(len(cleaned))
+        log.info(
+            "data.dropDuplicates name=%s keep=%s removed=%s rows=%s",
+            ds.name,
+            keep_norm,
+            result["removedCount"],
+            result["rows"],
+        )
+        return result
+
     def query(self, dataset_id: str, query_string: str) -> dict[str, Any]:
         """Filter rows in place via the shared Core ``query_dataframe``."""
         _require_pandas()
@@ -527,6 +566,20 @@ class DataManager:
 
 _FILLNA_METHODS = frozenset({"value", "forward", "backward", "mean", "median", "mode"})
 _FILLNA_ALIASES = {"constant": "value", "ffill": "forward", "bfill": "backward"}
+_KEEP_VALUES = frozenset({"first", "last", "none"})
+_KEEP_ALIASES = {"false": "none"}
+
+
+def _normalize_keep(raw: object) -> str:
+    if raw is False:
+        return "none"
+    if isinstance(raw, bool):
+        raise HostError(ErrorCode.ColumnOrValidation, "Unsupported keep value", "data.invalidValue")
+    key = str(raw or "first").strip().lower()
+    key = _KEEP_ALIASES.get(key, key)
+    if key not in _KEEP_VALUES:
+        raise HostError(ErrorCode.ColumnOrValidation, "Unsupported keep value", "data.invalidValue")
+    return key
 
 
 def _normalize_fillna_method(raw: object) -> str:
