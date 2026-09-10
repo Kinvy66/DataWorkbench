@@ -8,6 +8,7 @@ from .data_fillna import DataFillNaNode
 from .data_filter_by_column import DataFilterByColumnNode
 from .data_query import DataQueryNode
 from .data_replace_values import DataReplaceValuesNode
+from .data_search import DataSearchNode
 from .data_sort import DataSortNode
 from .data_source import DataSourceNode
 from .data_threshold_filter import DataThresholdFilterNode
@@ -22,6 +23,7 @@ __all__ = [
     "DataFilterByColumnNode",
     "DataQueryNode",
     "DataReplaceValuesNode",
+    "DataSearchNode",
     "DataSortNode",
     "DataSourceNode",
     "DataThresholdFilterNode",

@@ -509,6 +509,62 @@ class DataManager:
         log.info("data.eval name=%s rows=%s cols=%s", ds.name, result["rows"], result["cols"])
         return result
 
+    def search(
+        self,
+        dataset_id: str,
+        *,
+        column: object,
+        pattern: object,
+        case_sensitive: object = False,
+    ) -> dict[str, Any]:
+        """Keep matching rows in place via the shared Core ``search_dataframe``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.operations import search_dataframe
+
+        col_name = str(column or "").strip()
+        if not col_name:
+            raise HostError(
+                ErrorCode.ColumnOrValidation,
+                "Column is required",
+                "data.searchColumnEmpty",
+            )
+        needle = str(pattern or "").strip()
+        if not needle:
+            raise HostError(
+                ErrorCode.ColumnOrValidation,
+                "pattern must not be empty",
+                "data.searchPatternEmpty",
+            )
+        case_norm = _parse_bool(case_sensitive, default=False)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, [col_name])
+            col = resolved[0]
+            before = int(len(ds.df))
+            try:
+                matched = search_dataframe(ds.df, col, needle, case_norm)
+            except Exception as exc:
+                log.info("data.search failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Invalid search pattern or non-text column",
+                    "data.invalidSearch",
+                ) from exc
+            ds.df = matched
+        result = _meta(ds)
+        result["matchedCount"] = int(len(matched))
+        result["removedCount"] = before - int(len(matched))
+        log.info(
+            "data.search name=%s column=%s matched=%s removed=%s",
+            ds.name,
+            col_name,
+            result["matchedCount"],
+            result["removedCount"],
+        )
+        return result
+
     def fillna(
         self,
         dataset_id: str,

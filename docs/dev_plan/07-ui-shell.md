@@ -29,7 +29,7 @@
 | Data | Import | `data.import` | P1 |
 | Data | Export | `data.export` | P1 |
 | Data | Dataset | `data.rename` `data.remove` | P1 |
-| Data | Clean | `data.dropNa` `data.dropDuplicates` `data.fillNa` `data.replaceValues` `data.thresholdFilter` `data.filterByColumn` `data.eval` `data.query` `data.sort` | P3 |
+| Data | Clean | `data.dropNa` `data.dropDuplicates` `data.fillNa` `data.replaceValues` `data.thresholdFilter` `data.filterByColumn` `data.eval` `data.search` `data.query` `data.sort` | P3 |
 | Data | Analyze | `data.describe` | P3 |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |
 | Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` | P4 |

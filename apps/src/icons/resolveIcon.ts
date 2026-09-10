@@ -12,6 +12,7 @@ import iconReplaceValues from '@/assets/icons/app/replaceValues.svg?url'
 import iconThresholdFilter from '@/assets/icons/app/thresholdFilter.svg?url'
 import iconFilterByColumn from '@/assets/icons/app/filterByColumn.svg?url'
 import iconEval from '@/assets/icons/app/eval.svg?url'
+import iconSearch from '@/assets/icons/app/search.svg?url'
 import iconQuery from '@/assets/icons/app/query.svg?url'
 import iconSort from '@/assets/icons/app/sort.svg?url'
 import iconDescribe from '@/assets/icons/app/describe.svg?url'
@@ -41,6 +42,7 @@ const urls: Record<string, string> = {
   'app/thresholdFilter': iconThresholdFilter,
   'app/filterByColumn': iconFilterByColumn,
   'app/eval': iconEval,
+  'app/search': iconSearch,
   'app/query': iconQuery,
   'app/sort': iconSort,
   'app/describe': iconDescribe,

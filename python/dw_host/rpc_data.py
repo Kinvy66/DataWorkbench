@@ -86,6 +86,13 @@ class EvalParams(BaseModel):
     expression: str
 
 
+class SearchParams(BaseModel):
+    id: str
+    column: str
+    pattern: str
+    caseSensitive: bool = False
+
+
 class SortParams(BaseModel):
     id: str
     columns: list[str] | str
@@ -201,6 +208,14 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
     if method == "data.eval":
         parsed = EvalParams.model_validate(params)
         return manager.evaluate(parsed.id, parsed.expression)
+    if method == "data.search":
+        parsed = SearchParams.model_validate(params)
+        return manager.search(
+            parsed.id,
+            column=parsed.column,
+            pattern=parsed.pattern,
+            case_sensitive=parsed.caseSensitive,
+        )
     if method == "data.sort":
         parsed = SortParams.model_validate(params)
         return manager.sort(

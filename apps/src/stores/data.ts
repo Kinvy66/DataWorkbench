@@ -8,6 +8,7 @@ import type {
   DataListResult,
   DataQueryResult,
   DataEvalResult,
+  DataSearchResult,
   DataSortResult,
   DataFillNaResult,
   DataReplaceValuesResult,
@@ -29,6 +30,7 @@ export const useDataStore = defineStore('data', {
     dropDuplicatesDialogOpen: false,
     queryDialogOpen: false,
     evalDialogOpen: false,
+    searchDialogOpen: false,
     sortDialogOpen: false,
     fillNaDialogOpen: false,
     replaceValuesDialogOpen: false,
@@ -172,6 +174,25 @@ export const useDataStore = defineStore('data', {
         id,
         expression
       })) as DataEvalResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async search(options: {
+      column: string
+      pattern: string
+      caseSensitive?: boolean
+    }): Promise<DataSearchResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.search', {
+        id,
+        column: options.column,
+        pattern: options.pattern,
+        caseSensitive: options.caseSensitive ?? false
+      })) as DataSearchResult
       await this.refreshList()
       await this.select(id)
       return result

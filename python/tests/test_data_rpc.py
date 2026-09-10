@@ -836,6 +836,95 @@ def test_data_eval_via_rpc(tmp_path: Path) -> None:
             proc.kill()
 
 
+def test_data_search_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "people.csv"
+    csv_path.write_text("name,city,age\nAlice,Beijing,25\nBob,Shanghai,30\nCharlie,Beijing,35\n", encoding="utf-8")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        assert imported["result"]["rows"] == 3
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.search",
+                "params": {"id": dataset_id, "column": "city", "pattern": "bei"},
+            },
+        )
+        searched = read_rpc(proc)
+        assert "result" in searched, searched
+        assert searched["result"]["rows"] == 2
+        assert searched["result"]["matchedCount"] == 2
+        assert searched["result"]["removedCount"] == 1
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "data.search",
+                "params": {"id": dataset_id, "column": "", "pattern": "bei"},
+            },
+        )
+        empty_col = read_rpc(proc)
+        assert empty_col["error"]["code"] == 1002
+        assert empty_col["error"]["data"]["i18nKey"] == "data.searchColumnEmpty"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.search",
+                "params": {"id": dataset_id, "column": "city", "pattern": "   "},
+            },
+        )
+        empty_pat = read_rpc(proc)
+        assert empty_pat["error"]["code"] == 1002
+        assert empty_pat["error"]["data"]["i18nKey"] == "data.searchPatternEmpty"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "data.search",
+                "params": {"id": dataset_id, "column": "age", "pattern": "25"},
+            },
+        )
+        nontext = read_rpc(proc)
+        assert nontext["error"]["code"] == 1002
+        assert nontext["error"]["data"]["i18nKey"] == "data.invalidSearch"
+
+        send(
+            proc,
+            {"jsonrpc": "2.0", "id": 6, "method": "data.search", "params": {"id": "missing", "column": "city", "pattern": "bei"}},
+        )
+        missing = read_rpc(proc)
+        assert missing["error"]["code"] == 1001
+
+        send(proc, {"jsonrpc": "2.0", "id": 7, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
 def test_data_describe_via_rpc(tmp_path: Path) -> None:
     csv_path = tmp_path / "nums.csv"
     csv_path.write_text("a,b\n1,10\n2,20\n3,30\n4,40\n", encoding="utf-8")

@@ -29,6 +29,7 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/thresholdFilter')).toMatch(/thresholdFilter\.svg/)
     expect(resolveIconUrl('app/filterByColumn')).toMatch(/filterByColumn\.svg/)
     expect(resolveIconUrl('app/eval')).toMatch(/eval\.svg/)
+    expect(resolveIconUrl('app/search')).toMatch(/search\.svg/)
     expect(resolveIconUrl('app/query')).toMatch(/query\.svg/)
     expect(resolveIconUrl('app/sort')).toMatch(/sort\.svg/)
     expect(resolveIconUrl('app/describe')).toMatch(/describe\.svg/)

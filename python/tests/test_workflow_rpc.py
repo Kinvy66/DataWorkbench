@@ -14,6 +14,7 @@ from dw_nodes_analysis import (
     DataFilterByColumnNode,
     DataQueryNode,
     DataReplaceValuesNode,
+    DataSearchNode,
     DataSortNode,
     DataSourceNode,
     DataThresholdFilterNode,
@@ -33,6 +34,7 @@ REPLACE = DataReplaceValuesNode.qualified_name
 THRESHOLD = DataThresholdFilterNode.qualified_name
 FILTERCOL = DataFilterByColumnNode.qualified_name
 EVAL = DataEvalNode.qualified_name
+SEARCH = DataSearchNode.qualified_name
 SORT = DataSortNode.qualified_name
 DESCRIBE = DataDescribeNode.qualified_name
 EXPORT = DataExportNode.qualified_name
@@ -242,6 +244,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert THRESHOLD in names
         assert FILTERCOL in names
         assert EVAL in names
+        assert SEARCH in names
         assert SORT in names
         assert DESCRIBE in names
         assert EXPORT in names

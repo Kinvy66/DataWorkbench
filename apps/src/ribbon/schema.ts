@@ -208,6 +208,15 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/eval')
                   },
                   {
+                    id: 'data.search',
+                    type: 'button',
+                    label: t('ribbon.dataSearch'),
+                    tooltip: t('ribbon.dataSearchTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/search')
+                  },
+                  {
                     id: 'data.query',
                     type: 'button',
                     label: t('ribbon.dataQuery'),
