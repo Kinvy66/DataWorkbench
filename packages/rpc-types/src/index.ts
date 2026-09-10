@@ -46,6 +46,7 @@ export const RpcMethod = {
   DataThresholdFilter: 'data.thresholdFilter',
   DataFilterByColumn: 'data.filterByColumn',
   DataDescribe: 'data.describe',
+  DataPivotTable: 'data.pivotTable',
   WorkflowCreate: 'workflow.create',
   WorkflowListNodeTypes: 'workflow.listNodeTypes',
   WorkflowAddNode: 'workflow.addNode',
@@ -453,6 +454,27 @@ export interface DataDescribeResult {
   rows: number
   cols: number
   columns: ColumnSchema[]
+}
+
+export interface DataPivotTableParams {
+  id: string
+  index: string[] | string
+  columns?: string[] | string
+  values?: string[] | string
+  aggfunc?: string
+  margins?: boolean
+  marginsName?: string
+  sort?: boolean
+  name?: string
+}
+
+export interface DataPivotTableResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  aggfunc: string
 }
 
 export interface OkResult {

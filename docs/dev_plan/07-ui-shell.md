@@ -30,7 +30,7 @@
 | Data | Export | `data.export` | P1 |
 | Operate | Data Cleaning | `data.dropNa` `data.dropDuplicates` `data.fillNa` `data.interpolate` `data.removeOutliersIqr` `data.removeOutliersZscore` `data.transformSkewed` | P3（对齐上游数据清洗） |
 | Operate | Data Filtering | `data.eval` `data.query` `data.search` `data.filterByColumn` `data.sort` | P3（检索与按列为 medium，其余 large） |
-| Operate | Statistics | `data.describe` | P3（透视表后续按上游同 panel 再加） |
+| Operate | Statistics | `data.describe` `data.pivotTable` | P3（对齐上游统计） |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |
 | Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` | P4 |
 | Chart | Export | `chart.exportPng` `chart.exportSvg` | P4 |

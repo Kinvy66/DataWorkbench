@@ -37,6 +37,7 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/query')).toMatch(/query\.svg/)
     expect(resolveIconUrl('app/sort')).toMatch(/sort\.svg/)
     expect(resolveIconUrl('app/describe')).toMatch(/describe\.svg/)
+    expect(resolveIconUrl('app/pivotTable')).toMatch(/pivotTable\.svg/)
   })
 
   it('returns empty string for a missing name', () => {

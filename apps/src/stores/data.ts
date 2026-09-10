@@ -19,6 +19,7 @@ import type {
   DataThresholdFilterResult,
   DataFilterByColumnResult,
   DataDescribeResult,
+  DataPivotTableResult,
   DatasetListItem
 } from '@dw/rpc-types'
 import { BLOCK_SIZE } from '@/data/blockWindow'
@@ -44,7 +45,8 @@ export const useDataStore = defineStore('data', {
     replaceValuesDialogOpen: false,
     thresholdFilterDialogOpen: false,
     filterByColumnDialogOpen: false,
-    describeDialogOpen: false
+    describeDialogOpen: false,
+    pivotTableDialogOpen: false
   }),
   getters: {
     current(state): DatasetListItem | null {
@@ -405,6 +407,34 @@ export const useDataStore = defineStore('data', {
         percentiles: options?.percentiles ?? '0.25,0.5,0.75',
         name: options?.name
       })) as DataDescribeResult
+      await this.refreshList()
+      await this.select(result.id)
+      return result
+    },
+    async pivotTable(options: {
+      index: string[]
+      columns?: string[]
+      values?: string[]
+      aggfunc?: string
+      margins?: boolean
+      marginsName?: string
+      sort?: boolean
+      name?: string
+    }): Promise<DataPivotTableResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const result = (await getDesktopBridge().rpc.invoke('data.pivotTable', {
+        id: this.currentId,
+        index: options.index,
+        columns: options.columns,
+        values: options.values,
+        aggfunc: options.aggfunc ?? 'mean',
+        margins: options.margins ?? false,
+        marginsName: options.marginsName ?? 'All',
+        sort: options.sort ?? false,
+        name: options.name
+      })) as DataPivotTableResult
       await this.refreshList()
       await this.select(result.id)
       return result

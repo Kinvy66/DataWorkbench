@@ -1270,3 +1270,93 @@ def test_data_describe_via_rpc(tmp_path: Path) -> None:
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_data_pivot_table_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "people.csv"
+    csv_path.write_text(
+        "category,region,sales\nA,East,100\nA,West,200\nB,East,150\nB,West,250\n",
+        encoding="utf-8",
+    )
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        source_rows = imported["result"]["rows"]
+        assert source_rows == 4
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.pivotTable",
+                "params": {
+                    "id": dataset_id,
+                    "index": ["category"],
+                    "columns": ["region"],
+                    "values": ["sales"],
+                    "aggfunc": "mean",
+                },
+            },
+        )
+        pivoted = read_rpc(proc)
+        assert "result" in pivoted, pivoted
+        pivot_id = pivoted["result"]["id"]
+        assert pivot_id != dataset_id
+        assert pivoted["result"]["name"] == "people_PivotTable"
+        assert pivoted["result"]["aggfunc"] == "mean"
+        assert pivoted["result"]["rows"] >= 1
+        assert "category" in [col["name"] for col in pivoted["result"]["columns"]]
+
+        send(proc, {"jsonrpc": "2.0", "id": 3, "method": "data.getSchema", "params": {"id": dataset_id}})
+        source_schema = read_rpc(proc)
+        assert source_schema["result"]["rowCount"] == source_rows
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.pivotTable",
+                "params": {"id": dataset_id, "index": [], "values": ["sales"]},
+            },
+        )
+        empty_index = read_rpc(proc)
+        assert empty_index["error"]["code"] == 1002
+        assert empty_index["error"]["data"]["i18nKey"] == "data.pivotIndexEmpty"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "data.pivotTable",
+                "params": {"id": dataset_id, "index": ["category"], "values": ["sales"], "aggfunc": "maybe"},
+            },
+        )
+        invalid = read_rpc(proc)
+        assert invalid["error"]["code"] == 1002
+        assert invalid["error"]["data"]["i18nKey"] == "data.invalidValue"
+
+        send(proc, {"jsonrpc": "2.0", "id": 6, "method": "data.pivotTable", "params": {"id": "missing", "index": ["category"]}})
+        missing = read_rpc(proc)
+        assert missing["error"]["code"] == 1001
+
+        send(proc, {"jsonrpc": "2.0", "id": 7, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()

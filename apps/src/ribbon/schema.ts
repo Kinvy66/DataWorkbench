@@ -279,6 +279,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/describe')
+                  },
+                  {
+                    id: 'data.pivotTable',
+                    type: 'button',
+                    label: t('ribbon.dataPivotTable'),
+                    tooltip: t('ribbon.dataPivotTableTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/pivotTable')
                   }
                 ]
               }

@@ -57,6 +57,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 - **Query**：节点输出新 df；Operate `data.query` **就地**替换当前数据集（与 `query_dataframe` 同一函数）。
 - **Sort**：节点输出新 df；Operate `data.sort` **就地**替换当前数据集（与 `sort_dataframe` 同一函数）。需要另存一份时用 Output to DataManager。
 - **Describe**：节点输出统计表；Operate `data.describe` **发布新数据集**（默认名 `{源表} describe`），不改源表。两端都把 `describe()` 的索引展平为 `stat` 列，否则虚表 `iloc` 看不到统计名。
+- **Pivot Table**：节点输出透视表；Operate `data.pivotTable` **发布新数据集**（默认名 `{源表}_PivotTable`），不改源表。参数对齐上游透视表对话框（index 必填；columns/values 可选；aggfunc 含 mean/sum/count/size/min/max/median/std/var/first/last/prod；margins/sort）。不要抄上游 tiny 节点的精简 aggfunc。两端都把 MultiIndex 列展平并 `reset_index()`，否则虚表看不到行列标签。
 - **Data Export**：节点把连入的 DataFrame 写到 `file_path`（Core `export_data`）。Data 标签 `data.export` 仍导出**当前选中**的 DataManager 表（主进程对话框 + sidecar `_write_frame`）。两者入口不同，不要混用。
 - **Output to DataManager**：见 [06-python-reuse.md](./06-python-reuse.md)。
 - 执行结束后前端 `data.list` 刷新。不要靠猜测 df 是否变化。
@@ -90,6 +91,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | `test_data_query_via_rpc` / `test_query_node_matches_core` | Operate `data.query` 与节点 Query 与 `query_dataframe` 同行数 |
 | `test_data_sort_via_rpc` / `test_sort_node_matches_core` | Operate `data.sort` 与节点 Sort 与 `sort_dataframe` 同顺序 |
 | `test_data_describe_via_rpc` / `test_describe_node_matches_core` | Operate `data.describe` 与节点 Describe 与 `describe_dataframe` 同统计表；源表行数不变 |
+| `test_data_pivot_table_via_rpc` / `test_pivot_node_mean_matches_core` | Operate `data.pivotTable` 与节点 Pivot Table 与 `create_pivot_table` 同透视表；源表行数不变；空 index → `data.pivotIndexEmpty` |
 | `test_export_node_matches_core` | 节点 Data Export 与 Core `export_data` 同文件字节；pickle 被拒绝 |
 | `test_xlsx_roundtrip` / `test_parquet_roundtrip` | 导入再导出内容一致 |
 | `test_pickle_rejected` / `test_pickle_import_rejected_via_rpc` | pickle 关（内存路径 + stdio 3001） |

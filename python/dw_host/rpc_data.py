@@ -172,6 +172,18 @@ class DescribeParams(BaseModel):
     name: str | None = None
 
 
+class PivotTableParams(BaseModel):
+    id: str
+    index: list[str] | str | None = None
+    columns: list[str] | str | None = None
+    values: list[str] | str | None = None
+    aggfunc: str = "mean"
+    margins: object = False
+    marginsName: str = "All"
+    sort: object = False
+    name: str | None = None
+
+
 def _subset_list(raw: list[str] | str | None) -> list[str] | None:
     if raw is None:
         return None
@@ -336,4 +348,17 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
     if method == "data.describe":
         parsed = DescribeParams.model_validate(params)
         return manager.describe(parsed.id, percentiles=parsed.percentiles, name=parsed.name)
+    if method == "data.pivotTable":
+        parsed = PivotTableParams.model_validate(params)
+        return manager.pivot_table(
+            parsed.id,
+            index=_subset_list(parsed.index),
+            columns=_subset_list(parsed.columns),
+            values=_subset_list(parsed.values),
+            aggfunc=parsed.aggfunc,
+            margins=parsed.margins,
+            margins_name=parsed.marginsName,
+            sort=parsed.sort,
+            name=parsed.name,
+        )
     raise HostError(ErrorCode.MethodNotFound, f"Method not found: {method}")

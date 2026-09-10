@@ -24,6 +24,7 @@ import FilterByColumnDialog from '@/views/data/FilterByColumnDialog.vue'
 import EvalDialog from '@/views/data/EvalDialog.vue'
 import SearchDialog from '@/views/data/SearchDialog.vue'
 import DescribeDialog from '@/views/data/DescribeDialog.vue'
+import PivotTableDialog from '@/views/data/PivotTableDialog.vue'
 import QueryDialog from '@/views/data/QueryDialog.vue'
 import SortDialog from '@/views/data/SortDialog.vue'
 
@@ -101,6 +102,7 @@ function formatTime(at: number): string {
     <EvalDialog />
     <SearchDialog />
     <DescribeDialog />
+    <PivotTableDialog />
     <QueryDialog />
     <SortDialog />
   </div>

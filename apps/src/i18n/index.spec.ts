@@ -95,6 +95,10 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.dataDescribe'))).toBe('Data Description')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataDescribe'))).toBe('数据描述')
+    i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.dataPivotTable'))).toBe('Pivot Table')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.dataPivotTable'))).toBe('数据透视表')
     expect(String(i18n.global.t('ribbon.dataClean'))).toBe('数据清洗')
     expect(String(i18n.global.t('ribbon.dataFilter'))).toBe('数据过滤')
     expect(String(i18n.global.t('ribbon.dataStatistic'))).toBe('统计')

@@ -12,6 +12,7 @@ from dw_nodes_analysis import (
     DataExportNode,
     DataFillNaNode,
     DataFilterByColumnNode,
+    DataPivotTableNode,
     DataQueryNode,
     DataReplaceValuesNode,
     DataSearchNode,
@@ -37,6 +38,7 @@ EVAL = DataEvalNode.qualified_name
 SEARCH = DataSearchNode.qualified_name
 SORT = DataSortNode.qualified_name
 DESCRIBE = DataDescribeNode.qualified_name
+PIVOT = DataPivotTableNode.qualified_name
 EXPORT = DataExportNode.qualified_name
 END = EndNode.qualified_name
 DELAY = DelayNode.qualified_name
@@ -247,6 +249,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert SEARCH in names
         assert SORT in names
         assert DESCRIBE in names
+        assert PIVOT in names
         assert EXPORT in names
         constant = next(item for item in listed["result"]["types"] if item["qualifiedName"] == CONSTANT)
         assert any(p["name"] == "value" for p in constant["outputs"])

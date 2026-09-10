@@ -1,4 +1,4 @@
-# dw:adapted — Data Source / Query / DropNA / DropDuplicates / FillNA / Interpolate / IQR / ZScore / TransformSkewed / ReplaceValues / ThresholdFilter / FilterByColumn / Eval / Search / Sort / Describe / Export; Core lives in .core (vendored DADataAnalysisCore).
+# dw:adapted — Data Source / Query / DropNA / DropDuplicates / FillNA / Interpolate / IQR / ZScore / TransformSkewed / ReplaceValues / ThresholdFilter / FilterByColumn / Eval / Search / Sort / Describe / PivotTable / Export; Core lives in .core (vendored DADataAnalysisCore).
 
 from .i18n import setup_i18n
 
@@ -12,6 +12,7 @@ from .nodes.data_export import DataExportNode
 from .nodes.data_fillna import DataFillNaNode
 from .nodes.data_filter_by_column import DataFilterByColumnNode
 from .nodes.data_interpolate import DataFillInterpolateNode
+from .nodes.data_pivot_table import DataPivotTableNode
 from .nodes.data_query import DataQueryNode
 from .nodes.data_remove_outliers_iqr import DataRemoveOutliersIQRNode
 from .nodes.data_remove_outliers_zscore import DataRemoveOutliersZScoreNode
@@ -31,6 +32,7 @@ __all__ = [
     "DataFillNaNode",
     "DataFillInterpolateNode",
     "DataFilterByColumnNode",
+    "DataPivotTableNode",
     "DataRemoveOutliersIQRNode",
     "DataRemoveOutliersZScoreNode",
     "DataTransformSkewedNode",
@@ -63,6 +65,7 @@ def register_analysis_nodes(factory) -> None:
         DataSearchNode,
         DataSortNode,
         DataDescribeNode,
+        DataPivotTableNode,
         DataExportNode,
     ):
         registry.register_node(cls)

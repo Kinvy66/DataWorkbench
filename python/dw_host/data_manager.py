@@ -1019,8 +1019,81 @@ class DataManager:
             base = (name or "").strip() or f"{source_name} describe"
             display = _unique_display_name(self._names(), base)
             new_ds = self._insert(display, table)
-        result = _meta(new_ds)
+            result = _meta(new_ds)
         log.info("data.describe source=%s name=%s rows=%s cols=%s", source_name, new_ds.name, result["rows"], result["cols"])
+        return result
+
+    def pivot_table(
+        self,
+        dataset_id: str,
+        *,
+        index: list[str] | None = None,
+        columns: list[str] | None = None,
+        values: list[str] | None = None,
+        aggfunc: str = "mean",
+        margins: object = False,
+        margins_name: str = "All",
+        sort: object = False,
+        name: str | None = None,
+    ) -> dict[str, Any]:
+        """Publish a new pivot table via Core ``create_pivot_table``; source is unchanged."""
+        _require_pandas()
+        from dw_nodes_analysis.core.operations import create_pivot_table
+
+        agg_norm = _normalize_pivot_aggfunc(aggfunc)
+        margins_norm = _parse_bool(margins, default=False)
+        sort_norm = _parse_bool(sort, default=False)
+        margins_label = str(margins_name or "All").strip() or "All"
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            source_name = ds.name
+            index_resolved = _resolve_columns(ds.df, index)
+            if not index_resolved:
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Pivot table requires at least one index column",
+                    "data.pivotIndexEmpty",
+                )
+            columns_resolved = _resolve_columns(ds.df, columns)
+            values_resolved = _resolve_columns(ds.df, values)
+            _require_disjoint_columns(index_resolved, columns_resolved, values_resolved)
+            try:
+                table = _flatten_pivot(
+                    create_pivot_table(
+                        ds.df,
+                        index=index_resolved,
+                        columns=columns_resolved,
+                        values=values_resolved,
+                        aggfunc=agg_norm,
+                        margins=margins_norm,
+                        margins_name=margins_label,
+                        sort=sort_norm,
+                    )
+                )
+            except HostError:
+                raise
+            except Exception as exc:
+                log.info("data.pivotTable failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to create pivot table",
+                    "data.invalidValue",
+                ) from exc
+            base = (name or "").strip() or f"{source_name}_PivotTable"
+            display = _unique_display_name(self._names(), base)
+            new_ds = self._insert(display, table)
+        result = _meta(new_ds)
+        result["aggfunc"] = agg_norm
+        log.info(
+            "data.pivotTable source=%s name=%s aggfunc=%s rows=%s cols=%s",
+            source_name,
+            new_ds.name,
+            agg_norm,
+            result["rows"],
+            result["cols"],
+        )
         return result
 
     def export_path(self, dataset_id: str, path: str, fmt: str | None = None) -> None:
@@ -1045,6 +1118,9 @@ _IQR_ACTIONS = frozenset(
     {"remove", "replace_mean", "replace_median", "replace_boundary", "replace_custom"}
 )
 _TRANSFORM_METHODS = frozenset({"log", "sqrt", "reciprocal", "power", "boxcox"})
+_PIVOT_AGGFUNCS = frozenset(
+    {"mean", "sum", "count", "size", "min", "max", "median", "std", "var", "first", "last", "prod"}
+)
 _INTERPOLATE_METHODS = frozenset(
     {
         "linear",
@@ -1205,6 +1281,13 @@ def _normalize_transform_method(raw: object) -> str:
     return key
 
 
+def _normalize_pivot_aggfunc(raw: object) -> str:
+    key = str(raw or "mean").strip().lower()
+    if key not in _PIVOT_AGGFUNCS:
+        raise HostError(ErrorCode.ColumnOrValidation, "Unsupported pivot aggregation", "data.invalidValue")
+    return key
+
+
 def _parse_transform_lambda(raw: object) -> float:
     try:
         value = float(raw if raw is not None and raw != "" else 0.5)
@@ -1334,6 +1417,31 @@ def _flatten_describe(stats: Any) -> Any:
     table = stats.reset_index()
     first = table.columns[0]
     return table.rename(columns={first: "stat"})
+
+
+def _flatten_pivot(table: Any) -> Any:
+    result = table.copy() if hasattr(table, "columns") else table.to_frame()
+    if getattr(result.columns, "nlevels", 1) > 1:
+        result.columns = ["_".join(str(part) for part in col if str(part) != "") for col in result.columns]
+    result = result.reset_index()
+    result.columns = [str(col) for col in result.columns]
+    return result
+
+
+def _require_disjoint_columns(*groups: list[Any] | None) -> None:
+    seen: set[str] = set()
+    for group in groups:
+        if not group:
+            continue
+        for name in group:
+            key = str(name)
+            if key in seen:
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    f"Column used in more than one pivot role: {key}",
+                    "data.invalidValue",
+                )
+            seen.add(key)
 
 
 def _na_cell_count(df: Any) -> int:
