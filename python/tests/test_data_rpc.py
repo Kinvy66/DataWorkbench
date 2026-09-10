@@ -661,6 +661,78 @@ def test_data_remove_outliers_iqr_via_rpc(tmp_path: Path) -> None:
             proc.kill()
 
 
+def test_data_remove_outliers_zscore_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "zscore.csv"
+    lines = ["a,label"] + [f"0,x{i}" for i in range(20)] + ["100,x20"]
+    csv_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        assert imported["result"]["rows"] == 21
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.removeOutliersZscore",
+                "params": {"id": dataset_id, "action": "remove", "subset": ["a"]},
+            },
+        )
+        cleaned = read_rpc(proc)
+        assert "result" in cleaned, cleaned
+        assert cleaned["result"]["rows"] == 20
+        assert cleaned["result"]["removedCount"] == 1
+        assert cleaned["result"]["replacedCount"] == 0
+        assert cleaned["result"]["action"] == "remove"
+        assert cleaned["result"]["robust"] is False
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "data.removeOutliersZscore",
+                "params": {"id": dataset_id, "action": "maybe"},
+            },
+        )
+        invalid = read_rpc(proc)
+        assert invalid["error"]["code"] == 1002
+        assert invalid["error"]["data"]["i18nKey"] == "data.invalidValue"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.removeOutliersZscore",
+                "params": {"id": dataset_id, "subset": ["missing"]},
+            },
+        )
+        missing_col = read_rpc(proc)
+        assert missing_col["error"]["code"] == 1002
+        assert missing_col["error"]["data"]["i18nKey"] == "data.columnNotFound"
+
+        send(proc, {"jsonrpc": "2.0", "id": 5, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
 def test_data_replace_values_via_rpc(tmp_path: Path) -> None:
     csv_path = tmp_path / "swap.csv"
     csv_path.write_text("a,b\nx,1\ny,1\nx,2\n", encoding="utf-8")

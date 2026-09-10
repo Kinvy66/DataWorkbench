@@ -10,6 +10,7 @@ import iconDropDuplicates from '@/assets/icons/app/dropDuplicates.svg?url'
 import iconFillNa from '@/assets/icons/app/fillNa.svg?url'
 import iconInterpolate from '@/assets/icons/app/interpolate.svg?url'
 import iconOutlierIqr from '@/assets/icons/app/outlierIqr.svg?url'
+import iconOutlierZscore from '@/assets/icons/app/outlierZscore.svg?url'
 import iconReplaceValues from '@/assets/icons/app/replaceValues.svg?url'
 import iconThresholdFilter from '@/assets/icons/app/thresholdFilter.svg?url'
 import iconFilterByColumn from '@/assets/icons/app/filterByColumn.svg?url'
@@ -42,6 +43,7 @@ const urls: Record<string, string> = {
   'app/fillNa': iconFillNa,
   'app/interpolate': iconInterpolate,
   'app/outlierIqr': iconOutlierIqr,
+  'app/outlierZscore': iconOutlierZscore,
   'app/replaceValues': iconReplaceValues,
   'app/thresholdFilter': iconThresholdFilter,
   'app/filterByColumn': iconFilterByColumn,

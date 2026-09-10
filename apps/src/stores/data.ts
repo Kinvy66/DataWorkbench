@@ -13,6 +13,7 @@ import type {
   DataFillNaResult,
   DataInterpolateResult,
   DataRemoveOutliersIqrResult,
+  DataRemoveOutliersZscoreResult,
   DataReplaceValuesResult,
   DataThresholdFilterResult,
   DataFilterByColumnResult,
@@ -37,6 +38,7 @@ export const useDataStore = defineStore('data', {
     fillNaDialogOpen: false,
     interpolateDialogOpen: false,
     iqrDialogOpen: false,
+    zscoreDialogOpen: false,
     replaceValuesDialogOpen: false,
     thresholdFilterDialogOpen: false,
     filterByColumnDialogOpen: false,
@@ -274,6 +276,31 @@ export const useDataStore = defineStore('data', {
         reindex: options?.reindex ?? true,
         subset: options?.subset
       })) as DataRemoveOutliersIqrResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async removeOutliersZscore(options?: {
+      threshold?: number
+      robust?: boolean
+      action?: string
+      customValue?: number
+      reindex?: boolean
+      subset?: string[]
+    }): Promise<DataRemoveOutliersZscoreResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.removeOutliersZscore', {
+        id,
+        threshold: options?.threshold ?? 3,
+        robust: options?.robust ?? false,
+        action: options?.action ?? 'remove',
+        customValue: options?.customValue ?? 0,
+        reindex: options?.reindex ?? true,
+        subset: options?.subset
+      })) as DataRemoveOutliersZscoreResult
       await this.refreshList()
       await this.select(id)
       return result

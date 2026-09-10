@@ -185,6 +185,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/outlierIqr')
+                  },
+                  {
+                    id: 'data.removeOutliersZscore',
+                    type: 'button',
+                    label: t('ribbon.dataZscore'),
+                    tooltip: t('ribbon.dataZscoreTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/outlierZscore')
                   }
                 ]
               }

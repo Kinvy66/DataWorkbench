@@ -40,6 +40,7 @@ export const RpcMethod = {
   DataFillNa: 'data.fillNa',
   DataInterpolate: 'data.interpolate',
   DataRemoveOutliersIqr: 'data.removeOutliersIqr',
+  DataRemoveOutliersZscore: 'data.removeOutliersZscore',
   DataReplaceValues: 'data.replaceValues',
   DataThresholdFilter: 'data.thresholdFilter',
   DataFilterByColumn: 'data.filterByColumn',
@@ -341,6 +342,28 @@ export interface DataRemoveOutliersIqrResult {
   cols: number
   columns: ColumnSchema[]
   action: string
+  removedCount: number
+  replacedCount: number
+}
+
+export interface DataRemoveOutliersZscoreParams {
+  id: string
+  threshold?: number
+  robust?: boolean
+  action?: string
+  customValue?: number
+  reindex?: boolean
+  subset?: string[] | string
+}
+
+export interface DataRemoveOutliersZscoreResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  action: string
+  robust: boolean
   removedCount: number
   replacedCount: number
 }

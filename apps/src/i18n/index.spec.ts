@@ -56,6 +56,10 @@ describe('i18n', () => {
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataIqr'))).toBe('IQR异常值处理')
     i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.dataZscore'))).toBe('Z-Score Outlier Handling')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.dataZscore'))).toBe('Z-Score异常值处理')
+    i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataReplaceValues'))).toBe('Replace Values')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataReplaceValues'))).toBe('替换值')

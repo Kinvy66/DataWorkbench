@@ -123,6 +123,16 @@ class RemoveOutliersIqrParams(BaseModel):
     subset: list[str] | str | None = None
 
 
+class RemoveOutliersZscoreParams(BaseModel):
+    id: str
+    threshold: float = 3.0
+    robust: bool = False
+    action: str = "remove"
+    customValue: float = 0.0
+    reindex: bool = True
+    subset: list[str] | str | None = None
+
+
 class ReplaceValuesParams(BaseModel):
     id: str
     oldValues: list[Any] | str | None = None
@@ -262,6 +272,17 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
         return manager.remove_outliers_iqr(
             parsed.id,
             multiplier=parsed.multiplier,
+            action=parsed.action,
+            custom_value=parsed.customValue,
+            reindex=parsed.reindex,
+            subset=_subset_list(parsed.subset),
+        )
+    if method == "data.removeOutliersZscore":
+        parsed = RemoveOutliersZscoreParams.model_validate(params)
+        return manager.remove_outliers_zscore(
+            parsed.id,
+            threshold=parsed.threshold,
+            robust=parsed.robust,
             action=parsed.action,
             custom_value=parsed.customValue,
             reindex=parsed.reindex,
