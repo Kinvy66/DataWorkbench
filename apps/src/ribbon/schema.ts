@@ -136,6 +136,26 @@ export function useRibbonSchema() {
                 ]
               }
             ]
+          },
+          {
+            id: 'data-clean',
+            title: t('ribbon.dataClean'),
+            collections: [
+              {
+                id: 'data-clean-actions',
+                items: [
+                  {
+                    id: 'data.dropNa',
+                    type: 'button',
+                    label: t('ribbon.dataDropNa'),
+                    tooltip: t('ribbon.dataDropNaTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/dropNa')
+                  }
+                ]
+              }
+            ]
           }
         ]
       },

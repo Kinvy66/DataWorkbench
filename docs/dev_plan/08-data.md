@@ -42,6 +42,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 ## 与工作流衔接
 
 - **data_source 节点**：参数 `dataset_name` 或 `dataset_id`，`execute` 时从 DataManager 取 df 的**副本**写入 `_output_data`。不是上游那个读文件的 Data Source。
+- **Drop NA**：节点输出新 df；Ribbon `data.dropNa` **就地**替换当前数据集（与 `dropna_impl` 同一函数）。需要另存一份时用 Output to DataManager。
 - **Output to DataManager**：见 [06-python-reuse.md](./06-python-reuse.md)。
 - 执行结束后前端 `data.list` 刷新。不要靠猜测 df 是否变化。
 
@@ -59,6 +60,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | `test_fetch_block_caps_row_count` | `rowCount` 上限 2048 |
 | `test_patch_rollback` | 非法 float 写入数值列 → error 且原值不变 |
 | `test_import_csv_utf8` / `test_import_txt_semicolon` / `test_import_csv_gb18030` | utf-8 / txt 分号 / GB18030 |
+| `test_data_dropna_via_rpc` / `test_dropna_node_matches_core` | Ribbon `data.dropNa` 与节点 Drop NA 与 `dropna_impl` 同行数 |
 | `test_xlsx_roundtrip` / `test_parquet_roundtrip` | 导入再导出内容一致 |
 | `test_pickle_rejected` / `test_pickle_import_rejected_via_rpc` | pickle 关（内存路径 + stdio 3001） |
 | `test_data_import_list_fetch_via_rpc` | 每个 `data.*` 方法至少一正一反（stdio）；`fetchBlock` 头为 `arrow-v1` |

@@ -63,6 +63,23 @@ class RegisterParams(BaseModel):
     handle: Any | None = None
 
 
+class DropNaParams(BaseModel):
+    id: str
+    how: str = "any"
+    subset: list[str] | str | None = None
+    minNonNa: int = 0
+
+
+def _subset_list(raw: list[str] | str | None) -> list[str] | None:
+    if raw is None:
+        return None
+    if isinstance(raw, str):
+        items = [part.strip() for part in raw.split(",") if part.strip()]
+        return items or None
+    items = [str(part).strip() for part in raw if str(part).strip()]
+    return items or None
+
+
 def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_ok: bool) -> Any:
     if method.startswith("data.") and method != "data.list" and not pandas_ok:
         raise HostError(
@@ -103,4 +120,12 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
 
         dataset_id = manager.publish_dataframe(parsed.name, pd.DataFrame())
         return {"id": dataset_id}
+    if method == "data.dropNa":
+        parsed = DropNaParams.model_validate(params)
+        return manager.dropna(
+            parsed.id,
+            how=parsed.how,
+            subset=_subset_list(parsed.subset),
+            min_non_na=parsed.minNonNa,
+        )
     raise HostError(ErrorCode.MethodNotFound, f"Method not found: {method}")

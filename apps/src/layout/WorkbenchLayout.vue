@@ -11,6 +11,7 @@ import VirtualTable from '@/views/VirtualTable.vue'
 import NodeToolbox from '@/views/workflow/NodeToolbox.vue'
 import NodeProperties from '@/views/workflow/NodeProperties.vue'
 import WorkflowCanvas from '@/views/workflow/WorkflowCanvas.vue'
+import DropNaDialog from '@/views/data/DropNaDialog.vue'
 
 const { t } = useI18n()
 const log = useLogStore()
@@ -73,6 +74,7 @@ function formatTime(at: number): string {
         </section>
       </Pane>
     </Splitpanes>
+    <DropNaDialog />
   </div>
 </template>
 

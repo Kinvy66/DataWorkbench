@@ -4,7 +4,7 @@ import json
 import time
 from pathlib import Path
 
-from dw_nodes_analysis import DataQueryNode, DataSourceNode
+from dw_nodes_analysis import DataDropNaNode, DataQueryNode, DataSourceNode
 from dw_nodes_system import ConstantNode, DataToManagerNode, DelayNode, EndNode, StartNode
 from rpc_client import popen, read_rpc, readline, send
 
@@ -13,6 +13,7 @@ CONSTANT = ConstantNode.qualified_name
 DATAMGR = DataToManagerNode.qualified_name
 SOURCE = DataSourceNode.qualified_name
 QUERY = DataQueryNode.qualified_name
+DROPNA = DataDropNaNode.qualified_name
 END = EndNode.qualified_name
 DELAY = DelayNode.qualified_name
 
@@ -212,6 +213,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert DELAY in names
         assert SOURCE in names
         assert QUERY in names
+        assert DROPNA in names
         constant = next(item for item in listed["result"]["types"] if item["qualifiedName"] == CONSTANT)
         assert any(p["name"] == "value" for p in constant["outputs"])
         assert any(p["name"] == "value" and p["type"] == "code" for p in constant["parameters"])

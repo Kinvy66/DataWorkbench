@@ -32,6 +32,9 @@ export default {
     dataRenameTip: 'Rename the selected dataset',
     dataRemove: 'Remove',
     dataRemoveTip: 'Remove the selected dataset from memory',
+    dataClean: 'Clean',
+    dataDropNa: 'Drop NA',
+    dataDropNaTip: 'Remove rows with missing values from the selected table',
     workflow: 'Workflow',
     workflowRunGroup: 'Run',
     workflowRun: 'Run',
@@ -87,7 +90,15 @@ export default {
     columnNotFound: 'Column or cell is out of range.',
     invalidValue: 'The value does not match the column type.',
     ioError: 'Failed to read or write the file.',
-    pickleDisabled: 'Pickle import is disabled.'
+    pickleDisabled: 'Pickle import is disabled.',
+    dropNaHow: 'Drop when',
+    dropNaHowAny: 'Any value is missing',
+    dropNaHowAll: 'All values are missing',
+    dropNaSubset: 'Columns to check',
+    dropNaSubsetHint: 'All columns',
+    dropNaMinNonNa: 'Minimum non-missing values (0 = unused)',
+    dropNaConfirm: 'Apply',
+    dropNaCancel: 'Cancel'
   },
   workflow: {
     unknownType: 'Unknown node type.',
@@ -111,6 +122,7 @@ export default {
     exportOk: 'Dataset exported.',
     renameOk: 'Dataset renamed to {name}.',
     removeOk: 'Dataset removed.',
+    dropNaOk: 'Dropped {removed} rows from {name} ({rows} × {cols}).',
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'

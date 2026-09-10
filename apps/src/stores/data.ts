@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type {
+  DataDropNaResult,
   DataFetchBlockResult,
   DataGetSchemaResult,
   DataImportResult,
@@ -14,7 +15,8 @@ export const useDataStore = defineStore('data', {
   state: () => ({
     datasets: [] as DatasetListItem[],
     currentId: null as string | null,
-    schema: null as DataGetSchemaResult | null
+    schema: null as DataGetSchemaResult | null,
+    dropNaDialogOpen: false
   }),
   getters: {
     current(state): DatasetListItem | null {
@@ -93,6 +95,25 @@ export const useDataStore = defineStore('data', {
         return
       }
       await getDesktopBridge().rpc.invoke('data.patchCells', { id: this.currentId, patches })
+    },
+    async dropNa(options?: {
+      how?: string
+      subset?: string[]
+      minNonNa?: number
+    }): Promise<DataDropNaResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.dropNa', {
+        id,
+        how: options?.how ?? 'any',
+        subset: options?.subset,
+        minNonNa: options?.minNonNa ?? 0
+      })) as DataDropNaResult
+      await this.refreshList()
+      await this.select(id)
+      return result
     }
   }
 })

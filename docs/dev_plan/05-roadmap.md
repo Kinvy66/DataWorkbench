@@ -120,7 +120,7 @@ gantt
 
 上游 `data_plot_node` 依赖 C++ 图，P3 **不要**移植；出图走 P4 前端。
 
-**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query（`query_dataframe`）。其余批次 A 节点与 Ribbon Query/DropNA 对话框未做。
+**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query（`query_dataframe`）；Drop NA 节点与 Ribbon「删除缺失」对话框（均调用 `dropna_impl`，Ribbon 经 `data.dropNa` **就地**改写当前表，不是 `data.register` 空表）。其余批次 A 节点与 Ribbon Query 对话框未做。
 
 **验收**
 

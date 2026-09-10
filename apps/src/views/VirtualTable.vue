@@ -130,6 +130,10 @@ watch(
 watch(
   () => `${store.currentId ?? ''}:${rowCount.value}`,
   () => {
+    fetchGen += 1
+    blocks.value = {}
+    inflight.clear()
+    editing.value = null
     requestVisibleBlocks()
   },
   { immediate: true }

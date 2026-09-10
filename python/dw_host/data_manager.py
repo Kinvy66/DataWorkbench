@@ -331,6 +331,40 @@ class DataManager:
             self.get(dataset_id)
             del self._items[dataset_id]
 
+    def dropna(
+        self,
+        dataset_id: str,
+        *,
+        how: str = "any",
+        subset: list[str] | None = None,
+        min_non_na: int = 0,
+    ) -> dict[str, Any]:
+        """Drop NA rows in place via the shared Core ``dropna_impl``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.cleaning import dropna_impl
+
+        how_norm = str(how or "any").strip().lower()
+        if how_norm not in ("any", "all"):
+            raise HostError(ErrorCode.ColumnOrValidation, "how must be 'any' or 'all'", "data.invalidValue")
+        try:
+            thresh = int(min_non_na)
+        except (TypeError, ValueError) as exc:
+            raise HostError(ErrorCode.ColumnOrValidation, "minNonNa must be an integer", "data.invalidValue") from exc
+        if thresh < 0:
+            raise HostError(ErrorCode.ColumnOrValidation, "minNonNa must be >= 0", "data.invalidValue")
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_dropna_subset(ds.df, subset)
+            before = int(len(ds.df))
+            cleaned = dropna_impl(ds.df, subset=resolved, how=how_norm, min_non_na=thresh, reindex=True)
+            ds.df = cleaned
+        result = _meta(ds)
+        result["removedCount"] = before - int(len(cleaned))
+        log.info("data.dropNa name=%s removed=%s rows=%s", ds.name, result["removedCount"], result["rows"])
+        return result
+
     def export_path(self, dataset_id: str, path: str, fmt: str | None = None) -> None:
         _require_pandas()
         ds = self.get(dataset_id)
@@ -345,6 +379,20 @@ class DataManager:
             log.info("data.export failed: %s", type(exc).__name__)
             raise HostError(ErrorCode.FileIo, f"Failed to export {file_path.name}", "data.ioError") from exc
         log.info("data.export name=%s format=%s", ds.name, kind)
+
+
+def _resolve_dropna_subset(df: Any, subset: list[str] | None) -> list[Any] | None:
+    if not subset:
+        return None
+    mapping = {str(col): col for col in df.columns}
+    missing = [name for name in subset if name not in mapping]
+    if missing:
+        raise HostError(
+            ErrorCode.ColumnOrValidation,
+            f"Unknown columns: {', '.join(missing)}",
+            "data.columnNotFound",
+        )
+    return [mapping[name] for name in subset]
 
 
 def _read_frame(path: str, kind: str) -> Any:

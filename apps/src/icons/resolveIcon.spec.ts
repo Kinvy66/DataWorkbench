@@ -22,6 +22,7 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/zoomIn')).toMatch(/zoomIn\.svg/)
     expect(resolveIconUrl('app/zoomOut')).toMatch(/zoomOut\.svg/)
     expect(resolveIconUrl('app/viewAll')).toMatch(/viewAll\.svg/)
+    expect(resolveIconUrl('app/dropNa')).toMatch(/dropNa\.svg/)
   })
 
   it('returns empty string for a missing name', () => {

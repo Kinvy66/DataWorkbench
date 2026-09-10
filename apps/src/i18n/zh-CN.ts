@@ -32,6 +32,9 @@ export default {
     dataRenameTip: '重命名当前数据集',
     dataRemove: '移除',
     dataRemoveTip: '从内存中移除当前数据集',
+    dataClean: '清洗',
+    dataDropNa: '删除缺失',
+    dataDropNaTip: '从当前表删除含缺失值的行',
     workflow: '工作流',
     workflowRunGroup: '运行',
     workflowRun: '运行',
@@ -86,7 +89,15 @@ export default {
     columnNotFound: '列或单元格超出范围。',
     invalidValue: '值与该列类型不匹配。',
     ioError: '读写文件失败。',
-    pickleDisabled: '已禁用 pickle 导入。'
+    pickleDisabled: '已禁用 pickle 导入。',
+    dropNaHow: '删除条件',
+    dropNaHowAny: '任一值缺失即删',
+    dropNaHowAll: '全部缺失才删',
+    dropNaSubset: '检查的列',
+    dropNaSubsetHint: '全部列',
+    dropNaMinNonNa: '最少非缺失值（0 表示不启用）',
+    dropNaConfirm: '应用',
+    dropNaCancel: '取消'
   },
   workflow: {
     unknownType: '未知节点类型。',
@@ -110,6 +121,7 @@ export default {
     exportOk: '数据集已导出。',
     renameOk: '数据集已重命名为 {name}。',
     removeOk: '数据集已移除。',
+    dropNaOk: '已从 {name} 删除 {removed} 行（{rows} × {cols}）。',
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'

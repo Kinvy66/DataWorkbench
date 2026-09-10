@@ -29,5 +29,9 @@ describe('i18n', () => {
     expect(String(i18n.global.t('layout.fitView'))).toBe('适应画布')
     expect(String(i18n.global.t('log.workflowStopped'))).toBe('工作流已停止。')
     expect(String(i18n.global.t('ribbon.undo'))).toBe('撤销')
+    i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.dataDropNa'))).toBe('Drop NA')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.dataDropNa'))).toBe('删除缺失')
   })
 })

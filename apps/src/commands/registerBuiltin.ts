@@ -113,6 +113,25 @@ export function registerBuiltinCommands(): void {
   )
 
   commandBus.register(
+    'data.dropNa',
+    async () => {
+      const data = useDataStore()
+      if (!data.currentId) {
+        return
+      }
+      try {
+        if (!data.schema) {
+          await data.select(data.currentId)
+        }
+        data.dropNaDialogOpen = true
+      } catch (err) {
+        reportError(err)
+      }
+    },
+    () => useDataStore().hasSelection
+  )
+
+  commandBus.register(
     'data.remove',
     async () => {
       const data = useDataStore()

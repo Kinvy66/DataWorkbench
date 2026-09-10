@@ -158,3 +158,75 @@ def test_pickle_import_rejected_via_rpc(tmp_path: Path) -> None:
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_data_dropna_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "na.csv"
+    csv_path.write_text("a,b\n1,1\n,\n3,\n", encoding="utf-8")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        assert imported["result"]["rows"] == 3
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.dropNa",
+                "params": {"id": dataset_id, "how": "any"},
+            },
+        )
+        dropped = read_rpc(proc)
+        assert "result" in dropped, dropped
+        assert dropped["result"]["rows"] == 1
+        assert dropped["result"]["removedCount"] == 2
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "data.dropNa",
+                "params": {"id": dataset_id, "how": "maybe"},
+            },
+        )
+        invalid = read_rpc(proc)
+        assert invalid["error"]["code"] == 1002
+        assert invalid["error"]["data"]["i18nKey"] == "data.invalidValue"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.dropNa",
+                "params": {"id": dataset_id, "subset": ["missing"]},
+            },
+        )
+        missing_col = read_rpc(proc)
+        assert missing_col["error"]["code"] == 1002
+        assert missing_col["error"]["data"]["i18nKey"] == "data.columnNotFound"
+
+        send(proc, {"jsonrpc": "2.0", "id": 5, "method": "data.dropNa", "params": {"id": "missing"}})
+        missing_ds = read_rpc(proc)
+        assert missing_ds["error"]["code"] == 1001
+
+        send(proc, {"jsonrpc": "2.0", "id": 6, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
