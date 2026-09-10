@@ -9,6 +9,7 @@ import type {
   DataQueryResult,
   DataSortResult,
   DataFillNaResult,
+  DataReplaceValuesResult,
   DataDescribeResult,
   DatasetListItem
 } from '@dw/rpc-types'
@@ -26,6 +27,7 @@ export const useDataStore = defineStore('data', {
     queryDialogOpen: false,
     sortDialogOpen: false,
     fillNaDialogOpen: false,
+    replaceValuesDialogOpen: false,
     describeDialogOpen: false
   }),
   getters: {
@@ -184,6 +186,27 @@ export const useDataStore = defineStore('data', {
         subset: options?.subset,
         value: options?.value ?? 0
       })) as DataFillNaResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async replaceValues(options: {
+      oldValues: string[] | string
+      newValue?: string | number
+      subset?: string[]
+      caseSensitive?: boolean
+    }): Promise<DataReplaceValuesResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.replaceValues', {
+        id,
+        oldValues: options.oldValues,
+        newValue: options.newValue ?? '',
+        subset: options.subset,
+        caseSensitive: options.caseSensitive ?? true
+      })) as DataReplaceValuesResult
       await this.refreshList()
       await this.select(id)
       return result

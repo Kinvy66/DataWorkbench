@@ -5,6 +5,7 @@ from .data_dropna import DataDropNaNode
 from .data_export import DataExportNode
 from .data_fillna import DataFillNaNode
 from .data_query import DataQueryNode
+from .data_replace_values import DataReplaceValuesNode
 from .data_sort import DataSortNode
 from .data_source import DataSourceNode
 
@@ -15,6 +16,7 @@ __all__ = [
     "DataExportNode",
     "DataFillNaNode",
     "DataQueryNode",
+    "DataReplaceValuesNode",
     "DataSortNode",
     "DataSourceNode",
 ]

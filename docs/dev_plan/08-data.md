@@ -45,6 +45,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 - **Drop NA**：节点输出新 df；Ribbon `data.dropNa` **就地**替换当前数据集（与 `dropna_impl` 同一函数）。需要另存一份时用 Output to DataManager。
 - **Drop Duplicates**：节点输出新 df；Ribbon `data.dropDuplicates` **就地**替换当前数据集（与 `drop_duplicates_impl` 同一函数）。需要另存一份时用 Output to DataManager。
 - **Fill NA**：节点输出新 df；Ribbon `data.fillNa` **就地**替换当前数据集（与 `fillna_impl` 同一函数）。需要另存一份时用 Output to DataManager。
+- **Replace Values**：节点输出新 df；Ribbon `data.replaceValues` **就地**替换当前数据集（与 `replace_values_impl` 同一函数）。需要另存一份时用 Output to DataManager。
 - **Query**：节点输出新 df；Ribbon `data.query` **就地**替换当前数据集（与 `query_dataframe` 同一函数）。
 - **Sort**：节点输出新 df；Ribbon `data.sort` **就地**替换当前数据集（与 `sort_dataframe` 同一函数）。需要另存一份时用 Output to DataManager。
 - **Describe**：节点输出统计表；Ribbon `data.describe` **发布新数据集**（默认名 `{源表} describe`），不改源表。两端都把 `describe()` 的索引展平为 `stat` 列，否则虚表 `iloc` 看不到统计名。
@@ -69,6 +70,7 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 | `test_data_dropna_via_rpc` / `test_dropna_node_matches_core` | Ribbon `data.dropNa` 与节点 Drop NA 与 `dropna_impl` 同行数 |
 | `test_data_drop_duplicates_via_rpc` / `test_drop_duplicates_node_matches_core` | Ribbon `data.dropDuplicates` 与节点 Drop Duplicates 与 `drop_duplicates_impl` 同行数 |
 | `test_data_fillna_via_rpc` / `test_fillna_node_matches_core` | Ribbon `data.fillNa` 与节点 Fill NA 与 `fillna_impl` 同填充数 |
+| `test_data_replace_values_via_rpc` / `test_replace_values_node_matches_core` | Ribbon `data.replaceValues` 与节点 Replace Values 与 `replace_values_impl` 同替换数 |
 | `test_data_query_via_rpc` / `test_query_node_matches_core` | Ribbon `data.query` 与节点 Query 与 `query_dataframe` 同行数 |
 | `test_data_sort_via_rpc` / `test_sort_node_matches_core` | Ribbon `data.sort` 与节点 Sort 与 `sort_dataframe` 同顺序 |
 | `test_data_describe_via_rpc` / `test_describe_node_matches_core` | Ribbon `data.describe` 与节点 Describe 与 `describe_dataframe` 同统计表；源表行数不变 |

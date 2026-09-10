@@ -25,6 +25,7 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/dropNa')).toMatch(/dropNa\.svg/)
     expect(resolveIconUrl('app/dropDuplicates')).toMatch(/dropDuplicates\.svg/)
     expect(resolveIconUrl('app/fillNa')).toMatch(/fillNa\.svg/)
+    expect(resolveIconUrl('app/replaceValues')).toMatch(/replaceValues\.svg/)
     expect(resolveIconUrl('app/query')).toMatch(/query\.svg/)
     expect(resolveIconUrl('app/sort')).toMatch(/sort\.svg/)
     expect(resolveIconUrl('app/describe')).toMatch(/describe\.svg/)

@@ -94,6 +94,14 @@ class FillNaParams(BaseModel):
     value: Any = 0.0
 
 
+class ReplaceValuesParams(BaseModel):
+    id: str
+    oldValues: list[Any] | str | None = None
+    newValue: Any = ""
+    subset: list[str] | str | None = None
+    caseSensitive: bool = True
+
+
 class DescribeParams(BaseModel):
     id: str
     percentiles: list[float] | str | None = "0.25,0.5,0.75"
@@ -182,6 +190,15 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             method=parsed.method,
             subset=_subset_list(parsed.subset),
             value=parsed.value,
+        )
+    if method == "data.replaceValues":
+        parsed = ReplaceValuesParams.model_validate(params)
+        return manager.replace_values(
+            parsed.id,
+            old_values=parsed.oldValues,
+            new_value=parsed.newValue,
+            subset=_subset_list(parsed.subset),
+            case_sensitive=parsed.caseSensitive,
         )
     if method == "data.describe":
         parsed = DescribeParams.model_validate(params)

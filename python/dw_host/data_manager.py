@@ -508,6 +508,56 @@ class DataManager:
         log.info("data.fillNa name=%s method=%s filled=%s", ds.name, method_norm, result["filledCount"])
         return result
 
+    def replace_values(
+        self,
+        dataset_id: str,
+        *,
+        old_values: list[str] | str | None = None,
+        new_value: Any = "",
+        subset: list[str] | None = None,
+        case_sensitive: object = True,
+    ) -> dict[str, Any]:
+        """Replace matching cells in place via the shared Core ``replace_values_impl``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.cleaning import replace_values_impl
+
+        olds = _parse_old_values(old_values)
+        if not olds:
+            raise HostError(ErrorCode.ColumnOrValidation, "oldValues must not be empty", "data.replaceOldEmpty")
+        case_norm = _parse_bool(case_sensitive, default=True)
+        replacement = _parse_replace_value(new_value)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, subset)
+            before = ds.df
+            try:
+                replaced = replace_values_impl(
+                    ds.df,
+                    subset=resolved,
+                    old_values=olds,
+                    new_value=replacement,
+                    case_sensitive=case_norm,
+                )
+            except Exception as exc:
+                log.info("data.replaceValues failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to replace values",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = replaced
+        result = _meta(ds)
+        result["replacedCount"] = _changed_cell_count(before, replaced)
+        log.info(
+            "data.replaceValues name=%s replaced=%s rows=%s",
+            ds.name,
+            result["replacedCount"],
+            result["rows"],
+        )
+        return result
+
     def describe(
         self,
         dataset_id: str,
@@ -602,6 +652,54 @@ def _parse_fill_value(raw: Any) -> Any:
         return float(text)
     except (TypeError, ValueError):
         return text
+
+
+def _parse_replace_value(raw: Any) -> Any:
+    if raw is None:
+        return ""
+    if isinstance(raw, bool):
+        return raw
+    if isinstance(raw, (int, float)):
+        return raw
+    text = str(raw)
+    if text == "":
+        return ""
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return text
+
+
+def _parse_old_values(raw: object) -> list[str]:
+    if raw is None:
+        return []
+    if isinstance(raw, str):
+        return [part.strip() for part in raw.split(",") if part.strip()]
+    if isinstance(raw, (list, tuple)):
+        return [str(item).strip() for item in raw if str(item).strip()]
+    text = str(raw).strip()
+    return [text] if text else []
+
+
+def _parse_bool(raw: object, *, default: bool = True) -> bool:
+    if raw is None:
+        return default
+    if isinstance(raw, bool):
+        return raw
+    if isinstance(raw, (int, float)) and not isinstance(raw, bool) and raw in (0, 1):
+        return bool(raw)
+    key = str(raw).strip().lower()
+    if key in ("true", "1", "yes", "on"):
+        return True
+    if key in ("false", "0", "no", "off"):
+        return False
+    raise HostError(ErrorCode.ColumnOrValidation, "Unsupported boolean value", "data.invalidValue")
+
+
+def _changed_cell_count(before: Any, after: Any) -> int:
+    neq = before.ne(after)
+    both_na = before.isna() & after.isna()
+    return int((neq & ~both_na).to_numpy().sum())
 
 
 def _parse_percentiles(raw: object) -> list[float] | None:

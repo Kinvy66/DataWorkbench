@@ -36,6 +36,7 @@ export const RpcMethod = {
   DataQuery: 'data.query',
   DataSort: 'data.sort',
   DataFillNa: 'data.fillNa',
+  DataReplaceValues: 'data.replaceValues',
   DataDescribe: 'data.describe',
   WorkflowCreate: 'workflow.create',
   WorkflowListNodeTypes: 'workflow.listNodeTypes',
@@ -269,6 +270,23 @@ export interface DataFillNaResult {
   cols: number
   columns: ColumnSchema[]
   filledCount: number
+}
+
+export interface DataReplaceValuesParams {
+  id: string
+  oldValues?: string[] | string
+  newValue?: string | number | boolean | null
+  subset?: string[] | string
+  caseSensitive?: boolean
+}
+
+export interface DataReplaceValuesResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  replacedCount: number
 }
 
 export interface DataDescribeParams {

@@ -8,6 +8,7 @@ import iconRemoveData from '@/assets/icons/app/removeData.svg?url'
 import iconDropNa from '@/assets/icons/app/dropNa.svg?url'
 import iconDropDuplicates from '@/assets/icons/app/dropDuplicates.svg?url'
 import iconFillNa from '@/assets/icons/app/fillNa.svg?url'
+import iconReplaceValues from '@/assets/icons/app/replaceValues.svg?url'
 import iconQuery from '@/assets/icons/app/query.svg?url'
 import iconSort from '@/assets/icons/app/sort.svg?url'
 import iconDescribe from '@/assets/icons/app/describe.svg?url'
@@ -33,6 +34,7 @@ const urls: Record<string, string> = {
   'app/dropNa': iconDropNa,
   'app/dropDuplicates': iconDropDuplicates,
   'app/fillNa': iconFillNa,
+  'app/replaceValues': iconReplaceValues,
   'app/query': iconQuery,
   'app/sort': iconSort,
   'app/describe': iconDescribe,

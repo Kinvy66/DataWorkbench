@@ -14,6 +14,7 @@ import WorkflowCanvas from '@/views/workflow/WorkflowCanvas.vue'
 import DropNaDialog from '@/views/data/DropNaDialog.vue'
 import DropDuplicatesDialog from '@/views/data/DropDuplicatesDialog.vue'
 import FillNaDialog from '@/views/data/FillNaDialog.vue'
+import ReplaceValuesDialog from '@/views/data/ReplaceValuesDialog.vue'
 import DescribeDialog from '@/views/data/DescribeDialog.vue'
 import QueryDialog from '@/views/data/QueryDialog.vue'
 import SortDialog from '@/views/data/SortDialog.vue'
@@ -82,6 +83,7 @@ function formatTime(at: number): string {
     <DropNaDialog />
     <DropDuplicatesDialog />
     <FillNaDialog />
+    <ReplaceValuesDialog />
     <DescribeDialog />
     <QueryDialog />
     <SortDialog />

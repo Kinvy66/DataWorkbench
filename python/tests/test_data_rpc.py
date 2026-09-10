@@ -523,6 +523,78 @@ def test_data_fillna_via_rpc(tmp_path: Path) -> None:
             proc.kill()
 
 
+def test_data_replace_values_via_rpc(tmp_path: Path) -> None:
+    csv_path = tmp_path / "swap.csv"
+    csv_path.write_text("a,b\nx,1\ny,1\nx,2\n", encoding="utf-8")
+    proc = popen()
+    try:
+        ready = json.loads(readline(proc))
+        assert ready["method"] == "host.ready"
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "data.import",
+                "params": {"path": str(csv_path)},
+            },
+        )
+        imported = read_rpc(proc)
+        dataset_id = imported["result"]["id"]
+        assert imported["result"]["rows"] == 3
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "data.replaceValues",
+                "params": {"id": dataset_id, "oldValues": "x", "newValue": "z", "subset": ["a"]},
+            },
+        )
+        replaced = read_rpc(proc)
+        assert "result" in replaced, replaced
+        assert replaced["result"]["rows"] == 3
+        assert replaced["result"]["replacedCount"] == 2
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "data.replaceValues",
+                "params": {"id": dataset_id, "oldValues": ""},
+            },
+        )
+        empty = read_rpc(proc)
+        assert empty["error"]["code"] == 1002
+        assert empty["error"]["data"]["i18nKey"] == "data.replaceOldEmpty"
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "data.replaceValues",
+                "params": {"id": dataset_id, "oldValues": "x", "subset": ["missing"]},
+            },
+        )
+        missing_col = read_rpc(proc)
+        assert missing_col["error"]["code"] == 1002
+        assert missing_col["error"]["data"]["i18nKey"] == "data.columnNotFound"
+
+        send(proc, {"jsonrpc": "2.0", "id": 5, "method": "data.replaceValues", "params": {"id": "missing", "oldValues": "x"}})
+        missing_ds = read_rpc(proc)
+        assert missing_ds["error"]["code"] == 1001
+
+        send(proc, {"jsonrpc": "2.0", "id": 6, "method": "host.shutdown", "params": {}})
+        proc.wait(timeout=5)
+        assert proc.returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+
 def test_data_describe_via_rpc(tmp_path: Path) -> None:
     csv_path = tmp_path / "nums.csv"
     csv_path.write_text("a,b\n1,10\n2,20\n3,30\n4,40\n", encoding="utf-8")

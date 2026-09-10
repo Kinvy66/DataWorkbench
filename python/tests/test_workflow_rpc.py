@@ -11,6 +11,7 @@ from dw_nodes_analysis import (
     DataExportNode,
     DataFillNaNode,
     DataQueryNode,
+    DataReplaceValuesNode,
     DataSortNode,
     DataSourceNode,
 )
@@ -25,6 +26,7 @@ QUERY = DataQueryNode.qualified_name
 DROPNA = DataDropNaNode.qualified_name
 DROPDUPE = DataDropDuplicatesNode.qualified_name
 FILLNA = DataFillNaNode.qualified_name
+REPLACE = DataReplaceValuesNode.qualified_name
 SORT = DataSortNode.qualified_name
 DESCRIBE = DataDescribeNode.qualified_name
 EXPORT = DataExportNode.qualified_name
@@ -230,6 +232,7 @@ def test_list_node_types_includes_system_set() -> None:
         assert DROPNA in names
         assert DROPDUPE in names
         assert FILLNA in names
+        assert REPLACE in names
         assert SORT in names
         assert DESCRIBE in names
         assert EXPORT in names

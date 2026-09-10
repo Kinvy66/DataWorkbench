@@ -172,6 +172,15 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/fillNa')
                   },
                   {
+                    id: 'data.replaceValues',
+                    type: 'button',
+                    label: t('ribbon.dataReplaceValues'),
+                    tooltip: t('ribbon.dataReplaceValuesTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/replaceValues')
+                  },
+                  {
                     id: 'data.query',
                     type: 'button',
                     label: t('ribbon.dataQuery'),
