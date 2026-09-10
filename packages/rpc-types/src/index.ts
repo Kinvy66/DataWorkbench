@@ -20,6 +20,9 @@ export const FETCH_BLOCK_DEFAULT = 512
 export const FETCH_BLOCK_MAX = 2048
 export const CHART_MAX_POINTS_DEFAULT = 5000
 export const CHART_MAX_POINTS_MAX = 20000
+export const CHART_HIST_BINS_DEFAULT = 50
+export const CHART_HIST_BINS_MIN = 5
+export const CHART_HIST_BINS_MAX = 200
 
 export const RpcMethod = {
   HostHello: 'host.hello',
@@ -662,9 +665,11 @@ export interface ChartListTypesResult {
 
 export interface ChartBuildSeriesParams {
   dataId: string
-  x: string
+  x?: string
   y: string[]
+  kind?: ChartTypeId
   maxPoints?: number
+  bins?: number
   xMin?: number
   xMax?: number
 }

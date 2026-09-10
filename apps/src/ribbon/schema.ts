@@ -370,6 +370,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/chart-type/chart-bar')
+                  },
+                  {
+                    id: 'chart.newHist',
+                    type: 'button',
+                    label: t('ribbon.chartHist'),
+                    tooltip: t('ribbon.chartHistTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/chart-type/chart-histogram')
                   }
                 ]
               }

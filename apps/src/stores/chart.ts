@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { nextTick } from 'vue'
 import {
+  CHART_HIST_BINS_DEFAULT,
   CHART_MAX_POINTS_DEFAULT,
   type ChartBuildSeriesResult,
   type ChartTypeId
@@ -16,7 +17,7 @@ import { isCancelled } from '@/rpc/rpcError'
 import { useDataStore } from './data'
 import { useWorkflowStore } from './workflow'
 
-export type BindableChartType = Exclude<ChartTypeId, 'hist'>
+export type BindableChartType = ChartTypeId
 
 export type ChartSeriesStyle = {
   key: string
@@ -141,29 +142,42 @@ export const useChartStore = defineStore('chart', {
     async createFromBind(options: {
       type: BindableChartType
       dataId: string
-      x: string
+      x?: string
       y: string[]
       title?: string
+      yLabel?: string
     }): Promise<ChartSpec> {
       const data = useDataStore()
       const workflow = useWorkflowStore()
-      const result = (await rpc().invoke('chart.buildSeries', {
-        dataId: options.dataId,
-        x: options.x,
-        y: options.y,
-        maxPoints: CHART_MAX_POINTS_DEFAULT
-      })) as ChartBuildSeriesResult
+      const isHist = options.type === 'hist'
+      const result = (await rpc().invoke(
+        'chart.buildSeries',
+        isHist
+          ? {
+              dataId: options.dataId,
+              y: options.y,
+              kind: 'hist',
+              bins: CHART_HIST_BINS_DEFAULT
+            }
+          : {
+              dataId: options.dataId,
+              x: options.x,
+              y: options.y,
+              maxPoints: CHART_MAX_POINTS_DEFAULT
+            }
+      )) as ChartBuildSeriesResult
       const datasetName = data.datasets.find((item) => item.id === options.dataId)?.name ?? 'chart'
       const id = crypto.randomUUID()
+      const xName = isHist ? (options.y[0] ?? '') : (options.x ?? '')
       const spec: ChartSpec = {
         id,
         type: options.type,
         dataId: options.dataId,
-        x: options.x,
+        x: xName,
         y: options.y,
         title: options.title?.trim() || `${datasetName} — ${options.type}`,
-        xLabel: options.x,
-        yLabel: options.y.join(', '),
+        xLabel: xName,
+        yLabel: options.yLabel ?? (isHist ? 'Count' : options.y.join(', ')),
         grid: true,
         legend: true,
         series: options.y.map((key, index) => ({

@@ -521,6 +521,13 @@ export function registerBuiltinCommands(): void {
     },
     () => useDataStore().hasSelection
   )
+  commandBus.register(
+    'chart.newHist',
+    async () => {
+      useChartStore().openBindDialog('hist')
+    },
+    () => useDataStore().hasSelection
+  )
 
   const hasChart = () => Boolean(useChartStore().currentId)
 

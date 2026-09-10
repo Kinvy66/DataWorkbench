@@ -147,7 +147,7 @@ gantt
 
 范围见 [10-chart.md](./10-chart.md)。
 
-**已落地（第一刀 + 导出）**：`chart.listTypes` / `chart.buildSeries`（Python LTTB，默认 5000 点）；Ribbon Chart 标签 New Line / Scatter / Bar；中区 Figure tab；属性面板改标题/颜色/线宽/网格/图例。缩放只放大已采样点（UI 提示 overview downsample）。PNG 从 uPlot 画布抓取；SVG 由采样点生成矢量，另存对话框在主进程（`chart.saveExport`）。**尚未做**：直方 UI、视口窗口二次 `buildSeries`。
+**已落地（第一刀 + 导出 + 直方）**：`chart.listTypes` / `chart.buildSeries`（Python LTTB，默认 5000 点；`kind:"hist"` 在 sidecar 分箱）；Ribbon Chart 标签 New Line / Scatter / Bar / Histogram；中区 Figure tab；属性面板改标题/颜色/线宽/网格/图例。缩放只放大已采样点（UI 提示 overview downsample）。PNG 从 uPlot 画布抓取；SVG 由采样点生成矢量，另存对话框在主进程（`chart.saveExport`）。**尚未做**：视口窗口二次 `buildSeries`。
 
 **验收**
 

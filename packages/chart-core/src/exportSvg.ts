@@ -158,7 +158,8 @@ export function seriesToSvg(opts: SvgExportOptions): string {
   const nSeries = Math.max(1, opts.data.ys.length)
   const dx = minPositiveDx(xs)
   const span = xMax - xMin
-  const groupW = Number.isFinite(dx) ? (dx / span) * plotW * 0.8 : plotW / Math.max(xs.length, 1) * 0.6
+  const gap = opts.kind === 'hist' ? 1 : 0.8
+  const groupW = Number.isFinite(dx) ? (dx / span) * plotW * gap : plotW / Math.max(xs.length, 1) * 0.6
   const barW = Math.max(2, groupW / nSeries)
   const baseline = yMin <= 0 && yMax >= 0 ? sy(0) : padT + plotH
 
@@ -180,7 +181,7 @@ export function seriesToSvg(opts: SvgExportOptions): string {
       }
       return
     }
-    if (opts.kind === 'bar') {
+    if (opts.kind === 'bar' || opts.kind === 'hist') {
       for (let i = 0; i < xs.length; i++) {
         const x = xs[i]
         const y = ys[i]

@@ -56,6 +56,7 @@ sequenceDiagram
 - 非数值列：error 1002，提示先 query 或选数值列（对齐上游 Agent 工具的错误策略，但无 Agent）
 - NaN：**丢掉非有限 x 的行**；y 的 NaN 序列化为 JSON `null`，uPlot 断线。不要改成插值填缝。
 - datetime x：转 epoch ms，uPlot 用 time 轴
+- **直方**（`kind:"hist"`）：对 `y` 列在 sidecar `numpy.histogram`，回传箱中心与计数。默认 50 箱。专业 bin 参数见二期。
 
 ## 样式对象（存入工程 `charts.json`）
 

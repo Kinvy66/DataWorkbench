@@ -9,6 +9,8 @@ from dw_host.errors import ErrorCode, HostError
 
 DEFAULT_MAX_POINTS = 5000
 
+CHART_KINDS = ("line", "scatter", "bar", "hist")
+
 CHART_TYPES = (
     {"id": "line", "name": "Line"},
     {"id": "scatter", "name": "Scatter"},
@@ -19,9 +21,11 @@ CHART_TYPES = (
 
 class BuildSeriesParams(BaseModel):
     dataId: str
-    x: str
+    x: str | None = None
     y: list[str] = Field(min_length=1)
+    kind: str | None = None
     maxPoints: int = DEFAULT_MAX_POINTS
+    bins: int | None = None
     xMin: float | None = None
     xMax: float | None = None
 
@@ -30,6 +34,15 @@ class BuildSeriesParams(BaseModel):
     def coerce_y(cls, value: object) -> object:
         if isinstance(value, str):
             return [value]
+        return value
+
+    @field_validator("kind", mode="before")
+    @classmethod
+    def coerce_kind(cls, value: object) -> object:
+        if value in (None, ""):
+            return None
+        if not isinstance(value, str) or value not in CHART_KINDS:
+            raise ValueError("kind must be line, scatter, bar, or hist")
         return value
 
 
@@ -47,9 +60,20 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             "data.pandasRequired",
         )
     if method == "chart.buildSeries":
-        from dw_host.chart_series import build_series
+        from dw_host.chart_series import build_histogram, build_series
 
         parsed = BuildSeriesParams.model_validate(params)
+        if parsed.kind == "hist":
+            return build_histogram(
+                manager,
+                parsed.dataId,
+                parsed.y,
+                bins=parsed.bins,
+                x_min=parsed.xMin,
+                x_max=parsed.xMax,
+            )
+        if not parsed.x:
+            raise HostError(ErrorCode.InvalidParams, "x is required", "rpc.invalidParams")
         return build_series(
             manager,
             parsed.dataId,

@@ -1,7 +1,7 @@
 import uPlot from 'uplot'
 import type { AlignedData, Options } from 'uplot'
 
-export type PlotKind = 'line' | 'scatter' | 'bar'
+export type PlotKind = 'line' | 'scatter' | 'bar' | 'hist'
 
 export type SeriesStyle = {
   label: string
@@ -47,8 +47,8 @@ function seriesOpts(kind: PlotKind, styles: SeriesStyle[]): Options['series'] {
       })
       continue
     }
-    if (kind === 'bar') {
-      const bars = uPlot.paths.bars?.({ size: [0.6, 100] })
+    if (kind === 'bar' || kind === 'hist') {
+      const bars = uPlot.paths.bars?.({ size: kind === 'hist' ? [1, 1000] : [0.6, 100] })
       series.push({
         label: style.label,
         stroke: style.color,

@@ -3,7 +3,13 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from dw_host.chart_series import DEFAULT_MAX_POINTS, build_series, lttb_indices
+from dw_host.chart_series import (
+    DEFAULT_MAX_POINTS,
+    HIST_BINS_DEFAULT,
+    build_histogram,
+    build_series,
+    lttb_indices,
+)
 from dw_host.data_manager import DataManager
 from dw_host.errors import ErrorCode, HostError
 
@@ -78,3 +84,44 @@ def test_build_series_missing_dataset() -> None:
     except HostError as exc:
         assert exc.code == ErrorCode.DatasetNotFound
         assert exc.i18n_key == "data.notFound"
+
+
+def test_build_histogram_counts_sum_to_source() -> None:
+    values = np.concatenate([np.zeros(40), np.ones(60)])
+    df = pd.DataFrame({"v": values, "w": values + 0.5})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("bins", df)
+    result = build_histogram(manager, data_id, ["v"], bins=10)
+    assert result["downsampled"] is False
+    assert result["sourceCount"] == 100
+    assert result["pointCount"] == 10
+    assert result["xKind"] == "number"
+    assert len(result["x"]) == 10
+    assert sum(result["ys"][0]) == 100
+    both = build_histogram(manager, data_id, ["v", "w"], bins=HIST_BINS_DEFAULT)
+    assert both["pointCount"] == HIST_BINS_DEFAULT
+    assert len(both["ys"]) == 2
+    assert len(both["x"]) == len(both["ys"][0]) == HIST_BINS_DEFAULT
+    assert sum(both["ys"][0]) == 100
+    assert sum(both["ys"][1]) == 100
+
+
+def test_build_histogram_rejects_non_numeric() -> None:
+    df = pd.DataFrame({"age": [10, 30, 18], "name": ["a", "b", "c"]})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("people", df)
+    try:
+        build_histogram(manager, data_id, ["name"])
+        raise AssertionError("expected HostError")
+    except HostError as exc:
+        assert exc.code == ErrorCode.ColumnOrValidation
+        assert exc.i18n_key == "chart.nonNumeric"
+
+
+def test_build_histogram_range_filter() -> None:
+    df = pd.DataFrame({"v": [0.0, 1.0, 2.0, 3.0, 10.0]})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("range", df)
+    result = build_histogram(manager, data_id, ["v"], bins=5, x_min=0.0, x_max=3.0)
+    assert result["sourceCount"] == 4
+    assert sum(result["ys"][0]) == 4

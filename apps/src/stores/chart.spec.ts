@@ -51,6 +51,37 @@ describe('useChartStore', () => {
     expect(workflow.centerTab).toBe('figure')
   })
 
+  it('builds a histogram without sending x or maxPoints', async () => {
+    invoke.mockResolvedValue({
+      x: [0.5, 1.5],
+      ys: [[4, 6]],
+      pointCount: 2,
+      sourceCount: 10,
+      downsampled: false,
+      xKind: 'number',
+      maxPoints: 50
+    })
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 10, cols: 1 }]
+    const chart = useChartStore()
+    const created = await chart.createFromBind({
+      type: 'hist',
+      dataId: 'ds-1',
+      y: ['ch1'],
+      yLabel: 'Count'
+    })
+    expect(invoke).toHaveBeenCalledWith('chart.buildSeries', {
+      dataId: 'ds-1',
+      y: ['ch1'],
+      kind: 'hist',
+      bins: 50
+    })
+    expect(created.type).toBe('hist')
+    expect(created.xLabel).toBe('ch1')
+    expect(created.yLabel).toBe('Count')
+    expect(created.data?.pointCount).toBe(2)
+  })
+
   it('drops charts whose dataset is gone', () => {
     const chart = useChartStore()
     chart.charts = [

@@ -12,10 +12,27 @@ from dw_host.errors import ErrorCode, HostError
 DEFAULT_MAX_POINTS = 5000
 MIN_MAX_POINTS = 2
 MAX_MAX_POINTS = 20_000
+HIST_BINS_DEFAULT = 50
+HIST_BINS_MIN = 5
+HIST_BINS_MAX = 200
 
 
 def clamp_max_points(value: int) -> int:
     return max(MIN_MAX_POINTS, min(int(value), MAX_MAX_POINTS))
+
+
+def clamp_hist_bins(value: int | None) -> int:
+    if value is None:
+        return HIST_BINS_DEFAULT
+    return max(HIST_BINS_MIN, min(int(value), HIST_BINS_MAX))
+
+
+def _unique_names(names: list[str]) -> list[str]:
+    seen: list[str] = []
+    for name in names:
+        if name not in seen:
+            seen.append(name)
+    return seen
 
 
 def _column(df: Any, name: str) -> pd.Series:
@@ -115,10 +132,7 @@ def build_series(
     """Downsample x + y columns. Non-finite x rows are dropped; y NaN becomes JSON null."""
     ds = manager.get(data_id)
     df = ds.df
-    seen: list[str] = []
-    for name in y_names:
-        if name not in seen:
-            seen.append(name)
+    seen = _unique_names(y_names)
     if not seen:
         raise HostError(
             ErrorCode.ColumnOrValidation,
@@ -155,4 +169,58 @@ def build_series(
         "downsampled": downsampled,
         "xKind": x_kind,
         "maxPoints": cap,
+    }
+
+
+def build_histogram(
+    manager: DataManager,
+    data_id: str,
+    y_names: list[str],
+    bins: int | None = None,
+    x_min: float | None = None,
+    x_max: float | None = None,
+) -> dict[str, Any]:
+    """Bin numeric columns in Python. Renderer only gets bin centers + counts."""
+    ds = manager.get(data_id)
+    df = ds.df
+    seen = _unique_names(y_names)
+    if not seen:
+        raise HostError(
+            ErrorCode.ColumnOrValidation,
+            "At least one y column is required",
+            "chart.columnNotFound",
+        )
+    cols = [_as_y_array(_column(df, name), name) for name in seen]
+    kept: list[np.ndarray] = []
+    for col in cols:
+        mask = np.isfinite(col)
+        if x_min is not None:
+            mask &= col >= float(x_min)
+        if x_max is not None:
+            mask &= col <= float(x_max)
+        kept.append(col[mask])
+    source_count = int(max((arr.size for arr in kept), default=0))
+    if source_count < 1:
+        raise HostError(
+            ErrorCode.ColumnOrValidation,
+            "Not enough numeric points to plot",
+            "chart.emptySeries",
+        )
+    vmin = min(float(arr.min()) for arr in kept if arr.size)
+    vmax = max(float(arr.max()) for arr in kept if arr.size)
+    if vmin == vmax:
+        vmin -= 0.5
+        vmax += 0.5
+    n_bins = clamp_hist_bins(bins)
+    edges = np.linspace(vmin, vmax, n_bins + 1)
+    centers = (edges[:-1] + edges[1:]) * 0.5
+    counts = [np.histogram(arr, bins=edges)[0].astype(np.float64, copy=False) for arr in kept]
+    return {
+        "x": [float(v) for v in centers.tolist()],
+        "ys": [[float(v) for v in col.tolist()] for col in counts],
+        "pointCount": int(n_bins),
+        "sourceCount": source_count,
+        "downsampled": False,
+        "xKind": "number",
+        "maxPoints": n_bins,
     }

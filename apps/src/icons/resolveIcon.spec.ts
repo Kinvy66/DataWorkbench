@@ -39,6 +39,7 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/describe')).toMatch(/describe\.svg/)
     expect(resolveIconUrl('app/pivotTable')).toMatch(/pivotTable\.svg/)
     expect(resolveIconUrl('app/chart-type/chart-curve')).toMatch(/chart-curve\.svg/)
+    expect(resolveIconUrl('app/chart-type/chart-histogram')).toMatch(/chart-histogram\.svg/)
     expect(resolveIconUrl('gui/chart')).toMatch(/chart\.svg/)
   })
 

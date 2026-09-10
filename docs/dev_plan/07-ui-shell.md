@@ -32,7 +32,7 @@
 | Operate | Data Filtering | `data.eval` `data.query` `data.search` `data.filterByColumn` `data.sort` | P3（检索与按列为 medium，其余 large） |
 | Operate | Statistics | `data.describe` `data.pivotTable` | P3（对齐上游统计） |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |
-| Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` | P4 |
+| Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` `chart.newHist` | P4 |
 | Chart | Export | `chart.exportPng` `chart.exportSvg` | P4 |
 
 所有 label 走 i18n key，例如 `ribbon.dataImport`。英文源对齐上游：「Add Data」。默认界面语言 `zh-CN`。

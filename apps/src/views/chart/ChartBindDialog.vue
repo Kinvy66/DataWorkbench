@@ -50,8 +50,11 @@ const xCandidates = computed(() => {
 
 const yCandidates = computed(() => numericNames.value)
 
+const isHist = computed(() => chart.pendingType === 'hist')
+
 const canApply = computed(
-  () => Boolean(data.currentId && form.x && form.y.length) && !applying.value
+  () =>
+    Boolean(data.currentId && form.y.length && (isHist.value || form.x)) && !applying.value
 )
 
 function typeLabel(type: BindableChartType): string {
@@ -60,6 +63,9 @@ function typeLabel(type: BindableChartType): string {
   }
   if (type === 'bar') {
     return t('ribbon.chartBar')
+  }
+  if (type === 'hist') {
+    return t('ribbon.chartHist')
   }
   return t('ribbon.chartLine')
 }
@@ -104,9 +110,10 @@ async function confirm(): Promise<void> {
     const created = await chart.createFromBind({
       type: chart.pendingType,
       dataId: data.currentId,
-      x: form.x,
+      x: isHist.value ? undefined : form.x,
       y: [...form.y],
-      title: form.title
+      title: form.title,
+      yLabel: isHist.value ? t('chart.count') : undefined
     })
     chart.bindDialogOpen = false
     const line = t('log.chartOk', {
@@ -134,12 +141,12 @@ async function confirm(): Promise<void> {
     :close-on-click-modal="!applying"
   >
     <el-form label-position="top" size="small" @submit.prevent>
-      <el-form-item :label="t('chart.xColumn')">
+      <el-form-item v-if="!isHist" :label="t('chart.xColumn')">
         <el-select v-model="form.x" filterable style="width: 100%">
           <el-option v-for="name in xCandidates" :key="name" :label="name" :value="name" />
         </el-select>
       </el-form-item>
-      <el-form-item :label="t('chart.yColumns')">
+      <el-form-item :label="isHist ? t('chart.valueColumns') : t('chart.yColumns')">
         <el-select v-model="form.y" multiple filterable style="width: 100%">
           <el-option v-for="name in yCandidates" :key="name" :label="name" :value="name" />
         </el-select>
@@ -147,7 +154,7 @@ async function confirm(): Promise<void> {
       <el-form-item :label="t('chart.title')">
         <el-input v-model="form.title" :placeholder="t('chart.titleHint')" />
       </el-form-item>
-      <p class="hint">{{ t('chart.bindHint') }}</p>
+      <p class="hint">{{ isHist ? t('chart.bindHistHint') : t('chart.bindHint') }}</p>
     </el-form>
     <template #footer>
       <el-button :disabled="applying" @click="visible = false">{{ t('chart.bindCancel') }}</el-button>

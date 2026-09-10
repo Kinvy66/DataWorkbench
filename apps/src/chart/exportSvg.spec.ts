@@ -55,6 +55,24 @@ describe('seriesToSvg', () => {
     expect(svg).toContain('<circle')
     expect(svg).not.toContain('<path')
   })
+
+  it('draws hist as rects', () => {
+    const svg = seriesToSvg({
+      kind: 'hist',
+      legend: false,
+      grid: false,
+      styles: [{ label: 'v', color: '#5280C1', width: 1 }],
+      data: {
+        x: [0.5, 1.5, 2.5],
+        ys: [[2, 5, 3]],
+        xKind: 'number'
+      }
+    })
+    const rects = svg.match(/<rect /g) ?? []
+    expect(rects.length).toBeGreaterThan(1)
+    expect(svg).not.toContain('<path')
+    expect(svg).not.toContain('<circle')
+  })
 })
 
 describe('suggestedExportName', () => {
