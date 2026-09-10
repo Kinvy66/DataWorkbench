@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（进行中） → P4 图表 → P5 工程文件**
 
-P2 任务 1–8 已落地。P3：已 vendor `dw_nodes_analysis/core`，工具箱含 Data Source（从 DataManager 取表）、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Sort、Describe 与 Data Export。Ribbon Data → 清洗 → 删除缺失 / 删除重复 / 填充缺失 / 替换值 / 查询 / 排序，以及 Data → 分析 → 描述统计，与对应节点共用 Core（Describe 发布新表，不改源表）。Data Export 是工作流写盘节点（Core `export_data`）；功能区导出仍是 `data.export`。不要做图表、自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。其余清洗节点仍属 P3 后续。
+P2 任务 1–8 已落地。P3：已 vendor `dw_nodes_analysis/core`，工具箱含 Data Source（从 DataManager 取表）、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Sort、Describe 与 Data Export。Ribbon Data → 清洗 → 删除缺失 / 删除重复 / 填充缺失 / 替换值 / 阈值筛选 / 查询 / 排序，以及 Data → 分析 → 描述统计，与对应节点共用 Core（Describe 发布新表，不改源表）。Data Export 是工作流写盘节点（Core `export_data`）；功能区导出仍是 `data.export`。不要做图表、自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。File 保存/打开仍属 P5。其余清洗节点仍属 P3 后续。
 
 ## STRUCTURE
 

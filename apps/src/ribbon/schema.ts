@@ -181,6 +181,15 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/replaceValues')
                   },
                   {
+                    id: 'data.thresholdFilter',
+                    type: 'button',
+                    label: t('ribbon.dataThresholdFilter'),
+                    tooltip: t('ribbon.dataThresholdFilterTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/thresholdFilter')
+                  },
+                  {
                     id: 'data.query',
                     type: 'button',
                     label: t('ribbon.dataQuery'),

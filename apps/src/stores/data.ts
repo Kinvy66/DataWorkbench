@@ -10,6 +10,7 @@ import type {
   DataSortResult,
   DataFillNaResult,
   DataReplaceValuesResult,
+  DataThresholdFilterResult,
   DataDescribeResult,
   DatasetListItem
 } from '@dw/rpc-types'
@@ -28,6 +29,7 @@ export const useDataStore = defineStore('data', {
     sortDialogOpen: false,
     fillNaDialogOpen: false,
     replaceValuesDialogOpen: false,
+    thresholdFilterDialogOpen: false,
     describeDialogOpen: false
   }),
   getters: {
@@ -207,6 +209,31 @@ export const useDataStore = defineStore('data', {
         subset: options.subset,
         caseSensitive: options.caseSensitive ?? true
       })) as DataReplaceValuesResult
+      await this.refreshList()
+      await this.select(id)
+      return result
+    },
+    async thresholdFilter(options?: {
+      filterType?: string
+      lower?: number
+      upper?: number
+      subset?: string[]
+      rowLogic?: 'any' | 'all' | string
+      treatNan?: boolean
+    }): Promise<DataThresholdFilterResult | null> {
+      if (!this.currentId) {
+        return null
+      }
+      const id = this.currentId
+      const result = (await getDesktopBridge().rpc.invoke('data.thresholdFilter', {
+        id,
+        filterType: options?.filterType ?? 'greater_than',
+        lower: options?.lower ?? 0,
+        upper: options?.upper ?? 100,
+        subset: options?.subset,
+        rowLogic: options?.rowLogic ?? 'any',
+        treatNan: options?.treatNan ?? false
+      })) as DataThresholdFilterResult
       await this.refreshList()
       await this.select(id)
       return result

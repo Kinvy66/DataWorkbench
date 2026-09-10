@@ -102,6 +102,16 @@ class ReplaceValuesParams(BaseModel):
     caseSensitive: bool = True
 
 
+class ThresholdFilterParams(BaseModel):
+    id: str
+    filterType: str = "greater_than"
+    lower: float = 0.0
+    upper: float = 100.0
+    subset: list[str] | str | None = None
+    rowLogic: str = "any"
+    treatNan: bool = False
+
+
 class DescribeParams(BaseModel):
     id: str
     percentiles: list[float] | str | None = "0.25,0.5,0.75"
@@ -199,6 +209,17 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             new_value=parsed.newValue,
             subset=_subset_list(parsed.subset),
             case_sensitive=parsed.caseSensitive,
+        )
+    if method == "data.thresholdFilter":
+        parsed = ThresholdFilterParams.model_validate(params)
+        return manager.threshold_filter(
+            parsed.id,
+            filter_type=parsed.filterType,
+            lower=parsed.lower,
+            upper=parsed.upper,
+            subset=_subset_list(parsed.subset),
+            row_logic=parsed.rowLogic,
+            treat_nan=parsed.treatNan,
         )
     if method == "data.describe":
         parsed = DescribeParams.model_validate(params)

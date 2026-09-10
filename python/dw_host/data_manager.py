@@ -558,6 +558,72 @@ class DataManager:
         )
         return result
 
+    def threshold_filter(
+        self,
+        dataset_id: str,
+        *,
+        filter_type: str = "greater_than",
+        lower: object = 0.0,
+        upper: object = 100.0,
+        subset: list[str] | None = None,
+        row_logic: str = "any",
+        treat_nan: object = False,
+    ) -> dict[str, Any]:
+        """Drop rows matching a numeric threshold via Core ``threshold_filter_impl``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.cleaning import threshold_filter_impl
+
+        ftype = _normalize_filter_type(filter_type)
+        logic = _normalize_row_logic(row_logic)
+        lo = _parse_float(lower, 0.0)
+        hi = _parse_float(upper, 100.0)
+        nan_as_hit = _parse_bool(treat_nan, default=False)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, subset)
+            if resolved is None:
+                resolved = _numeric_columns(ds.df)
+                if not resolved:
+                    raise HostError(
+                        ErrorCode.ColumnOrValidation,
+                        "No numeric columns to filter",
+                        "data.thresholdNoNumeric",
+                    )
+            else:
+                _require_numeric_columns(ds.df, resolved)
+            before = int(len(ds.df))
+            try:
+                filtered = threshold_filter_impl(
+                    ds.df,
+                    subset=resolved,
+                    filter_type=ftype,
+                    lower=lo,
+                    upper=hi,
+                    row_logic=logic,
+                    treat_nan=nan_as_hit,
+                    reindex=True,
+                )
+            except Exception as exc:
+                log.info("data.thresholdFilter failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to apply threshold filter",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = filtered
+        result = _meta(ds)
+        result["removedCount"] = before - int(len(filtered))
+        log.info(
+            "data.thresholdFilter name=%s type=%s removed=%s rows=%s",
+            ds.name,
+            ftype,
+            result["removedCount"],
+            result["rows"],
+        )
+        return result
+
     def describe(
         self,
         dataset_id: str,
@@ -618,6 +684,19 @@ _FILLNA_METHODS = frozenset({"value", "forward", "backward", "mean", "median", "
 _FILLNA_ALIASES = {"constant": "value", "ffill": "forward", "bfill": "backward"}
 _KEEP_VALUES = frozenset({"first", "last", "none"})
 _KEEP_ALIASES = {"false": "none"}
+_FILTER_TYPES = frozenset({"greater_than", "less_than", "in_range", "out_of_range"})
+_FILTER_ALIASES = {
+    "gt": "greater_than",
+    ">": "greater_than",
+    "greater": "greater_than",
+    "lt": "less_than",
+    "<": "less_than",
+    "less": "less_than",
+    "between": "in_range",
+    "inside": "in_range",
+    "outside": "out_of_range",
+}
+_ROW_LOGIC = frozenset({"any", "all"})
 
 
 def _normalize_keep(raw: object) -> str:
@@ -630,6 +709,46 @@ def _normalize_keep(raw: object) -> str:
     if key not in _KEEP_VALUES:
         raise HostError(ErrorCode.ColumnOrValidation, "Unsupported keep value", "data.invalidValue")
     return key
+
+
+def _normalize_filter_type(raw: object) -> str:
+    key = str(raw or "greater_than").strip().lower()
+    key = _FILTER_ALIASES.get(key, key)
+    if key not in _FILTER_TYPES:
+        raise HostError(ErrorCode.ColumnOrValidation, "Unsupported filter type", "data.invalidValue")
+    return key
+
+
+def _normalize_row_logic(raw: object) -> str:
+    key = str(raw or "any").strip().lower()
+    if key not in _ROW_LOGIC:
+        raise HostError(ErrorCode.ColumnOrValidation, "rowLogic must be 'any' or 'all'", "data.invalidValue")
+    return key
+
+
+def _parse_float(raw: object, default: float) -> float:
+    if raw is None or raw == "":
+        return default
+    if isinstance(raw, bool):
+        raise HostError(ErrorCode.ColumnOrValidation, "Threshold must be a number", "data.invalidValue")
+    try:
+        return float(raw)
+    except (TypeError, ValueError) as exc:
+        raise HostError(ErrorCode.ColumnOrValidation, "Threshold must be a number", "data.invalidValue") from exc
+
+
+def _numeric_columns(df: Any) -> list[Any]:
+    return [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
+
+
+def _require_numeric_columns(df: Any, columns: list[Any]) -> None:
+    bad = [str(col) for col in columns if not pd.api.types.is_numeric_dtype(df[col])]
+    if bad:
+        raise HostError(
+            ErrorCode.ColumnOrValidation,
+            f"Non-numeric columns: {', '.join(bad)}",
+            "data.invalidValue",
+        )
 
 
 def _normalize_fillna_method(raw: object) -> str:

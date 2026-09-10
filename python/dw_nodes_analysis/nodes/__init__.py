@@ -8,6 +8,7 @@ from .data_query import DataQueryNode
 from .data_replace_values import DataReplaceValuesNode
 from .data_sort import DataSortNode
 from .data_source import DataSourceNode
+from .data_threshold_filter import DataThresholdFilterNode
 
 __all__ = [
     "DataDescribeNode",
@@ -19,4 +20,5 @@ __all__ = [
     "DataReplaceValuesNode",
     "DataSortNode",
     "DataSourceNode",
+    "DataThresholdFilterNode",
 ]

@@ -37,6 +37,7 @@ export const RpcMethod = {
   DataSort: 'data.sort',
   DataFillNa: 'data.fillNa',
   DataReplaceValues: 'data.replaceValues',
+  DataThresholdFilter: 'data.thresholdFilter',
   DataDescribe: 'data.describe',
   WorkflowCreate: 'workflow.create',
   WorkflowListNodeTypes: 'workflow.listNodeTypes',
@@ -287,6 +288,25 @@ export interface DataReplaceValuesResult {
   cols: number
   columns: ColumnSchema[]
   replacedCount: number
+}
+
+export interface DataThresholdFilterParams {
+  id: string
+  filterType?: string
+  lower?: number
+  upper?: number
+  subset?: string[] | string
+  rowLogic?: 'any' | 'all' | string
+  treatNan?: boolean
+}
+
+export interface DataThresholdFilterResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  removedCount: number
 }
 
 export interface DataDescribeParams {

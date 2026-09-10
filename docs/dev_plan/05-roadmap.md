@@ -120,7 +120,7 @@ gantt
 
 上游 `data_plot_node` 依赖 C++ 图，P3 **不要**移植；出图走 P4 前端。
 
-**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query 节点与 Ribbon「查询」对话框（均调用 `query_dataframe`，Ribbon 经 `data.query` **就地**改写当前表）；Drop NA 节点与 Ribbon「删除缺失」对话框（均调用 `dropna_impl`，Ribbon 经 `data.dropNa` 就地改写）；Drop Duplicates 节点与 Ribbon「删除重复」对话框（均调用 `drop_duplicates_impl`，Ribbon 经 `data.dropDuplicates` 就地改写）；Fill NA 节点与 Ribbon「填充缺失」对话框（均调用 `fillna_impl`，Ribbon 经 `data.fillNa` 就地改写）；Replace Values 节点与 Ribbon「替换值」对话框（均调用 `replace_values_impl`，Ribbon 经 `data.replaceValues` 就地改写）；Sort 节点与 Ribbon「排序」对话框（均调用 `sort_dataframe`，Ribbon 经 `data.sort` 就地改写）；Describe 节点与 Ribbon「描述统计」对话框（均调用 `describe_dataframe`，Ribbon 经 `data.describe` **发布新统计表**，源表不变；统计名展平为 `stat` 列）；Data Export 节点（`export_data` 写连入的 DataFrame；Ribbon `data.export` 仍导出当前 DataManager 表）。批次 A 完成（`data_filter` 与 Query 重叠，不单独做）。批次 B 已做 drop_duplicates、replace_values。
+**已落地**：Core vendor；Data Source（DataManager 按名/id）；Query 节点与 Ribbon「查询」对话框（均调用 `query_dataframe`，Ribbon 经 `data.query` **就地**改写当前表）；Drop NA 节点与 Ribbon「删除缺失」对话框（均调用 `dropna_impl`，Ribbon 经 `data.dropNa` 就地改写）；Drop Duplicates 节点与 Ribbon「删除重复」对话框（均调用 `drop_duplicates_impl`，Ribbon 经 `data.dropDuplicates` 就地改写）；Fill NA 节点与 Ribbon「填充缺失」对话框（均调用 `fillna_impl`，Ribbon 经 `data.fillNa` 就地改写）；Replace Values 节点与 Ribbon「替换值」对话框（均调用 `replace_values_impl`，Ribbon 经 `data.replaceValues` 就地改写）；Threshold Filter 节点与 Ribbon「阈值筛选」对话框（均调用 `threshold_filter_impl`，Ribbon 经 `data.thresholdFilter` 就地改写；直接暴露 Core `filter_type`，不要抄上游运算符映射）；Sort 节点与 Ribbon「排序」对话框（均调用 `sort_dataframe`，Ribbon 经 `data.sort` 就地改写）；Describe 节点与 Ribbon「描述统计」对话框（均调用 `describe_dataframe`，Ribbon 经 `data.describe` **发布新统计表**，源表不变；统计名展平为 `stat` 列）；Data Export 节点（`export_data` 写连入的 DataFrame；Ribbon `data.export` 仍导出当前 DataManager 表）。批次 A 完成（`data_filter` 与 Query 重叠，不单独做）。批次 B 已做 drop_duplicates、replace_values、threshold_filter。
 
 **验收**
 
@@ -129,6 +129,7 @@ gantt
 - Ribbon Drop Duplicates 与节点 Drop Duplicates 调用同一 Core 函数。
 - Ribbon FillNA 与节点 FillNA 调用同一 Core 函数。
 - Ribbon Replace Values 与节点 Replace Values 调用同一 Core 函数。
+- Ribbon Threshold Filter 与节点 Threshold Filter 调用同一 Core 函数（直接用 Core `filter_type`）。
 - Ribbon Query 与节点 Query 调用同一 Core 函数。
 - Ribbon Sort 与节点 Sort 调用同一 Core 函数。
 - Ribbon Describe 与节点 Describe 调用同一 Core 函数（Ribbon 发布新表）。

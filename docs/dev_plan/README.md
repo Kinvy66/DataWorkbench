@@ -41,4 +41,4 @@ flowchart LR
 
 ## 当前状态
 
-P0 骨架已落地。P1 数据自动验收已完成。P2 画布路径已完成。P3 已 vendor 分析 Core，并接入 Data Source、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Sort、Describe 与 Data Export（Ribbon 对话框分别共用 `query_dataframe` / `dropna_impl` / `drop_duplicates_impl` / `fillna_impl` / `replace_values_impl` / `sort_dataframe` / `describe_dataframe`；Describe 发布新表；Export 节点写连入的 df，Ribbon 导出仍走 `data.export`）。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。其余清洗节点仍属 P3。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。
+P0 骨架已落地。P1 数据自动验收已完成。P2 画布路径已完成。P3 已 vendor 分析 Core，并接入 Data Source、Query、Drop NA、Drop Duplicates、Fill NA、Replace Values、Threshold Filter、Sort、Describe 与 Data Export（Ribbon 对话框分别共用 `query_dataframe` / `dropna_impl` / `drop_duplicates_impl` / `fillna_impl` / `replace_values_impl` / `threshold_filter_impl` / `sort_dataframe` / `describe_dataframe`；Describe 发布新表；Export 节点写连入的 df，Ribbon 导出仍走 `data.export`）。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。其余清洗节点仍属 P3。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。
