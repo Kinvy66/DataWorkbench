@@ -34,6 +34,7 @@ export const RpcMethod = {
   DataDropNa: 'data.dropNa',
   DataQuery: 'data.query',
   DataSort: 'data.sort',
+  DataFillNa: 'data.fillNa',
   WorkflowCreate: 'workflow.create',
   WorkflowListNodeTypes: 'workflow.listNodeTypes',
   WorkflowAddNode: 'workflow.addNode',
@@ -235,6 +236,22 @@ export interface DataSortResult {
   rows: number
   cols: number
   columns: ColumnSchema[]
+}
+
+export interface DataFillNaParams {
+  id: string
+  method?: string
+  subset?: string[] | string
+  value?: string | number | boolean | null
+}
+
+export interface DataFillNaResult {
+  id: string
+  name: string
+  rows: number
+  cols: number
+  columns: ColumnSchema[]
+  filledCount: number
 }
 
 export interface OkResult {

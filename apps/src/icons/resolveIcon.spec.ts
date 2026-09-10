@@ -23,6 +23,7 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/zoomOut')).toMatch(/zoomOut\.svg/)
     expect(resolveIconUrl('app/viewAll')).toMatch(/viewAll\.svg/)
     expect(resolveIconUrl('app/dropNa')).toMatch(/dropNa\.svg/)
+    expect(resolveIconUrl('app/fillNa')).toMatch(/fillNa\.svg/)
     expect(resolveIconUrl('app/query')).toMatch(/query\.svg/)
     expect(resolveIconUrl('app/sort')).toMatch(/sort\.svg/)
   })

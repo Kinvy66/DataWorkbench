@@ -12,6 +12,7 @@ import NodeToolbox from '@/views/workflow/NodeToolbox.vue'
 import NodeProperties from '@/views/workflow/NodeProperties.vue'
 import WorkflowCanvas from '@/views/workflow/WorkflowCanvas.vue'
 import DropNaDialog from '@/views/data/DropNaDialog.vue'
+import FillNaDialog from '@/views/data/FillNaDialog.vue'
 import QueryDialog from '@/views/data/QueryDialog.vue'
 import SortDialog from '@/views/data/SortDialog.vue'
 
@@ -77,6 +78,7 @@ function formatTime(at: number): string {
       </Pane>
     </Splitpanes>
     <DropNaDialog />
+    <FillNaDialog />
     <QueryDialog />
     <SortDialog />
   </div>

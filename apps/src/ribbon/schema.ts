@@ -154,6 +154,15 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/dropNa')
                   },
                   {
+                    id: 'data.fillNa',
+                    type: 'button',
+                    label: t('ribbon.dataFillNa'),
+                    tooltip: t('ribbon.dataFillNaTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/fillNa')
+                  },
+                  {
                     id: 'data.query',
                     type: 'button',
                     label: t('ribbon.dataQuery'),

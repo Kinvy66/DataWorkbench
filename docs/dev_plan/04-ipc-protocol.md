@@ -57,6 +57,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `data.export` | `{id, path, format}` | `{ok}` | csv/xlsx/parquet。渲染进程可省略 `path`：主进程弹出保存对话框 |
 | `data.register` | `{name, handle?}` | `{id}` | 供节点 DataToManager 内部调用；同名覆盖。JSON-RPC 一期仅 `{name}` 建空表 |
 | `data.dropNa` | `{id, how?, subset?, minNonNa?}` | `{id, name, rows, cols, columns, removedCount}` | **就地**改写当前表，调用 Core `dropna_impl`（只删行）。`how` 为 `any`/`all`（默认 `any`）；`subset` 为列名数组或逗号分隔字符串，空=全部列；`minNonNa` 为最少非缺失值，`0` 表示不启用。未知列 → 1002/`data.columnNotFound` |
+| `data.fillNa` | `{id, method?, subset?, value?}` | `{id, name, rows, cols, columns, filledCount}` | **就地**改写当前表，调用 Core `fillna_impl`。`method` 为 `value`/`forward`/`backward`/`mean`/`median`/`mode`（默认 `value`，亦接受 `constant`/`ffill`/`bfill`）；`subset` 空=全部列；`value` 在 `method=value` 时生效（数字或字符串，默认 `0`）。非法 method → 1002/`data.invalidValue`；未知列 → 1002/`data.columnNotFound` |
 | `data.query` | `{id, queryString}` | `{id, name, rows, cols, columns, matchedCount, removedCount}` | **就地**改写当前表，调用 Core `query_dataframe`。空表达式 → 1002/`data.queryEmpty`；非法 pandas query → 1002/`data.invalidQuery` |
 | `data.sort` | `{id, columns, ascending?}` | `{id, name, rows, cols, columns}` | **就地**改写当前表，调用 Core `sort_dataframe`。`columns` 为列名数组或逗号分隔字符串；`ascending` 默认 `true`（所有列同一方向）。空列 → 1002/`data.sortColumnsEmpty`；未知列 → 1002/`data.columnNotFound` |
 

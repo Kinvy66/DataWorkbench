@@ -434,6 +434,41 @@ class DataManager:
         log.info("data.sort name=%s columns=%s ascending=%s", ds.name, names, ascending)
         return result
 
+    def fillna(
+        self,
+        dataset_id: str,
+        *,
+        method: str = "value",
+        subset: list[str] | None = None,
+        value: Any = 0.0,
+    ) -> dict[str, Any]:
+        """Fill NA cells in place via the shared Core ``fillna_impl``."""
+        _require_pandas()
+        from dw_nodes_analysis.core.cleaning import fillna_impl
+
+        method_norm = _normalize_fillna_method(method)
+        fill_value = _parse_fill_value(value)
+        with self._lock:
+            ds = self._items.get(dataset_id)
+            if ds is None:
+                raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
+            resolved = _resolve_columns(ds.df, subset)
+            before = _na_cell_count(ds.df)
+            try:
+                filled = fillna_impl(ds.df, subset=resolved, method=method_norm, value=fill_value, limit=None)
+            except Exception as exc:
+                log.info("data.fillNa failed: %s", type(exc).__name__)
+                raise HostError(
+                    ErrorCode.ColumnOrValidation,
+                    "Failed to fill missing values",
+                    "data.invalidValue",
+                ) from exc
+            ds.df = filled
+        result = _meta(ds)
+        result["filledCount"] = before - _na_cell_count(filled)
+        log.info("data.fillNa name=%s method=%s filled=%s", ds.name, method_norm, result["filledCount"])
+        return result
+
     def export_path(self, dataset_id: str, path: str, fmt: str | None = None) -> None:
         _require_pandas()
         ds = self.get(dataset_id)
@@ -448,6 +483,36 @@ class DataManager:
             log.info("data.export failed: %s", type(exc).__name__)
             raise HostError(ErrorCode.FileIo, f"Failed to export {file_path.name}", "data.ioError") from exc
         log.info("data.export name=%s format=%s", ds.name, kind)
+
+
+_FILLNA_METHODS = frozenset({"value", "forward", "backward", "mean", "median", "mode"})
+_FILLNA_ALIASES = {"constant": "value", "ffill": "forward", "bfill": "backward"}
+
+
+def _normalize_fillna_method(raw: object) -> str:
+    key = str(raw or "value").strip().lower()
+    key = _FILLNA_ALIASES.get(key, key)
+    if key not in _FILLNA_METHODS:
+        raise HostError(ErrorCode.ColumnOrValidation, "Unsupported fill method", "data.invalidValue")
+    return key
+
+
+def _parse_fill_value(raw: Any) -> Any:
+    if raw is None:
+        return 0.0
+    if isinstance(raw, bool):
+        return raw
+    if isinstance(raw, (int, float)):
+        return raw
+    text = str(raw)
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return text
+
+
+def _na_cell_count(df: Any) -> int:
+    return int(df.isna().to_numpy().sum())
 
 
 def _resolve_columns(df: Any, subset: list[str] | None) -> list[Any] | None:

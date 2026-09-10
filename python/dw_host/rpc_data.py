@@ -81,6 +81,13 @@ class SortParams(BaseModel):
     ascending: bool = True
 
 
+class FillNaParams(BaseModel):
+    id: str
+    method: str = "value"
+    subset: list[str] | str | None = None
+    value: Any = 0.0
+
+
 def _subset_list(raw: list[str] | str | None) -> list[str] | None:
     if raw is None:
         return None
@@ -148,5 +155,13 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             parsed.id,
             columns=_subset_list(parsed.columns) or [],
             ascending=parsed.ascending,
+        )
+    if method == "data.fillNa":
+        parsed = FillNaParams.model_validate(params)
+        return manager.fillna(
+            parsed.id,
+            method=parsed.method,
+            subset=_subset_list(parsed.subset),
+            value=parsed.value,
         )
     raise HostError(ErrorCode.MethodNotFound, f"Method not found: {method}")

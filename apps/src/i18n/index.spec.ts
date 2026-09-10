@@ -34,6 +34,10 @@ describe('i18n', () => {
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataDropNa'))).toBe('删除缺失')
     i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.dataFillNa'))).toBe('Fill NA')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.dataFillNa'))).toBe('填充缺失')
+    i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataQuery'))).toBe('Query')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.dataQuery'))).toBe('查询')
