@@ -33,11 +33,9 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 
 ## 前端虚表
 
-滚动条位置 → `startRow = floor(scrollRatio * rowCount)` → 对齐到 512 的块边界 → 若缓存未命中则 `fetchBlock`。缓存保留当前块 ±1。
+滚动条位置由 AG Grid Community infinite row model 驱动：`cacheBlockSize=512`，`IDatasource.getRows` 调 `data.fetchBlock`（按 512 行 origin 对齐）。`maxBlocksInCache=3` 对应可见块 ±1。**禁止** `clientSide` 整表灌进网格，也禁止 `v-for` 50 万个 `tr`。不要引入 `ag-grid-enterprise`。
 
-渲染：只用当前缓存的行画可见区（TanStack Virtual）。**禁止** `v-for` 50 万个 `tr`。
-
-列宽拖拽存在前端（像素轨，不使用 `1fr` 拉伸），不回写 Python。切换数据集时列宽重置。
+列宽由 AG Grid 拖拽（像素，不拉伸铺满），不回写 Python。切换数据集时网格重建，列宽重置。
 
 ## 与工作流衔接
 

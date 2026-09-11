@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（完成） → P4 图表一期（完成） → P5 工程文件（完成 / MVP）**
 
-P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 图表一期已齐：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar / Histogram，中区 Figure tab + 属性面板，PNG/SVG 导出，缩放后按视口带 `xMin`/`xMax` 再取样（150ms 防抖，窗口仍 5000 点封顶）。不要把图表按钮放到 Data/Operate。不要做 Agent。表格单元格 undo 不与工作流栈合并。**File 保存/打开 `.dwproj` 已落地**（主进程 ZIP，sidecar 只处理解压目录；打开失败不留下半开数据）。**sidecar 崩溃后提示并自动重启一次已落地**（第二次崩溃只提示，不循环拉起；重启后内存数据丢失，须打开已保存工程）。**安装包已落地**（`pnpm pack:win`：NSIS 向导 + 嵌入式 CPython 3.12；用户不必安装 Python。`pnpm pack:portable` 为同套运行时的便携目录）。**MVP（P0–P5）完成。** 二期已落地 **PDF 导出**、**图表标注**（点击放置 SVG overlay，不是 Qwt 画布拖一切）、**子图网格**（RxC 空格子再绑数据，不是拖布局）、**直方专业分箱**（箱数/箱宽/统计量/累计，分箱仍在 Python）与 **Golden Layout 自由停靠**（工作区七个面板可拖；禁止弹出窗口；图表区内嵌套停靠仍不做）。其余（AG Grid）未排期，不要擅自开工。Home 不要擅自改成对齐 Qt。
+P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 图表一期已齐：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar / Histogram，中区 Figure tab + 属性面板，PNG/SVG 导出，缩放后按视口带 `xMin`/`xMax` 再取样（150ms 防抖，窗口仍 5000 点封顶）。不要把图表按钮放到 Data/Operate。不要做 Agent。表格单元格 undo 不与工作流栈合并。**File 保存/打开 `.dwproj` 已落地**（主进程 ZIP，sidecar 只处理解压目录；打开失败不留下半开数据）。**sidecar 崩溃后提示并自动重启一次已落地**（第二次崩溃只提示，不循环拉起；重启后内存数据丢失，须打开已保存工程）。**安装包已落地**（`pnpm pack:win`：NSIS 向导 + 嵌入式 CPython 3.12；用户不必安装 Python。`pnpm pack:portable` 为同套运行时的便携目录）。**MVP（P0–P5）完成。** 二期已落地 **PDF 导出**、**图表标注**（点击放置 SVG overlay，不是 Qwt 画布拖一切）、**子图网格**（RxC 空格子再绑数据，不是拖布局）、**直方专业分箱**（箱数/箱宽/统计量/累计，分箱仍在 Python）、**Golden Layout 自由停靠**（工作区七个面板可拖；禁止弹出窗口；图表区内嵌套停靠仍不做）与 **AG Grid Community 虚表**（infinite row model，`fetchBlock` 512 行块，最多缓存 3 块；禁止 `ag-grid-enterprise` 与 `clientSide` 整表）。Home 不要擅自改成对齐 Qt。
 
 ## STRUCTURE
 
@@ -188,7 +188,7 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 | RPC 方法表 | `docs/dev_plan/04-ipc-protocol.md` |
 | vendor 上游哪些 py | `docs/dev_plan/06-python-reuse.md` |
 | Ribbon / 布局 | `docs/dev_plan/07-ui-shell.md` |
-| 虚表 / DataManager | `docs/dev_plan/08-data.md` |
+| 虚表 / DataManager | `docs/dev_plan/08-data.md`；网格在 `apps/src/views/VirtualTable.vue` + `apps/src/data/gridDatasource.ts` |
 | Vue Flow 同步规则 | `docs/dev_plan/09-workflow.md` |
 | 图表一期范围 | `docs/dev_plan/10-chart.md` |
 | 测试与日志 | `docs/dev_plan/12-quality.md` |
@@ -210,7 +210,7 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 - 窗口无系统标题栏：`Menu.setApplicationMenu(null)`（非 macOS）+ `titleBarStyle: 'hidden'`；Windows/Linux 用 `titleBarOverlay` 画系统最小化/最大化/关闭。不要用网页按钮盖在 Win11 右上角（点不到）。不要把 Electron 默认 File/View/Window 菜单和 Ribbon 叠两层
 - 默认界面语言 `zh-CN`（`DEFAULT_LOCALE`）；源字符串仍是英文 key
 - 工作区用 Golden Layout 自由停靠（七个面板可拖标签）；禁止弹出窗口；图表区内嵌套停靠仍不要做。不要用 dockview
-- 虚表用虚拟滚动，禁止 `v-for` 整表 DOM
+- 虚表用 AG Grid Community infinite row model + `data.fetchBlock`（512 行块，最多缓存 3 块），禁止 `v-for` 整表 DOM，禁止 `rowModelType: 'clientSide'` 灌整表，禁止 `ag-grid-enterprise`
 - 单元格编辑 debounce 后批量 `data.patchCells`，禁止一格一次 RPC
 - 画布：用户操作先 RPC 成功再改 Vue Flow；拖动坐标除外（`nodeDragStop` 只写 store）
 

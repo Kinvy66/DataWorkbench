@@ -12,20 +12,22 @@
 | 组件库 | Element Plus | ML Ribbon 的底层 primitives |
 | Ribbon | `@mlightcad/ribbon` | 只做展示与 key tips；命令不写在 ribbon schema 的闭包里 |
 | 节点图 | `@vue-flow/core` + `@vue-flow/background` + `@vue-flow/controls` | Vue 原生，自定义多端口节点 |
-| 表格 | TanStack Vue Virtual + 自绘网格 **或** AG Grid Community | 见下方表格决策 |
+| 表格 | AG Grid Community（infinite row model） | 见下方表格决策；禁止 `ag-grid-enterprise` |
 | 图表 | uPlot（主） | 大数据折线；导出走 SVG 序列化或离屏 canvas |
 | Python | 3.11 或 3.12 | 与上游推荐 3.11 对齐；禁止 3.8 |
 | 科学计算 | pandas / numpy / pyarrow / openpyxl | parquet 走 pyarrow |
 | 打包 Python | 开发态用仓库 venv。安装包 / 便携目录嵌入 Windows CPython 3.12（`scripts/prepare-python-runtime.ps1`）+ 运行时 wheels；`DW_PYTHON` 可覆盖。不使用 PyInstaller |
 
-## 表格：为什么先用虚表 + TanStack
+## 表格：AG Grid Community + 窗口化 DataFrame
 
-AG Grid 交互更像 Excel，但 Community 对「外部窗口数据」要自己喂行。一期核心难度是 **IPC 窗口** 而不是筛选 UI。先做轻量网格：
+一期先用自绘网格把 `data.fetchBlock` 窗口跑通；二期换成 **AG Grid Community**（MIT）的 infinite row model，交互更接近 Excel（列宽拖拽、单元格编辑），数据合同不变：
 
-- 列头、行号、虚拟滚动、当前块高亮
-- 单元格编辑走 `data.patchCells` 批量 RPC
+- DataFrame 只在 sidecar。Renderer 通过 `IDatasource.getRows` 调 `data.fetchBlock`（512 行块），`cacheBlockSize=512`、`maxBlocksInCache=3`（可见块 ±1）。**禁止** `rowModelType: 'clientSide'` 把整表灌进网格。
+- Viewport / Server-Side row model 是 Enterprise，不要引入 `ag-grid-enterprise`。
+- 单元格编辑 debounce 后批量 `data.patchCells`。列宽只存在前端像素，切换数据集时重置。
+- Pinia `useDataStore()` 仍只暴露 `fetchBlock` / `patchCells` / `schema`；不要为了网格去拉全表。
 
-二期若交互不够再换 AG Grid，store 接口保持 `getRow(i)` / `ensureWindow(start,end)` 不变。
+Community 不做 DataFrame 级筛选/排序：过滤仍走 Operate RPC。不要打开 AG Grid 客户端 filter（那需要全部行）。
 
 ## 停靠布局
 
@@ -56,6 +58,7 @@ AG Grid 交互更像 Excel，但 Community 对「外部窗口数据」要自己�
 | JupyterLab 整套嵌入 | 体积与 UX 过重 |
 | 在 TS 重写 DAG 执行器 | 与节点 `execute()` 双端分叉，必出 bug |
 | Redux | 与 Vue 不匹配 |
+| `ag-grid-enterprise` | 许可与体积；Community infinite row model 已覆盖窗口化虚表 |
 | 源码 UI 字符串写中文 | 沿用上游：英文源 + 词条；见 [12-quality.md](./12-quality.md) |
 
 ## ML Ribbon 使用边界
@@ -70,4 +73,6 @@ Ribbon schema 只描述：tab / group / item id / icon / labelKey。点击后 `i
 - Vue Flow：MIT
 - Electron：MIT
 - uPlot：MIT
+- AG Grid Community：MIT（`ag-grid-community` / `ag-grid-vue3`）。不要引入 Enterprise。
+- Golden Layout：MIT
 - 上游 data-workbench：LGPL。**vendor 其 Python 文件时必须保留版权头与 LGPL 告知**（见 [06-python-reuse.md](./06-python-reuse.md)）。本仓库若以 MIT 发布，需在 NOTICE 中标明上游文件范围。

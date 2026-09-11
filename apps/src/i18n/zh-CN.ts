@@ -122,6 +122,7 @@ export default {
     nodesEmpty: '尚未加载节点类型。',
     table: '表格',
     tableEmpty: '选择一个数据集以浏览表格。',
+    tableLoading: '加载中…',
     workflow: '工作流',
     workflowEmpty: '从「节点」列表拖入节点，或点击添加。',
     figure: '绘图',

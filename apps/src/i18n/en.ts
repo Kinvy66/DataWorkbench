@@ -122,6 +122,7 @@ export default {
     nodesEmpty: 'Node types have not loaded yet.',
     table: 'Table',
     tableEmpty: 'Select a dataset to browse its table.',
+    tableLoading: 'Loading…',
     workflow: 'Workflow',
     workflowEmpty: 'Drag a node from the Nodes list, or click one to add it.',
     figure: 'Figure',

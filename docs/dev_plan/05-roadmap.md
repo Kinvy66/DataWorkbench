@@ -75,7 +75,7 @@ gantt
 - **自动（pytest）**：`test_import_500k_csv_arrow_payload_not_file` 写 50 万行 csv 再 `import_path`；首窗 / 末窗各 512（或余数）行；Arrow 载荷 ≪ 文件体积。内存表窗口见 `test_fetch_block_500k_window_not_full_table`。
 - **自动（pytest）**：`test_export_csv_sees_patch` 改格子后导出含新值。
 - **自动（vitest）**：空状态走 vue-i18n（中/英）；Ribbon extra 有 locale 切换。
-- **自动（vitest）**：虚表只预取当前块 ±1（最多 3×512），`retainCachedBlocks` 丢掉窗外缓存。
+- **自动（vitest）**：虚表 infinite datasource 按 512 行 `fetchBlock`；`maxBlocksInCache=3`；`retainCachedBlocks` / `blockOriginsInRange` 不拉整表。
 - **手工**：`scripts/gen_large_csv.py` 生成 csv，Data → 添加数据后滚动不卡死；Chrome 任务管理器中 renderer 堆远小于整表 CSV。无 Electron E2E，此项不进 CI。
 
 ## P2 — 工作流（5 周）
@@ -169,7 +169,7 @@ gantt
 
 **验收**：关闭软件重开工程，工作流与至少一份导入数据还在（数据可 pickle 进 `datas/`，不追求惰性数据库）（**已落地**：ZIP 往返测试 + File 打开；文件日志 `userData/logs/main.log` 与 `sidecar.log`）。
 
-P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**、**图表标注层**、**子图网格**、**直方专业分箱**、**Golden Layout 自由停靠**。其余（AG Grid）**未排期**，未经明确要求不要开工。
+P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**、**图表标注层**、**子图网格**、**直方专业分箱**、**Golden Layout 自由停靠**、**AG Grid Community 虚表**（infinite row model + `fetchBlock` 512 行块）。图表区内嵌套停靠、Agent、Home 对齐 Qt **不要开工**。
 
 ## 并行规则
 

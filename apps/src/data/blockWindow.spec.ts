@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { BLOCK_SIZE, blockOrigin, blocksForWindow, retainCachedBlocks } from './blockWindow'
+import {
+  BLOCK_SIZE,
+  blockOrigin,
+  blockOriginsInRange,
+  blocksForWindow,
+  retainCachedBlocks
+} from './blockWindow'
 
 describe('blockWindow', () => {
   it('aligns rows to 512-row origins', () => {
@@ -23,5 +29,11 @@ describe('blockWindow', () => {
   it('drops cached blocks that are outside the prefetch window', () => {
     const cache = { 0: [['a']], 512: [['b']], 1024: [['c']], 1536: [['d']] }
     expect(retainCachedBlocks(cache, [512, 1024])).toEqual({ 512: [['b']], 1024: [['c']] })
+  })
+
+  it('lists 512-row origins for a requested range without prefetch neighbors', () => {
+    expect(blockOriginsInRange(0, 512, 2000)).toEqual([0])
+    expect(blockOriginsInRange(500, 600, 1000)).toEqual([0, 512])
+    expect(blockOriginsInRange(0, 512, 0)).toEqual([])
   })
 })

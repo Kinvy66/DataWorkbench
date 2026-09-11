@@ -43,7 +43,8 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 - **壳**：Electron（electron-vite）、Vue 3、TypeScript、Pinia、Element Plus、[@mlightcad/ribbon](https://github.com/mlightcad/ribbon)
 - **工作流画布**：@vue-flow/core
-- **表 / 图**：TanStack Vue Virtual（虚表）、uPlot
+- **表 / 图**：AG Grid Community（虚表 infinite row model）、uPlot
+- **停靠**：golden-layout（工作区级；图表区内嵌套停靠不做）
 - **计算**：Python 3.11+、pandas、numpy、pyarrow
 - **进程间**：JSON-RPC 2.0（stdio 按行）；块数据可走 Arrow
 

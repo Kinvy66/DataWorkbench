@@ -19,6 +19,30 @@ export function retainCachedBlocks<T>(
   return next
 }
 
+/** 512-row origins that cover [startRow, endRowExclusive), without neighbor prefetch. */
+export function blockOriginsInRange(
+  startRow: number,
+  endRowExclusive: number,
+  rowCount: number,
+  blockSize = BLOCK_SIZE
+): number[] {
+  if (rowCount <= 0 || endRowExclusive <= startRow) {
+    return []
+  }
+  const lo = Math.max(0, startRow)
+  const hiExclusive = Math.min(rowCount, endRowExclusive)
+  if (hiExclusive <= lo) {
+    return []
+  }
+  const first = blockOrigin(lo, blockSize)
+  const last = blockOrigin(hiExclusive - 1, blockSize)
+  const out: number[] = []
+  for (let origin = first; origin <= last; origin += blockSize) {
+    out.push(origin)
+  }
+  return out
+}
+
 /** Current block plus one neighbor on each side, clipped to [0, rowCount). */
 export function blocksForWindow(
   visibleStart: number,
