@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { APP_VERSION, type ProjectSaveParams, type ProjectUnpackLogicResult } from '@dw/rpc-types'
 import { writeChartExport } from './chart-export'
+import { renderSvgToPdf } from './chart-pdf'
 import {
   chartSaveDialogOptions,
   dataOpenDialogOptions,
@@ -347,9 +348,9 @@ async function handleRendererRpc(
       path?: string
       content?: string
     }
-    const format = p.format === 'svg' || p.format === 'png' ? p.format : null
+    const format = p.format === 'svg' || p.format === 'png' || p.format === 'pdf' ? p.format : null
     if (!format) {
-      throw new RpcError(-32602, 'format must be png or svg', 'rpc.invalidParams')
+      throw new RpcError(-32602, 'format must be png, svg or pdf', 'rpc.invalidParams')
     }
     if (typeof p.content !== 'string' || p.content.length === 0) {
       throw new RpcError(-32602, 'content is required', 'rpc.invalidParams')
@@ -366,7 +367,11 @@ async function handleRendererRpc(
       filePath = picked.filePath
     }
     try {
-      writeChartExport(filePath, format, p.content)
+      if (format === 'pdf') {
+        writeChartExport(filePath, 'pdf', await renderSvgToPdf(p.content))
+      } else {
+        writeChartExport(filePath, format, p.content)
+      }
       return { ok: true }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)

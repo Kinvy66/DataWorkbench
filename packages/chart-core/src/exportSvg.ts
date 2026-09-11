@@ -1,5 +1,9 @@
 import type { PlotKind, PlotSeriesData, SeriesStyle } from './UPlotChart'
 
+/** CJK-capable stack so SVG and Chromium print-to-PDF keep Chinese titles. */
+export const SVG_TEXT_FONT =
+  'Microsoft YaHei, PingFang SC, Noto Sans SC, Segoe UI, sans-serif'
+
 export type SvgExportOptions = {
   kind: PlotKind
   title?: string
@@ -132,26 +136,26 @@ export function seriesToSvg(opts: SvgExportOptions): string {
     const xv = xMin + ((xMax - xMin) * i) / 4
     const yv = yMin + ((yMax - yMin) * i) / 4
     parts.push(
-      `<text x="${sx(xv)}" y="${padT + plotH + 16}" text-anchor="middle" font-size="11" fill="#727272">${xmlEscape(formatTick(xv, opts.data.xKind))}</text>`
+      `<text x="${sx(xv)}" y="${padT + plotH + 16}" text-anchor="middle" font-size="11" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(formatTick(xv, opts.data.xKind))}</text>`
     )
     parts.push(
-      `<text x="${padL - 8}" y="${sy(yv) + 4}" text-anchor="end" font-size="11" fill="#727272">${xmlEscape(formatTick(yv, 'number'))}</text>`
+      `<text x="${padL - 8}" y="${sy(yv) + 4}" text-anchor="end" font-size="11" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(formatTick(yv, 'number'))}</text>`
     )
   }
 
   if (opts.title) {
     parts.push(
-      `<text x="${width / 2}" y="24" text-anchor="middle" font-size="16" font-weight="600" fill="#303133">${xmlEscape(opts.title)}</text>`
+      `<text x="${width / 2}" y="24" text-anchor="middle" font-size="16" font-weight="600" fill="#303133" font-family="${SVG_TEXT_FONT}">${xmlEscape(opts.title)}</text>`
     )
   }
   if (opts.xLabel) {
     parts.push(
-      `<text x="${padL + plotW / 2}" y="${height - 12}" text-anchor="middle" font-size="12" fill="#727272">${xmlEscape(opts.xLabel)}</text>`
+      `<text x="${padL + plotW / 2}" y="${height - 12}" text-anchor="middle" font-size="12" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(opts.xLabel)}</text>`
     )
   }
   if (opts.yLabel) {
     parts.push(
-      `<text transform="translate(16 ${padT + plotH / 2}) rotate(-90)" text-anchor="middle" font-size="12" fill="#727272">${xmlEscape(opts.yLabel)}</text>`
+      `<text transform="translate(16 ${padT + plotH / 2}) rotate(-90)" text-anchor="middle" font-size="12" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(opts.yLabel)}</text>`
     )
   }
 
@@ -231,7 +235,7 @@ export function seriesToSvg(opts: SvgExportOptions): string {
     for (const style of opts.styles) {
       parts.push(`<rect x="${lx}" y="${ly}" width="12" height="12" fill="${xmlEscape(style.color)}"/>`)
       parts.push(
-        `<text x="${lx + 16}" y="${ly + 11}" font-size="12" fill="#303133">${xmlEscape(style.label)}</text>`
+        `<text x="${lx + 16}" y="${ly + 11}" font-size="12" fill="#303133" font-family="${SVG_TEXT_FONT}">${xmlEscape(style.label)}</text>`
       )
       ly += 18
     }

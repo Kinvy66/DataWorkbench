@@ -706,7 +706,7 @@ export interface ChartBuildSeriesResult {
   maxPoints: number
 }
 
-export type ChartExportFormat = 'png' | 'svg'
+export type ChartExportFormat = 'png' | 'svg' | 'pdf'
 
 export interface ChartSaveExportParams {
   format: ChartExportFormat

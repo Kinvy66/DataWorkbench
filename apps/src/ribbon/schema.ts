@@ -408,6 +408,15 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasChart,
                     icon: ribbonIcon('app/save')
+                  },
+                  {
+                    id: 'chart.exportPdf',
+                    type: 'button',
+                    label: t('ribbon.chartExportPdf'),
+                    tooltip: t('ribbon.chartExportPdfTip'),
+                    size: 'large',
+                    disabled: !hasChart,
+                    icon: ribbonIcon('app/save')
                   }
                 ]
               }

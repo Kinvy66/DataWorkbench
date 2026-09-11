@@ -147,13 +147,13 @@ gantt
 
 范围见 [10-chart.md](./10-chart.md)。
 
-**已落地（含视口窗口）**：`chart.listTypes` / `chart.buildSeries`（Python LTTB，默认 5000 点；`kind:"hist"` 在 sidecar 分箱）；Ribbon Chart 标签 New Line / Scatter / Bar / Histogram；中区 Figure tab；属性面板改标题/颜色/线宽/网格/图例。缩放/平移停止 150ms 后带 `xMin`/`xMax` 再取样（小数据不重复请求；复位拉回全列）。PNG 从 uPlot 画布抓取；SVG 由采样点生成矢量，另存对话框在主进程（`chart.saveExport`）。
+**已落地（含视口窗口）**：`chart.listTypes` / `chart.buildSeries`（Python LTTB，默认 5000 点；`kind:"hist"` 在 sidecar 分箱）；Ribbon Chart 标签 New Line / Scatter / Bar / Histogram；中区 Figure tab；属性面板改标题/颜色/线宽/网格/图例。缩放/平移停止 150ms 后带 `xMin`/`xMax` 再取样（小数据不重复请求；复位拉回全列）。PNG 从 uPlot 画布抓取；SVG 由采样点生成矢量，另存对话框在主进程（`chart.saveExport`）。**PDF 已落地**（同一套 SVG markup，主进程 `printToPDF`）。
 
 **验收**
 
 - 当前数据集选 x/y 出折线；改颜色与标题立即生效。
 - 100 万点 y 列：`chart.buildSeries(maxPoints=5000)` 后缩放仍请求新窗口，渲染进程收不到百万点。
-- 导出 PNG、SVG 能插入 Word（人工看一次即可）。
+- 导出 PNG、SVG、PDF 能插入 Word / 阅读器（人工看一次即可）。
 
 ## P5 — 工程文件与发布（3 周）
 
@@ -169,7 +169,7 @@ gantt
 
 **验收**：关闭软件重开工程，工作流与至少一份导入数据还在（数据可 pickle 进 `datas/`，不追求惰性数据库）（**已落地**：ZIP 往返测试 + File 打开；文件日志 `userData/logs/main.log` 与 `sidecar.log`）。
 
-P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期（图表标注、PDF、自由停靠、AG Grid）**未排期**，未经明确要求不要开工。
+P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**。其余（画布标注、子图、直方专业 bin、自由停靠、AG Grid）**未排期**，未经明确要求不要开工。
 
 ## 并行规则
 

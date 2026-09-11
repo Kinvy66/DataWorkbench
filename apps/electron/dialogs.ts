@@ -29,15 +29,18 @@ export function dataSaveDialogOptions(suggestedName?: string): SaveDialogOptions
 }
 
 export function chartSaveDialogOptions(
-  format: 'png' | 'svg',
+  format: 'png' | 'svg' | 'pdf',
   suggestedName?: string
 ): SaveDialogOptions {
+  const filters =
+    format === 'png'
+      ? [{ name: 'PNG', extensions: ['png'] }]
+      : format === 'svg'
+        ? [{ name: 'SVG', extensions: ['svg'] }]
+        : [{ name: 'PDF', extensions: ['pdf'] }]
   return {
     defaultPath: suggestedName,
-    filters:
-      format === 'png'
-        ? [{ name: 'PNG', extensions: ['png'] }]
-        : [{ name: 'SVG', extensions: ['svg'] }]
+    filters
   }
 }
 

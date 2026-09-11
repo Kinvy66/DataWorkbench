@@ -539,14 +539,16 @@ export function registerBuiltinCommands(): void {
 
   const hasChart = () => Boolean(useChartStore().currentId)
 
-  async function exportChart(format: 'png' | 'svg'): Promise<void> {
+  async function exportChart(format: 'png' | 'svg' | 'pdf'): Promise<void> {
     const log = useLogStore()
     try {
       const ok = await useChartStore().saveExport(format)
       if (!ok) {
         return
       }
-      const line = t('log.chartExportOk', { format: format === 'png' ? 'PNG' : 'SVG' })
+      const line = t('log.chartExportOk', {
+        format: format === 'png' ? 'PNG' : format === 'svg' ? 'SVG' : 'PDF'
+      })
       log.append('info', line)
       ElMessage.success(line)
     } catch (err) {
@@ -556,4 +558,5 @@ export function registerBuiltinCommands(): void {
 
   commandBus.register('chart.exportPng', () => exportChart('png'), hasChart)
   commandBus.register('chart.exportSvg', () => exportChart('svg'), hasChart)
+  commandBus.register('chart.exportPdf', () => exportChart('pdf'), hasChart)
 }

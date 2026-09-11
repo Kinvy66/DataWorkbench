@@ -90,6 +90,8 @@ export default {
     chartExportPngTip: 'Export the current chart as PNG',
     chartExportSvg: 'SVG',
     chartExportSvgTip: 'Export the current chart as SVG',
+    chartExportPdf: 'PDF',
+    chartExportPdfTip: 'Export the current chart as PDF',
     layoutSwitcher: 'Switch ribbon layout',
     minimizeRibbon: 'Minimize ribbon',
     keyTips: 'Key Tips',

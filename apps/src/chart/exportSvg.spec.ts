@@ -22,6 +22,23 @@ describe('seriesToSvg', () => {
     expect(svg).toContain('<path')
     expect(svg).toContain('#5280C1')
     expect(svg).toContain('ch1')
+    expect(svg).toContain('font-family="Microsoft YaHei')
+  })
+
+  it('keeps a Chinese title as text', () => {
+    const svg = seriesToSvg({
+      kind: 'line',
+      title: '分数随年龄',
+      legend: false,
+      grid: false,
+      styles: [{ label: 'y', color: '#5280C1', width: 1 }],
+      data: {
+        x: [0, 1],
+        ys: [[1, 2]],
+        xKind: 'number'
+      }
+    })
+    expect(svg).toContain('分数随年龄')
   })
 
   it('splits the path when y is null', () => {
@@ -78,6 +95,7 @@ describe('seriesToSvg', () => {
 describe('suggestedExportName', () => {
   it('strips illegal path characters', () => {
     expect(suggestedExportName('Run 01: a/b', 'svg')).toBe('Run 01_ a_b.svg')
+    expect(suggestedExportName('Run 01', 'pdf')).toBe('Run 01.pdf')
   })
 })
 

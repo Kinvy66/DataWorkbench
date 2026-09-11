@@ -1,9 +1,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-export type ChartExportFormat = 'png' | 'svg'
+export type ChartExportFormat = 'png' | 'svg' | 'pdf'
 
-export function decodeChartExportContent(format: ChartExportFormat, content: string): Buffer {
+const PDF_MAGIC = Buffer.from('%PDF')
+
+export function isPdfBuffer(buf: Buffer): boolean {
+  return buf.length >= 4 && buf.subarray(0, 4).equals(PDF_MAGIC)
+}
+
+export function decodeChartExportContent(format: Exclude<ChartExportFormat, 'pdf'>, content: string): Buffer {
   if (typeof content !== 'string' || content.length === 0) {
     throw new Error('empty export content')
   }
@@ -26,8 +32,26 @@ export function withChartExportExtension(filePath: string, format: ChartExportFo
   return filePath.slice(0, -ext.length) + `.${format}`
 }
 
-export function writeChartExport(filePath: string, format: ChartExportFormat, content: string): string {
+export function writeChartExport(
+  filePath: string,
+  format: ChartExportFormat,
+  content: string | Buffer
+): string {
   const dest = withChartExportExtension(filePath, format)
-  fs.writeFileSync(dest, decodeChartExportContent(format, content))
+  let bytes: Buffer
+  if (format === 'pdf') {
+    if (!Buffer.isBuffer(content)) {
+      throw new Error('pdf export requires converted bytes')
+    }
+    if (!isPdfBuffer(content)) {
+      throw new Error('pdf content is not a PDF')
+    }
+    bytes = content
+  } else if (Buffer.isBuffer(content)) {
+    bytes = content
+  } else {
+    bytes = decodeChartExportContent(format, content)
+  }
+  fs.writeFileSync(dest, bytes)
   return dest
 }

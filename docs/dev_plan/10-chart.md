@@ -10,7 +10,7 @@
 - ✅ 绑定：当前 dataset 的 x 列 + 1..N 条 y 列
 - ✅ 样式：标题、轴标签、线色、线宽、网格开关、图例开关
 - ✅ 交互：缩放、平移（uPlot 内置）、复位
-- ✅ 导出：PNG、SVG（PDF 可用打印到 PDF 或 svg→pdf 库，一期可只 PNG+SVG）
+- ✅ 导出：PNG、SVG、PDF（矢量 SVG → Chromium `printToPDF`，中文标题走系统 CJK 字体）
 - ✅ 大数据：`chart.buildSeries` 在 Python 做 min-max 桶或 LTTB，默认上限 5000 点回传；缩放/平移停止 150ms 后按视口带 `xMin`/`xMax` 再取样
 
 ## 一期不做
@@ -48,7 +48,7 @@ sequenceDiagram
 - `exportSvg.ts`：由当前采样点生成矢量（标题/轴/图例/网格）；不要把 canvas 栅格化成 SVG
 - `exportPng.ts`：从 uPlot canvas 抓 PNG（含当前缩放）
 
-保存走 Electron 主进程 `chart.saveExport`（另存对话框 + 写字节）。不要把图片经 Python sidecar。
+保存走 Electron 主进程 `chart.saveExport`（另存对话框 + 写字节）。不要把图片经 Python sidecar。PDF 的 `content` 仍是 SVG markup，主进程 hidden `BrowserWindow` + `printToPDF` 转成 PDF 再写盘（保证中文标题；不要用 Helvetica-only 的 svg→pdf 库）。
 
 `apps/src/views/chart`：工具条 + 画布 + 绑定对话框（选列）。
 
@@ -82,7 +82,7 @@ sequenceDiagram
 1. 箱线 / 直方更专业的 bin 参数  
 2. 多 subplot  
 3. 标注层（SVG overlay）  
-4. 导出 PDF  
+4. ~~导出 PDF~~ **已落地**：Ribbon `chart.exportPdf`；渲染进程仍发 SVG markup，主进程 `printToPDF`  
 5. 颜色循环与色盲安全色板（可抄上游 icon 色）  
 
 ## 验收对照
@@ -92,3 +92,4 @@ sequenceDiagram
 | 小数据（<2 万点） | 无降采样提示，缩放后点位置与表一致（抽查） |
 | 100 万点 | 构建序列 < 3s；交互不掉到 5fps 以下 |
 | SVG | 在浏览器或 Inkscape 打开可见曲线与标题 |
+| PDF | 另存为 `.pdf` 后可用阅读器打开；中文标题可见 |

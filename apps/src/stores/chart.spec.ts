@@ -153,6 +153,46 @@ describe('useChartStore', () => {
     expect(payload.content).toContain('<path')
   })
 
+  it('saves pdf via chart.saveExport with svg markup', async () => {
+    invoke.mockImplementation(async (method: string) => {
+      if (method === 'chart.buildSeries') {
+        return {
+          x: [0, 1, 2],
+          ys: [[1, 2, 3]],
+          pointCount: 3,
+          sourceCount: 3,
+          downsampled: false,
+          xKind: 'number',
+          maxPoints: 5000
+        }
+      }
+      if (method === 'chart.saveExport') {
+        return { ok: true }
+      }
+      return {}
+    })
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 3, cols: 2 }]
+    const chart = useChartStore()
+    await chart.createFromBind({
+      type: 'line',
+      dataId: 'ds-1',
+      x: 't',
+      y: ['ch1'],
+      title: 'Run 01'
+    })
+    const ok = await chart.saveExport('pdf')
+    expect(ok).toBe(true)
+    expect(invoke).toHaveBeenCalledWith(
+      'chart.saveExport',
+      expect.objectContaining({
+        format: 'pdf',
+        suggestedName: 'Run 01.pdf',
+        content: expect.stringContaining('<svg')
+      })
+    )
+  })
+
   it('returns false when the save dialog is cancelled', async () => {
     invoke.mockImplementation(async (method: string) => {
       if (method === 'chart.buildSeries') {

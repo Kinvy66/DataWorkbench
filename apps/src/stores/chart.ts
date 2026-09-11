@@ -301,7 +301,7 @@ export const useChartStore = defineStore('chart', {
     async resetWindow(id: string): Promise<boolean> {
       return this.rebuildWindow(id)
     },
-    async saveExport(format: 'png' | 'svg'): Promise<boolean> {
+    async saveExport(format: 'png' | 'svg' | 'pdf'): Promise<boolean> {
       const current = this.current
       if (!current?.data) {
         throwExportMissing()
@@ -309,7 +309,14 @@ export const useChartStore = defineStore('chart', {
       const workflow = useWorkflowStore()
       workflow.centerTab = 'figure'
       let content: string
-      if (format === 'svg') {
+      if (format === 'png') {
+        await nextTick()
+        const canvas = await waitForCanvas(() => canvasProvider?.() ?? null)
+        if (!canvas || canvas.width < 1 || canvas.height < 1) {
+          throwExportMissing()
+        }
+        content = canvasToPngDataUrl(canvas)
+      } else {
         content = seriesToSvg({
           kind: current.type,
           title: current.title,
@@ -328,13 +335,6 @@ export const useChartStore = defineStore('chart', {
             xKind: current.data.xKind
           }
         })
-      } else {
-        await nextTick()
-        const canvas = await waitForCanvas(() => canvasProvider?.() ?? null)
-        if (!canvas || canvas.width < 1 || canvas.height < 1) {
-          throwExportMissing()
-        }
-        content = canvasToPngDataUrl(canvas)
       }
       const result = await rpc().invoke('chart.saveExport', {
         format,

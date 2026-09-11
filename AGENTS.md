@@ -28,7 +28,7 @@ AI 在本仓库改代码前**必须先读本文**，再读当前阶段对应的 
 
 **P0 骨架（完成） → P1 数据（自动验收完成） → P2 工作流（画布路径完成） → P3 分析节点（完成） → P4 图表一期（完成） → P5 工程文件（完成 / MVP）**
 
-P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 图表一期已齐：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar / Histogram，中区 Figure tab + 属性面板，PNG/SVG 导出，缩放后按视口带 `xMin`/`xMax` 再取样（150ms 防抖，窗口仍 5000 点封顶）。不要把图表按钮放到 Data/Operate。不要做自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。**File 保存/打开 `.dwproj` 已落地**（主进程 ZIP，sidecar 只处理解压目录；打开失败不留下半开数据）。**sidecar 崩溃后提示并自动重启一次已落地**（第二次崩溃只提示，不循环拉起；重启后内存数据丢失，须打开已保存工程）。**安装包已落地**（`pnpm pack:win`：NSIS 向导 + 嵌入式 CPython 3.12；用户不必安装 Python。`pnpm pack:portable` 为同套运行时的便携目录）。**MVP（P0–P5）完成。** 二期（画布标注、PDF、自由停靠）未排期，不要擅自开工。Home 不要擅自改成对齐 Qt。
+P2 任务 1–8 已落地。P3 分析节点已齐（不要移植 `data_plot`）。Ribbon **对齐上游**：Data 标签只有数据操作（添加/移除/重命名）和导出；清洗/过滤/统计在 **Operate（操作）** 标签。Replace Values、Threshold Filter 不上 Ribbon。Describe 与 Pivot Table 发布新表。If / Else 未匹配分支输出 None；Text Viewer 把 `runtime_state.display_text` 画在 Vue 节点体上，不要用 Python `paint()`。**不要把每个新节点塞进 Data 标签。** P4 图表一期已齐：`chart.buildSeries` 在 Python 做 LTTB（默认 5000 点），Chart 标签 New Line / Scatter / Bar / Histogram，中区 Figure tab + 属性面板，PNG/SVG 导出，缩放后按视口带 `xMin`/`xMax` 再取样（150ms 防抖，窗口仍 5000 点封顶）。不要把图表按钮放到 Data/Operate。不要做自由停靠或 Agent。表格单元格 undo 不与工作流栈合并。**File 保存/打开 `.dwproj` 已落地**（主进程 ZIP，sidecar 只处理解压目录；打开失败不留下半开数据）。**sidecar 崩溃后提示并自动重启一次已落地**（第二次崩溃只提示，不循环拉起；重启后内存数据丢失，须打开已保存工程）。**安装包已落地**（`pnpm pack:win`：NSIS 向导 + 嵌入式 CPython 3.12；用户不必安装 Python。`pnpm pack:portable` 为同套运行时的便携目录）。**MVP（P0–P5）完成。** 二期已落地图表 **PDF 导出**（`chart.exportPdf`，主进程 printToPDF）。其余（画布标注、自由停靠）未排期，不要擅自开工。Home 不要擅自改成对齐 Qt。
 
 ## STRUCTURE
 
@@ -224,7 +224,8 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 ### 图表（P4 一期完成）
 
 - 一期：line / scatter / bar / hist + 属性面板 + PNG/SVG + 视口窗口二次取样
-- PNG 从当前 uPlot 画布抓取；SVG 由采样点生成矢量（Inkscape 可打开）；保存走主进程 `chart.saveExport`，不要把图片经 Python sidecar
+- **PDF 已落地**：渲染进程发与 SVG 相同的矢量 markup；主进程 hidden BrowserWindow `printToPDF`（CJK 字体）。不要把图片经 Python sidecar，也不要用 Helvetica-only 的 svg→pdf 库
+- PNG 从当前 uPlot 画布抓取；SVG 由采样点生成矢量（Inkscape 可打开）；保存走主进程 `chart.saveExport`
 - 直方：`kind:"hist"`，Python `numpy.histogram` 分箱后只回传箱中心与计数；不要把原始百万点拉到前端再分箱。专业 bin 参数属二期
 - 生产降采样以 Python `chart.buildSeries` 为准（LTTB，默认 5000）；不要对百万点 `JSON.parse`
 - 缩放/平移停止 150ms 后带 `xMin`/`xMax` 再请求，窗口仍 `maxPoints=5000`。小数据不重复请求。复位视图拉回全列。数据更新用 `setData(resetScales=false)`，不要每次销毁 uPlot

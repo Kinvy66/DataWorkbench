@@ -90,6 +90,8 @@ export default {
     chartExportPngTip: '导出当前图为 PNG',
     chartExportSvg: 'SVG',
     chartExportSvgTip: '导出当前图为 SVG',
+    chartExportPdf: 'PDF',
+    chartExportPdfTip: '导出当前图为 PDF',
     layoutSwitcher: '切换功能区布局',
     minimizeRibbon: '最小化功能区',
     keyTips: '快捷提示',
