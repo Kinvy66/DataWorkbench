@@ -7,19 +7,6 @@ import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
 import { useRibbonSchema } from './schema'
 import DwIcon from '@/icons/DwIcon.vue'
-import { resolveIconUrl } from '@/icons/resolveIcon'
-
-function fileMenuIconCss(name: string): string {
-  const src = resolveIconUrl(name).replace(/\\/g, '/')
-  return src ? `url("${src}")` : 'none'
-}
-
-/** Qt File menu: Open=file, Save=save, Save As=save-as. New/Exit reuse existing copies. */
-const fileMenuIconNew = fileMenuIconCss('app/appendProject')
-const fileMenuIconOpen = fileMenuIconCss('app/file')
-const fileMenuIconSave = fileMenuIconCss('app/save')
-const fileMenuIconSaveAs = fileMenuIconCss('app/save-as')
-const fileMenuIconExit = fileMenuIconCss('gui/cancel')
 
 const { t, locale } = useI18n()
 const { tabs, fileMenuItems } = useRibbonSchema()
@@ -143,7 +130,12 @@ function toggleLocale(): void {
 </style>
 
 <style>
-/* File menu popper is teleported; FileMenuItemModel has no icon field. */
+/*
+ * File menu popper is teleported to <body>. Vue CSS v-bind compiles to custom
+ * properties on this component root, which the popper cannot inherit — that
+ * left an empty 18px ::before slot. Vite url() is resolved at build time.
+ * nth-child order must match schema.ts fileMenuItems.
+ */
 .ml-ribbon-file-menu-dropdown .el-dropdown-menu__item {
   display: flex;
   align-items: center;
@@ -157,18 +149,18 @@ function toggleLocale(): void {
   background: center / contain no-repeat;
 }
 .ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(1)::before {
-  background-image: v-bind(fileMenuIconNew);
+  background-image: url('@/assets/icons/app/appendProject.svg');
 }
 .ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(2)::before {
-  background-image: v-bind(fileMenuIconOpen);
+  background-image: url('@/assets/icons/app/file.svg');
 }
 .ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(3)::before {
-  background-image: v-bind(fileMenuIconSave);
+  background-image: url('@/assets/icons/app/save.svg');
 }
 .ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(4)::before {
-  background-image: v-bind(fileMenuIconSaveAs);
+  background-image: url('@/assets/icons/app/save-as.svg');
 }
 .ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(5)::before {
-  background-image: v-bind(fileMenuIconExit);
+  background-image: url('@/assets/icons/gui/cancel.svg');
 }
 </style>
