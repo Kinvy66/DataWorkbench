@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, markRaw, nextTick, onMounted, onUnmounted, ref, shallowReactive, watch } from 'vue'
 import { GoldenLayout, LayoutConfig } from 'golden-layout'
 import type { ComponentContainer, ComponentItem } from 'golden-layout'
 import 'golden-layout/dist/css/goldenlayout-base.css'
@@ -50,7 +50,7 @@ const log = useLogStore()
 const workflow = useWorkflowStore()
 const project = useProjectStore()
 const hostEl = ref<HTMLElement | null>(null)
-const hosts = reactive<Partial<Record<DockPanelId, HTMLElement>>>({})
+const hosts = shallowReactive<Partial<Record<DockPanelId, HTMLElement>>>({})
 
 let layout: GoldenLayout | null = null
 let reloading = false
@@ -102,7 +102,7 @@ function notifyShown(): void {
 function bindPanel(container: ComponentContainer, itemConfig: { componentType: unknown }): { virtual: false; component: undefined } {
   const type = String(itemConfig.componentType)
   if (isDockPanelId(type)) {
-    hosts[type] = container.element
+    hosts[type] = markRaw(container.element)
     container.element.classList.add('dw-gl-content')
     container.on('show', notifyShown)
   }
@@ -344,14 +344,19 @@ watch(locale, () => {
 .workbench :deep(.lm_tab) {
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
+.log-panel {
+  color: #303133;
+}
 .log-panel .log-lines {
   margin: 0;
   padding: 6px 10px;
   overflow: auto;
   flex: 1;
+  min-height: 0;
   font-family: Consolas, 'Courier New', monospace;
   font-size: 12px;
   list-style: none;
+  color: #303133;
 }
 .log-lines .ts {
   color: #909399;

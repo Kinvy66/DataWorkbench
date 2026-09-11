@@ -13,6 +13,7 @@ import {
 } from './dialogs'
 import { openProjectArchive, ProjectFileError, saveProjectArchive, withProjectExtension } from './project-io'
 import { AppFileLog, type AppLogKind } from './app-log'
+import { RendererEventGate } from './renderer-events'
 import { RpcError } from './rpc-error'
 import { SidecarBridge } from './sidecar'
 import {
@@ -174,7 +175,6 @@ function createWindow(): void {
     // Do not wait solely on ready-to-show: a hidden WCO window may never paint.
     clearTimeout(showFallback)
     revealWindow(mainWindow, 'did-finish-load')
-    flushRendererEvents()
     void sidecar
       .waitUntilReady(10000)
       .then(() =>
@@ -197,28 +197,20 @@ function createWindow(): void {
   }
 }
 
-const pendingRendererEvents: Array<{ method: string; params: unknown }> = []
-let rendererCanReceive = false
+const rendererEvents = new RendererEventGate()
+
+function sendToRenderer(method: string, params: unknown): void {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('dw:event', method, params)
+  }
+}
 
 function forward(method: string, params: unknown): void {
-  if (!rendererCanReceive || !mainWindow || mainWindow.isDestroyed()) {
-    pendingRendererEvents.push({ method, params })
-    if (pendingRendererEvents.length > 200) {
-      pendingRendererEvents.shift()
-    }
-    return
-  }
-  mainWindow.webContents.send('dw:event', method, params)
+  rendererEvents.forward(method, params, sendToRenderer)
 }
 
 function flushRendererEvents(): void {
-  rendererCanReceive = true
-  const queued = pendingRendererEvents.splice(0)
-  for (const item of queued) {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('dw:event', item.method, item.params)
-    }
-  }
+  rendererEvents.flush(sendToRenderer)
 }
 
 function targetWindow(sender: Electron.WebContents): BrowserWindow | null {
@@ -290,6 +282,10 @@ async function handleRendererRpc(
 ): Promise<unknown> {
   if (method === 'app.quit') {
     app.quit()
+    return { ok: true }
+  }
+  if (method === 'app.rendererReady') {
+    flushRendererEvents()
     return { ok: true }
   }
   const win = targetWindow(event.sender)

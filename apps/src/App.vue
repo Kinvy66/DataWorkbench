@@ -159,6 +159,9 @@ onMounted(() => {
       log.append('warning', t('log.pollution', { raw: p.raw ?? '' }))
     })
   )
+  void rpc.invoke('app.rendererReady').catch(() => {
+    // Without the handshake, startup log.line / host.ready stay queued in main.
+  })
   void data.refreshList().catch(() => {
     // Sidecar may still be spawning; host.ready retries below.
   })
