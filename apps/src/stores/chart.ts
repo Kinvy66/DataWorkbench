@@ -18,12 +18,16 @@ import {
   figureToSvg,
   parseChartAnnotations,
   seriesColor,
+  applyPaletteToSeries,
+  DEFAULT_SERIES_PALETTE,
+  isSeriesPaletteId,
   seriesToSvg,
   suggestedExportName,
   type ChartAnnotation,
   type ChartAnnotationKind,
   type SvgExportOptions,
-  type ViewportWindow
+  type ViewportWindow,
+  type SeriesPaletteId
 } from '@dw/chart-core'
 import {
   emptyFigure,
@@ -41,6 +45,7 @@ import { touchProject } from './project'
 import { useWorkflowStore } from './workflow'
 
 export type { ChartFigure } from '@/chart/figures'
+export type { SeriesPaletteId } from '@dw/chart-core'
 
 export type BindableChartType = ChartTypeId
 
@@ -62,6 +67,7 @@ export type ChartSpec = {
   grid: boolean
   legend: boolean
   series: ChartSeriesStyle[]
+  palette?: SeriesPaletteId
   annotations: ChartAnnotation[]
   bins?: number
   binWidth?: number
@@ -347,6 +353,7 @@ export const useChartStore = defineStore('chart', {
           grid: spec.grid,
           legend: spec.legend,
           series: spec.series.map((item) => ({ ...item })),
+          palette: isSeriesPaletteId(spec.palette) ? spec.palette : DEFAULT_SERIES_PALETTE,
           annotations: parseChartAnnotations(spec.annotations),
           bins: spec.bins,
           binWidth: spec.binWidth,
@@ -488,6 +495,15 @@ export const useChartStore = defineStore('chart', {
         return
       }
       Object.assign(series, patch)
+      touchProject()
+    },
+    updatePalette(id: string, palette: SeriesPaletteId): void {
+      const chart = this.charts.find((item) => item.id === id)
+      if (!chart) {
+        return
+      }
+      chart.palette = palette
+      chart.series = applyPaletteToSeries(chart.series, palette)
       touchProject()
     },
     async updateHist(
@@ -644,9 +660,10 @@ export const useChartStore = defineStore('chart', {
         legend: true,
         series: options.y.map((key, index) => ({
           key,
-          color: seriesColor(index),
+          color: seriesColor(index, DEFAULT_SERIES_PALETTE),
           width: 1.5
         })),
+        palette: DEFAULT_SERIES_PALETTE,
         annotations: [],
         bins,
         histStat: isHist ? 'count' : undefined,

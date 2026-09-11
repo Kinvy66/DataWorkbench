@@ -169,7 +169,7 @@ gantt
 
 **验收**：关闭软件重开工程，工作流与至少一份导入数据还在（数据可 pickle 进 `datas/`，不追求惰性数据库）（**已落地**：ZIP 往返测试 + File 打开；文件日志 `userData/logs/main.log` 与 `sidecar.log`）。
 
-P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**、**图表标注层**、**子图网格**、**直方专业分箱**、**Golden Layout 自由停靠**、**AG Grid Community 虚表**（infinite row model + `fetchBlock` 512 行块）。图表区内嵌套停靠、Agent、Home 对齐 Qt **不要开工**。
+P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**、**图表标注层**、**子图网格**、**直方专业分箱**、**Golden Layout 自由停靠**、**AG Grid Community 虚表**、**图表色板**（图标色循环 + Okabe–Ito）。图表区内嵌套停靠、Agent、Home 对齐 Qt **不要开工**。
 
 ## 并行规则
 

@@ -111,6 +111,7 @@ describe('project session', () => {
     const charts = captureCharts()
     expect(charts.charts[0]?.y).toEqual(['value'])
     expect(charts.charts[0]?.histStat).toBeUndefined()
+    expect(charts.charts[0]?.palette).toBeUndefined()
     expect(JSON.stringify(charts)).not.toContain('"data":')
     expect(JSON.stringify(charts)).not.toContain('window')
     chart.charts[0] = {
@@ -126,6 +127,8 @@ describe('project session', () => {
     expect(histFile.charts[0]?.binWidth).toBe(0.5)
     expect(histFile.charts[0]?.histStat).toBe('density')
     expect(histFile.charts[0]?.histCumulative).toBe(true)
+    chart.charts[0] = { ...chart.charts[0]!, palette: 'okabeIto' }
+    expect(captureCharts().charts[0]?.palette).toBe('okabeIto')
   })
 
   it('saves through project.save and clears dirty', async () => {

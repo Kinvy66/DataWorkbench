@@ -50,6 +50,9 @@ function persistChart(chart: ChartSpec): ProjectChartPersist {
     series: chart.series.map((item) => ({ key: item.key, color: item.color, width: item.width })),
     annotations: (chart.annotations ?? []).map((item) => ({ ...item }))
   }
+  if (chart.palette && chart.palette !== 'icon') {
+    out.palette = chart.palette
+  }
   if (chart.type === 'hist') {
     if (chart.bins != null) {
       out.bins = chart.bins

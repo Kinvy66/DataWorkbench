@@ -8,6 +8,7 @@ import {
   type ChartHistStat
 } from '@dw/rpc-types'
 import { isGridFigure } from '@/chart/figures'
+import { paletteColors, SERIES_PALETTE_IDS, type SeriesPaletteId } from '@dw/chart-core'
 import { useChartStore } from '@/stores/chart'
 import DwIcon from '@/icons/DwIcon.vue'
 
@@ -40,6 +41,15 @@ function histBins(): number {
 function histStat(): ChartHistStat {
   return current.value?.histStat ?? 'count'
 }
+
+function paletteId(): SeriesPaletteId {
+  return current.value?.palette ?? 'icon'
+}
+
+function paletteLabel(id: SeriesPaletteId): string {
+  return id === 'okabeIto' ? t('chart.paletteOkabeIto') : t('chart.paletteIcon')
+}
+
 </script>
 
 <template>
@@ -86,6 +96,20 @@ function histStat(): ChartHistStat {
             :model-value="current.legend"
             @update:model-value="(value: boolean) => chart.updateStyle(current.id, { legend: value })"
           />
+        </el-form-item>
+        <el-form-item :label="t('chart.palette')">
+          <el-select
+            :model-value="paletteId()"
+            style="width: 100%"
+            @update:model-value="(value: SeriesPaletteId) => chart.updatePalette(current.id, value)"
+          >
+            <el-option
+              v-for="id in SERIES_PALETTE_IDS"
+              :key="id"
+              :label="paletteLabel(id)"
+              :value="id"
+            />
+          </el-select>
         </el-form-item>
         <template v-if="hist">
           <el-form-item :label="t('chart.bins')">
@@ -135,6 +159,7 @@ function histStat(): ChartHistStat {
           <el-form-item :label="t('chart.color')">
             <el-color-picker
               :model-value="series.color"
+              :predefine="[...paletteColors(paletteId())]"
               @update:model-value="
                 (value: string | null) => {
                   if (value) chart.updateSeries(current.id, series.key, { color: value })

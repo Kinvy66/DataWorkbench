@@ -1,4 +1,16 @@
-export { SERIES_COLORS, seriesColor } from './colors'
+export {
+  applyPaletteToSeries,
+  DEFAULT_SERIES_PALETTE,
+  ICON_SERIES_COLORS,
+  isSeriesPaletteId,
+  OKABE_ITO_COLORS,
+  paletteColors,
+  SERIES_COLORS,
+  SERIES_PALETTE_IDS,
+  SERIES_PALETTES,
+  seriesColor
+} from './colors'
+export type { SeriesPaletteId } from './colors'
 export { lttbIndices } from './downsample'
 export { UPlotChart } from './UPlotChart'
 export type { OverlayRect, PlotKind, PlotRenderOptions, PlotSeriesData, SeriesStyle } from './UPlotChart'

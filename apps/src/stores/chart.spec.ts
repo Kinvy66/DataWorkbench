@@ -48,10 +48,39 @@ describe('useChartStore', () => {
     expect(created.data?.pointCount).toBe(3)
     expect(created.window).toBeNull()
     expect(created.series[0].color).toBe('#5280C1')
+    expect(created.palette).toBe('icon')
     expect(chart.currentId).toBe(created.id)
     expect(chart.figures).toHaveLength(1)
     expect(chart.figures[0]?.slots).toEqual([created.id])
     expect(workflow.centerTab).toBe('figure')
+  })
+
+  it('cycles icon colors then reapplies Okabe–Ito from the property panel action', async () => {
+    invoke.mockResolvedValue({
+      x: [0, 1],
+      ys: [
+        [1, 2],
+        [3, 4]
+      ],
+      pointCount: 2,
+      sourceCount: 2,
+      downsampled: false,
+      xKind: 'number',
+      maxPoints: 5000
+    })
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 2, cols: 3 }]
+    const chart = useChartStore()
+    const created = await chart.createFromBind({
+      type: 'line',
+      dataId: 'ds-1',
+      x: 't',
+      y: ['a', 'b']
+    })
+    expect(created.series.map((item) => item.color)).toEqual(['#5280C1', '#669E8B'])
+    chart.updatePalette(created.id, 'okabeIto')
+    expect(chart.current?.palette).toBe('okabeIto')
+    expect(chart.current?.series.map((item) => item.color)).toEqual(['#E69F00', '#56B4E9'])
   })
 
   it('builds a histogram without sending x or maxPoints', async () => {
@@ -212,11 +241,14 @@ describe('useChartStore', () => {
           yLabel: 'ch1',
           grid: true,
           legend: true,
-          series: [{ key: 'ch1', color: '#5280C1', width: 1.5 }]
+          series: [{ key: 'ch1', color: '#E69F00', width: 1.5 }],
+          palette: 'okabeIto'
         }
       ]
     })
     expect(chart.charts[0]?.annotations[0]?.text).toBe('peak')
+    expect(chart.charts[0]?.palette).toBe('icon')
+    expect(chart.charts[1]?.palette).toBe('okabeIto')
     expect(chart.charts[1]?.annotations).toEqual([])
     expect(chart.figures).toHaveLength(2)
     expect(chart.currentFigureId).toBeTruthy()

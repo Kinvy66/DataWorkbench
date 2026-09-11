@@ -11,7 +11,7 @@ project.dwproj
 ├── manifest.json              # magic, version, appVersion
 ├── workflow-logic.json        # DAWorkflowSerializer.to_dict 产物
 ├── ui-layout.json             # 节点坐标、split 比例、打开的 tab、可选 docking
-├── charts.json                # 图表绑定与样式（含标注坐标、可选 figures 子图网格），无点数据
+├── charts.json                # 图表绑定与样式（含标注坐标、可选 figures / palette），无点数据
 ├── data-manager.json          # [{id, name, store: "inline-parquet"}]
 ├── datas/
 │   └── <id>.parquet           # 一期默认物化；小 csv 工程也可 parquet

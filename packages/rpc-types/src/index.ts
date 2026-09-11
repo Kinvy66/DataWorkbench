@@ -784,6 +784,8 @@ export interface ProjectChartPersist {
   legend: boolean
   series: ProjectChartSeriesStyle[]
   annotations?: ProjectChartAnnotation[]
+  /** Color cycle id. Omit = icon-guide palette. Do not bump PROJECT_FORMAT. */
+  palette?: 'icon' | 'okabeIto'
   bins?: number
   binWidth?: number
   histStat?: ChartHistStat

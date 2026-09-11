@@ -87,7 +87,7 @@ sequenceDiagram
 2. ~~多 subplot~~ **已落地**：`chart.newSubplots` 建 RxC 空网格（≤3×3）；选中格子后 New Line/Scatter/Bar/Hist 填入该格；导出整张 Figure。不是拖格子改布局。  
 3. ~~标注层（SVG overlay）~~ **已落地**：`chart.annotate*` 点击放置；坐标写入 `charts.json`；SVG/PDF/PNG 导出带标注  
 4. ~~导出 PDF~~ **已落地**：Ribbon `chart.exportPdf`；渲染进程仍发 SVG markup，主进程 `printToPDF`  
-5. 颜色循环与色盲安全色板（可抄上游 icon 色）  
+5. ~~颜色循环与色盲安全色板~~ **已落地**：默认 `icon`（图标语义色）；属性可选 `okabeIto`（与上游 Qwt `QwtColorCycle::OkabeIto` 同 hex）。切换色板按系列下标重着色。`charts.json` 仅在非默认时写 `palette`，不 bump `PROJECT_FORMAT`。箱线仍未做。  
 
 ## 验收对照
 
@@ -100,3 +100,4 @@ sequenceDiagram
 | 标注 | 点「文本」后在图上点击，属性可改字；保存工程再打开仍在 |
 | 子图 | 建 1×2，两个格子各绑一条折线；导出 SVG 里能搜到两个标题 |
 | 直方分箱 | 绑定 50 箱后在属性改箱宽/密度，图更新；旧工程无这些字段仍按 50 箱 count |
+| 色板 | 属性选图标色或色盲安全；多 Y 列颜色不同；旧工程无 `palette` 仍按已存 series.color |
