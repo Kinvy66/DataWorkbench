@@ -24,6 +24,14 @@ Sidecar 没就绪时 Ping 会失败。等就绪日志出现再点。失败文案
 
 Electron 二进制没下下来。按仓库根目录 [README.md](../../README.md) 里「electron.exe ENOENT」一节处理。普通用户请改用安装包 `DataWorkbench-Setup-*.exe`。
 
+### 安装时提示「不能打开要写入的文件」（uninstallerIcon.ico / Program Files）
+
+旧安装包默认可能写到 `C:\Program Files\DataWorkbench`，没有管理员权限就会失败。请点 **中止**，不要点忽略。
+
+- 用新打的 `DataWorkbench-Setup-*.exe`：默认装到当前用户目录（`%LOCALAPPDATA%\Programs\DataWorkbench`），双击即可。
+- 若必须用手头这份安装包：点「上一步」，把目录改成例如 `C:\Users\<你的用户名>\AppData\Local\Programs\DataWorkbench`，或右键安装包 **以管理员身份运行**。
+- 不要选 `C:\Program Files`，除非安装包已提权。
+
 ## 数据
 
 ### 添加数据后表格是空的

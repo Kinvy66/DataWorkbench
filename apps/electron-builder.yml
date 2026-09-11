@@ -40,6 +40,7 @@ electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
 win:
   icon: resources/icon.ico
+  requestedExecutionLevel: asInvoker
   target:
     - target: nsis
       arch:
@@ -50,8 +51,10 @@ win:
 nsis:
   oneClick: false
   perMachine: false
-  allowElevation: true
+  allowElevation: false
+  packElevateHelper: false
   allowToChangeInstallationDirectory: true
+  include: installer.nsh
   createDesktopShortcut: always
   createStartMenuShortcut: true
   shortcutName: DataWorkbench
