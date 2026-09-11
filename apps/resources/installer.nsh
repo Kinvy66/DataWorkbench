@@ -1,13 +1,13 @@
-﻿; Default remains per-user (LocalAppData). Program Files is a valid location
-; but Windows blocks writes without elevation — that was the uninstallerIcon.ico error.
-; If the user picks a protected folder while still in "current user" mode, request UAC
-; before files are copied (customInstall runs too late).
+﻿; Default is per-machine: C:\Program Files\DataWorkbench (see nsis.perMachine).
+; If the chosen folder is not writable, request UAC before files are copied
+; (customInstall runs too late for uninstallerIcon.ico).
 
 !macro customPageAfterChangeDir
   Page custom dwElevateIfProtectedDir dwElevateIfProtectedDirLeave
 !macroend
 
 !macro customHeader
+!include nsDialogs.nsh
 !ifndef BUILD_UNINSTALLER
 Function dwElevateIfProtectedDir
   Push $R0

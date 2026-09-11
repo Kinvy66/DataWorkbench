@@ -26,11 +26,11 @@ Electron 二进制没下下来。按仓库根目录 [README.md](../../README.md)
 
 ### 安装时提示「不能打开要写入的文件」（uninstallerIcon.ico / Program Files）
 
-向 `C:\Program Files` 写入需要管理员权限。默认的用户目录不需要。请点 **中止**，不要点忽略。
+默认目录是 `C:\Program Files\DataWorkbench`，写入需要管理员权限。点 **中止**，不要点忽略。
 
-- 继续用用户目录：点「上一步」，改回 `%LOCALAPPDATA%\Programs\DataWorkbench`（或向导给出的默认路径）。
-- 坚持装到 Program Files：在安装范围选「为所有用户安装」，或用会弹出 UAC 的新安装包；也可右键安装包 **以管理员身份运行**。
-- Program Files 本身没有兼容性问题，缺的只是提权。
+- 用新安装包：双击后应先弹出 Windows 帐户控制，点「是」再继续。
+- 若 UAC 被取消或被策略拦截：右键安装包 **以管理员身份运行**。
+- 也可以点「上一步」，把目录改成例如 `%LOCALAPPDATA%\Programs\DataWorkbench`。
 
 ## 数据
 

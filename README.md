@@ -96,7 +96,7 @@ pnpm pack:win
 
 首次会下载 Windows 嵌入式 CPython 3.12 并 `pip install` 运行时依赖（`python/requirements-runtime.txt`），写入 `apps/resources/python-runtime/`（已 gitignore）。产物：
 
-- `apps/dist/DataWorkbench-Setup-<version>.exe` — **发给最终用户**（向导、开始菜单、桌面快捷方式；默认装到当前用户目录，不必管理员。装到 `C:\Program Files` 会弹出 UAC，属正常）
+- `apps/dist/DataWorkbench-Setup-<version>.exe` — **发给最终用户**（向导、开始菜单、桌面快捷方式；默认 `C:\Program Files\DataWorkbench`，会弹出 UAC）
 - `apps/dist/win-unpacked/` — 便携目录（同样内嵌 Python）
 
 用户**不必**安装 Python。`DW_PYTHON` 仍可覆盖解释器。不把 `.venv`、测试 csv、`.env` 打进发布目录。只打便携目录时用 `pnpm pack:portable`。
