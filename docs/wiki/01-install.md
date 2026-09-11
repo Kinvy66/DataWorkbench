@@ -37,7 +37,12 @@ pnpm dev
 
 5. **不要**用浏览器打开 `http://localhost:5173`。必须等 Electron 窗口自己弹出。
 6. 看窗口**底部「日志」**：出现「Sidecar 已就绪」且提到 `pandas` 为真，才算成功。
+
+![启动后主窗口，底部日志显示 Sidecar 已就绪](../assets/wiki/01-ready.png)
+
 7. 顶部 **主页** 有 **Ping** 时，点一下。日志应出现 `host.hello 成功`。
+
+![点 Ping 后日志出现 host.hello 成功](../assets/wiki/01-ping.png)
 
 关掉窗口即可退出。再开仍执行 `pnpm dev`。
 

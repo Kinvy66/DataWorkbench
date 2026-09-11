@@ -6,6 +6,9 @@
 
 1. 顶部点 **数据**。
 2. 点 **添加数据**（大按钮）。
+
+![数据标签：添加数据、移除、重命名、导出](../assets/wiki/03-data-tab.png)
+
 3. 在文件对话框里选：
    - `.csv`（逗号分隔文本，Excel 另存为 CSV 即可）
    - `.xlsx`（Excel）
@@ -14,7 +17,9 @@
 5. 中间切到 **表格**，应看到列名和前几行。
 6. 底部日志类似：`已导入 xxx（行 × 列）`。
 
-跟做请用仓库里的 `docs/wiki/samples/wiki-demo.csv`。
+跟做请用仓库里的 `docs/wiki/samples/wiki-demo.csv`。导入成功后大致是这样：
+
+![导入 wiki-demo 后：左侧数据集、中间表格、右侧属性](../assets/wiki/03-table.png)
 
 **不能导入**：`.pkl` / pickle（已关闭，防止执行危险文件）。`.dapro` 也不是数据文件。
 

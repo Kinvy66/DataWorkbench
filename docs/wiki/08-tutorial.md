@@ -12,12 +12,17 @@
 4. 中间 **表格** 能看到列名和前几行。
 5. 日志：`已导入 wiki-demo（11 × 4）`（行数以实际为准）。
 
+![导入后的表格：name / age / city / score](../assets/wiki/03-table.png)
+
 看一眼：`Bob` 的 age 是空的，`Dave` 的 score 是空的，表末尾有两行完全一样的 `Alice,28,Beijing,88`。
 
 ## 第 2 步：删空行、去重复（约 2 分钟）
 
 1. 确认左边仍选中刚导入的表。
 2. **操作 → 删除缺失值** → 保持默认「任一值缺失即删」→ **应用**。
+
+![删除缺失值对话框](../assets/wiki/04-dropna-dialog.png)
+
 3. `Bob`（空 age）和 `Dave`（空 score）应消失。日志写删除了几行。
 4. **操作 → 删除重复值** → 保留第一次 → **应用**。多出来的那行 Alice 应只剩一行。
 
@@ -30,6 +35,8 @@
 ```text
 city == 'Beijing'
 ```
+
+![条件筛选填写 city == 'Beijing'](../assets/wiki/04-query-dialog.png)
 
 2. 应用后应只剩 `city` 为 Beijing 的行。
 3. **操作 → 数据排序**：列选 `score`，降序。分数应从高到低。
@@ -44,8 +51,14 @@ city == 'Beijing'
 
 1. 左边选中**数据表**（有 `age`、`score` 的那张，不是 describe）。
 2. **图表 → 折线**。X 列 `age`，Y 列 `score` → **绘图**。
+
+![新建折线对话框](../assets/wiki/06-bind-dialog.png)
+
 3. 中间切到 **绘图**，应看到曲线。
 4. 右侧属性把标题改成「分数随年龄」。图上标题应变。
+
+![折线图「分数随年龄」](../assets/wiki/06-chart.png)
+
 5. **图表 → PNG**，存到桌面试打开。
 6. 再导出一次 **SVG**（可用浏览器打开）。
 
@@ -57,6 +70,9 @@ Y 列不要选 `name`。选错会提示列不是数值。
 
 1. 左边切到 **节点**，中间切到 **工作流**。
 2. 拖入 `Data Source`、`Query`、`Output to DataManager`，按顺序连线（右圆点拖到下一节点左圆点）。
+
+![工作流：Data Source → Query → Output to DataManager](../assets/wiki/05-workflow.png)
+
 3. 点 `Data Source`，属性 **dataset_name** 填左边数据表的名字（不是 describe 那张）。
 4. 点 `Query`，表达式填：`score >= 80`
 5. 点 `Output to DataManager`，**data_name** 填 `high_score`。
@@ -68,6 +84,9 @@ Y 列不要选 `name`。选错会提示列不是数值。
 ## 第 7 步：保存工程（约 1 分钟）
 
 1. **文件 → 保存**（或 Ctrl+S）。
+
+![文件菜单里的保存](../assets/wiki/07-file-menu.png)
+
 2. 存成例如桌面上的 `wiki-demo.dwproj`。
 3. 日志「工程已保存」。
 4. 关掉软件，再打开，**文件 → 打开** 选这份文件。

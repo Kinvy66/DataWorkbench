@@ -23,16 +23,25 @@
 
 ## 最短能跑通的一条
 
+先把节点列表和工作流页打开（不要在「数据集」页拖）：
+
+![左侧切到节点、中间切到工作流；点节点名即可放入画布](../assets/wiki/05-nodes.png)
+
 1. **数据 → 添加数据**，导入 `wiki-demo.csv`，记住左边显示的名字（多半是 `wiki-demo`）。
 2. 左侧切到 **节点**。
 3. 中间切到 **工作流**。
-4. 依次拖入：`Data Source`、`Query`、`Output to DataManager`。
+4. 依次拖入（或点名称）：`Data Source`、`Query`、`Output to DataManager`。
 5. **连线**：从节点右侧小圆点拖到下一个节点左侧小圆点。
    - Data Source 的数据输出口 → Query 的数据输入口
    - Query 的结果口 → Output to DataManager 的数据口
 6. 点 `Data Source`，右侧属性填 **dataset_name** 为刚才的数据集名（或填 dataset_id）。
 7. 点 `Query`，在表达式里填：`age > 25`
 8. 点 `Output to DataManager`，把 **data_name** 改成 `adults`（不要和原表同名，便于看出新表）。
+
+连好后应类似下图。再点顶部 **工作流 → 运行**。
+
+![三条节点已连线：Data Source → Query → Output to DataManager](../assets/wiki/05-workflow.png)
+
 9. 顶部 **工作流 → 运行**。
 10. 节点应变色表示完成；左边应出现 `adults`；日志「工作流已完成」。
 11. 点 `adults`，表格里应只有 age 大于 25 的行（age 为空的行不会进入）。
