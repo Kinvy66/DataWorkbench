@@ -10,6 +10,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "pack:portable": "electron-vite build && electron-builder --dir --config electron-builder.yml",
+    "pack:win": "electron-vite build && electron-builder --win --config electron-builder.yml",
     "preview": "electron-vite preview",
     "test": "vitest run"
   },

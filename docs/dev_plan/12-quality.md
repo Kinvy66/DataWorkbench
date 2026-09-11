@@ -62,7 +62,7 @@ Windows 上 pytest 输出若被吞，用 `--junitxml=pytest.xml` 再读文件，
 - [x] 未打进安装包：测试 csv 大文件、`.env`、上游整个 C++ 仓库
 - [x] NOTICE / LICENSE（含 LGPL vendor 说明）
 - [x] 崩溃：杀 python.exe 后 UI 提示且主窗口仍在（自动重启一次已实现；发布前仍手测杀进程）
-- [ ] `pnpm build` / `pnpm pack:portable` 产物可在干净 Windows 10 上打开（便携目录需本机 Python；NSIS 未做）
+- [ ] `pnpm pack:win` 产物可在干净 Windows 10 上打开（安装向导 + 内嵌 Python，不必先装 CPython）
 
 ## 给后续 AI 的执行顺序
 

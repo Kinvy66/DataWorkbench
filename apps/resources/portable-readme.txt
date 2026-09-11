@@ -1,15 +1,12 @@
 DataWorkbench portable build
 ============================
 
-This folder is a portable Windows x64 build (not an NSIS installer).
+This folder is a portable Windows x64 build. Python 3.12 (pandas / numpy / pyarrow)
+is already in resources\python-runtime. Double-click DataWorkbench.exe.
 
-Python is not embedded. Install Python 3.11 or 3.12 on the machine, then:
+You do not need to install Python. To use another interpreter instead, set DW_PYTHON
+to that python.exe before launching.
 
-  py -3.12 -m pip install -r resources\python\requirements.txt
-
-Or set DW_PYTHON to a python.exe that already has those packages.
-Optional: DW_PYTHON_ROOT to the resources\python folder if you move the scripts.
-
-Run DataWorkbench.exe in this folder. Do not copy testdata or .env into a release zip.
+Do not copy testdata or .env into a release zip.
 
 LGPL notices for vendored Python/icons: resources\NOTICE.txt

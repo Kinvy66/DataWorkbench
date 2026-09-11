@@ -19,6 +19,12 @@ extraResources:
       - '!**/*.pyc'
       - '!**/.pytest_cache/**'
       - '!pytest.xml'
+  - from: resources/python-runtime
+    to: python-runtime
+    filter:
+      - '**/*'
+      - '!**/__pycache__/**'
+      - '!**/*.pyc'
   - from: ../LICENSE
     to: LICENSE.txt
   - from: ../NOTICE
@@ -29,9 +35,35 @@ extraResources:
     to: README.txt
 asar: true
 npmRebuild: false
+compression: maximum
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/
 win:
   icon: resources/icon.ico
   target:
+    - target: nsis
+      arch:
+        - x64
     - target: dir
       arch:
         - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: DataWorkbench
+  uninstallDisplayName: DataWorkbench
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico
+  installerHeaderIcon: resources/icon.ico
+  installerLanguages:
+    - zh_CN
+    - en_US
+  displayLanguageSelector: false
+  license: ../LICENSE
+  artifactName: ${productName}-Setup-${version}.${ext}

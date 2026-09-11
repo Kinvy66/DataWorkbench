@@ -16,7 +16,7 @@
 | 图表 | uPlot（主） | 大数据折线；导出走 SVG 序列化或离屏 canvas |
 | Python | 3.11 或 3.12 | 与上游推荐 3.11 对齐；禁止 3.8 |
 | 科学计算 | pandas / numpy / pyarrow / openpyxl | parquet 走 pyarrow |
-| 打包 Python | 开发态用仓库 venv；便携目录**不嵌入解释器**，使用本机 Python 3.11/3.12（`DW_PYTHON` 可覆盖）。PyInstaller / embeddable 推迟 |
+| 打包 Python | 开发态用仓库 venv。安装包 / 便携目录嵌入 Windows CPython 3.12（`scripts/prepare-python-runtime.ps1`）+ 运行时 wheels；`DW_PYTHON` 可覆盖。不使用 PyInstaller |
 
 ## 表格：为什么先用虚表 + TanStack
 

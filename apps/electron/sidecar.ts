@@ -86,13 +86,20 @@ export class SidecarBridge {
       cwd: process.cwd(),
       resourcesPath: this.resourcesPath
     })
-    const py = resolvePythonCommand({ pythonRoot })
+    const py = resolvePythonCommand({
+      pythonRoot,
+      resourcesPath: this.resourcesPath
+    })
     const args = [...py.args, '-u', '-m', 'dw_host']
-    const env = {
+    const env: NodeJS.ProcessEnv = {
       ...process.env,
       PYTHONUNBUFFERED: '1',
       PYTHONPATH: pythonRoot,
       PYTHONIOENCODING: 'utf-8'
+    }
+    if (py.source === 'bundled') {
+      // Embeddable CPython ignores PYTHONPATH; python*._pth lists ../python.
+      env.PYTHONNOUSERSITE = '1'
     }
     this.emitLog({ stream: 'stderr', text: `Starting sidecar: ${py.cmd} ${args.join(' ')}` })
     return spawn(py.cmd, args, {

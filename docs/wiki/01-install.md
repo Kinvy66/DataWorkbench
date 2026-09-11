@@ -7,14 +7,51 @@
 | 必须有 | 说明 |
 |--------|------|
 | Windows 10/11（64 位） | 当前主要支持平台 |
-| Python **3.11 或 3.12** | 在命令行执行 `py -3.12 --version` 能打印版本。不要用 3.8 |
-| 本手册示例表 | 仓库里的 `docs/wiki/samples/wiki-demo.csv` |
+| 本手册示例表 | 仓库里的 `docs/wiki/samples/wiki-demo.csv`（安装包用户请向发放人要这份表） |
 
-可选：Node.js 20 + pnpm（只有走「开发模式」才需要）。
+**一般用户不需要安装 Python、Node.js 或 pnpm。** 安装包已内嵌 Python 计算环境。
 
-## 方式 A：开发模式（仓库里试）
+开发者若要从源码启动，才需要 Python 3.11/3.12 和 Node.js，见下方「方式 C」。
 
-适合：你已经克隆了 GitHub 仓库，或开发者让你 `pnpm dev`。
+## 方式 A：安装向导（推荐给最终用户）
+
+适合：别人发给你 `DataWorkbench-Setup-0.1.0.exe`（版本号以文件名为准）。
+
+1. 双击安装程序。
+2. 按向导「下一步」：同意许可、可选安装目录（默认可不改）、完成。
+3. 安装结束可勾选立即运行，或从桌面 / 开始菜单打开 **DataWorkbench**。
+4. 看窗口**底部「日志」**：出现「Sidecar 已就绪」且提到 `pandas` 为真，才算成功。
+5. 顶部 **主页** 有 **Ping** 时，点一下。日志应出现 `host.hello 成功`。
+
+不需要再装 Python，也不用在命令行执行 `pip`。
+
+开发者在本仓库打安装包：
+
+```powershell
+pnpm pack:win
+```
+
+产物：`apps/dist/DataWorkbench-Setup-<version>.exe`（发给用户这一份即可）。同一次构建还会生成便携目录 `apps/dist/win-unpacked/`。首次打包会下载嵌入式 Python 并安装 pandas 等库，体积较大、耗时几分钟。
+
+## 方式 B：便携目录（不解压安装）
+
+适合：别人给了打好的 `win-unpacked` 文件夹，或不想写注册表。
+
+1. 解压后双击 `DataWorkbench.exe`。
+2. 同样看底部日志是否「Sidecar 已就绪」。
+
+便携目录同样内嵌 Python。一般不必设环境变量。若要用本机另一套解释器：
+
+```powershell
+$env:DW_PYTHON = "C:\Path\To\python.exe"
+.\DataWorkbench.exe
+```
+
+开发者生成便携目录：`pnpm pack:portable`（或 `.\scripts\pack-portable.ps1`）。
+
+## 方式 C：开发模式（仓库里试）
+
+适合：你已经克隆了 GitHub 仓库，并要改代码。
 
 1. 打开 PowerShell，进入仓库根目录（有 `package.json` 的那一层，例如 `F:\Rep\DataWorkbench`）。
 2. 安装界面依赖：
@@ -46,32 +83,7 @@ pnpm dev
 
 关掉窗口即可退出。再开仍执行 `pnpm dev`。
 
-`spawn electron.exe ENOENT` 等开发环境问题见根目录 [README.md](../../README.md)，一般用户改走方式 B。
-
-## 方式 B：便携目录（不装安装包）
-
-适合：别人给了打好的 `win-unpacked` 文件夹。
-
-1. 确认本机有 Python 3.11/3.12。
-2. 打开产物目录：`apps/dist/win-unpacked/`（开发者可用 `pnpm pack:portable` 生成）。
-3. 安装 sidecar 依赖（只需做一次）：
-
-```powershell
-py -3.12 -m pip install -r apps\dist\win-unpacked\resources\python\requirements.txt
-```
-
-4. 双击 `DataWorkbench.exe`。
-5. 同样看底部日志是否「Sidecar 已就绪」。
-
-若系统里 Python 不在默认路径，启动前设置：
-
-```powershell
-$env:DW_PYTHON = "C:\Path\To\python.exe"
-```
-
-然后再开 `DataWorkbench.exe`。
-
-当前**没有**「下一步下一步」的安装向导，也不会把 Python 打进软件里。
+`spawn electron.exe ENOENT` 等开发环境问题见根目录 [README.md](../../README.md)，一般用户改走方式 A。
 
 ## 启动自检（30 秒）
 

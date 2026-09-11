@@ -43,4 +43,4 @@ flowchart LR
 
 ## 当前状态
 
-P0 骨架已落地。P1 数据自动验收已完成。P2 画布路径已完成。P3 分析节点已齐（不要移植 `data_plot`）。P4 图表一期已齐。P5 / MVP 已收口：File `.dwproj`、sidecar 崩溃重启一次、便携目录（不嵌入 Python / 无 NSIS）、`userData/logs` 文件日志。二期未排期。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。
+P0 骨架已落地。P1 数据自动验收已完成。P2 画布路径已完成。P3 分析节点已齐（不要移植 `data_plot`）。P4 图表一期已齐。P5 / MVP 已收口：File `.dwproj`、sidecar 崩溃重启一次、NSIS 安装包 + 内嵌 CPython、`userData/logs` 文件日志。二期未排期。远程：[https://github.com/Kinvy66/DataWorkbench](https://github.com/Kinvy66/DataWorkbench.git)。每完成一个功能或阶段：自测 → commit → push（[AGENTS.md T11](../../AGENTS.md)）。

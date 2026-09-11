@@ -152,3 +152,6 @@ $RECYCLE.BIN/
 /large_500k.csv
 /large_*.csv
 testdata
+
+# Bundled embeddable CPython (produced by scripts/prepare-python-runtime.ps1)
+/apps/resources/python-runtime/

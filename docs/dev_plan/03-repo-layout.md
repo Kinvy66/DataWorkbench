@@ -33,7 +33,7 @@ DataWorkbench/
 │   └── tests/
 ├── docs/
 │   └── dev_plan/                # 本计划
-├── scripts/                     # 上游同步、便携打包（pack-portable.ps1）、P1 烟测 csv
+├── scripts/                     # 上游同步、prepare-python-runtime、pack-win / pack-portable
 ├── pnpm-workspace.yaml
 ├── package.json
 ├── AGENTS.md                    # 给后续 AI 的仓库约定（P0 补写，不在本期计划范围内强制）

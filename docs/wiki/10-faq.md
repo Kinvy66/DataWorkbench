@@ -12,9 +12,9 @@
 
 后台 Python 没起来。检查：
 
-1. 本机是否 **Python 3.11 或 3.12**（`py -3.12 --version`）。
-2. 是否安装了 sidecar 依赖：`py -3.12 -m pip install -r python/requirements.txt`（便携版则对 `win-unpacked\resources\python\requirements.txt`）。
-3. 便携版可用 `$env:DW_PYTHON = "C:\路径\python.exe"` 再启动。
+1. **安装包 / 便携目录**：应已内嵌 Python。把底部日志里 `Starting sidecar:` 那一行发给开发者。
+2. **开发模式**：本机是否 **Python 3.11 或 3.12**（`py -3.12 --version`），以及是否安装了 sidecar 依赖：`py -3.12 -m pip install -r python/requirements.txt`。
+3. 可用 `$env:DW_PYTHON = "C:\路径\python.exe"` 覆盖解释器后再启动。
 
 ### Ping 失败
 
@@ -22,7 +22,7 @@ Sidecar 没就绪时 Ping 会失败。等就绪日志出现再点。失败文案
 
 ### `spawn electron.exe ENOENT`（只有开发模式）
 
-Electron 二进制没下下来。按仓库根目录 [README.md](../../README.md) 里「electron.exe ENOENT」一节处理。普通用户请改用别人打好的 `win-unpacked`。
+Electron 二进制没下下来。按仓库根目录 [README.md](../../README.md) 里「electron.exe ENOENT」一节处理。普通用户请改用安装包 `DataWorkbench-Setup-*.exe`。
 
 ## 数据
 
@@ -138,8 +138,8 @@ Ctrl+Z 只撤销**工作流画布**（节点、连线），不撤销单元格。
 
 把这些一并记下：
 
-1. 用的是 `pnpm dev` 还是 `win-unpacked` 里的 exe。
-2. `py -3.12 --version` 的输出。
+1. 用的是安装包、`win-unpacked` 里的 exe，还是 `pnpm dev`。
+2. 安装包用户可跳过 Python 版本；开发模式记下 `py -3.12 --version`。
 3. 日志最后 20 行（可复制）。
 4. 你点了哪个标签的哪个按钮。
 
