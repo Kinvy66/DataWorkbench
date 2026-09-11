@@ -753,6 +753,17 @@ export interface ProjectChartSeriesStyle {
   width: number
 }
 
+export interface ProjectChartAnnotation {
+  id: string
+  kind: 'text' | 'point' | 'arrow' | 'region'
+  color: string
+  text?: string
+  x: number
+  y?: number
+  x2?: number
+  y2?: number
+}
+
 export interface ProjectChartPersist {
   id: string
   type: ChartTypeId
@@ -765,6 +776,7 @@ export interface ProjectChartPersist {
   grid: boolean
   legend: boolean
   series: ProjectChartSeriesStyle[]
+  annotations?: ProjectChartAnnotation[]
 }
 
 export interface ProjectChartsFile {

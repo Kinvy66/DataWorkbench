@@ -29,6 +29,7 @@ export type PlotRenderOptions = {
   width: number
   height: number
   onXRange?: (range: ViewportWindow) => void
+  onFrame?: () => void
 }
 
 function alignedFrom(data: PlotSeriesData): AlignedData {
@@ -71,11 +72,19 @@ function seriesOpts(kind: PlotKind, styles: SeriesStyle[]): Options['series'] {
   return series
 }
 
+export type OverlayRect = {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 export class UPlotChart {
   private plot: uPlot | null = null
   private aligned: AlignedData | null = null
   private xKind: PlotSeriesData['xKind'] = 'number'
   private onXRange: ((range: ViewportWindow) => void) | undefined
+  private onFrame: (() => void) | undefined
   private lastEmitted: ViewportWindow | null = null
   private xScaleIgnore = 0
   private xScaleQuietUntil = 0
@@ -86,6 +95,7 @@ export class UPlotChart {
     this.destroy()
     this.xKind = opts.data.xKind
     this.onXRange = opts.onXRange
+    this.onFrame = opts.onFrame
     this.quietXScale(3, 200)
     const width = Math.max(40, Math.floor(opts.width))
     const height = Math.max(40, Math.floor(opts.height))
@@ -116,11 +126,18 @@ export class UPlotChart {
         setScale: [
           (u, key) => {
             this.emitXRange(u, key)
+            this.onFrame?.()
+          }
+        ],
+        setSize: [
+          () => {
+            this.onFrame?.()
           }
         ]
       }
     }
     this.plot = new uPlot(options, this.aligned, this.el)
+    this.onFrame?.()
   }
 
   setData(data: PlotSeriesData, resetScales = false): void {
@@ -131,6 +148,7 @@ export class UPlotChart {
     this.aligned = alignedFrom(data)
     this.quietXScale(1, 80)
     this.plot.setData(this.aligned, resetScales)
+    this.onFrame?.()
   }
 
   setSize(width: number, height: number): void {
@@ -142,6 +160,7 @@ export class UPlotChart {
       width: Math.max(40, Math.floor(width)),
       height: Math.max(40, Math.floor(height))
     })
+    this.onFrame?.()
   }
 
   resetView(): void {
@@ -150,6 +169,7 @@ export class UPlotChart {
     }
     this.quietXScale(1, 80)
     this.plot.setData(this.aligned, true)
+    this.onFrame?.()
   }
 
   xRange(): ViewportWindow | null {
@@ -165,11 +185,80 @@ export class UPlotChart {
     return this.plot?.root.querySelector('canvas') ?? null
   }
 
+  overlayRect(relativeTo: HTMLElement): OverlayRect | null {
+    const over = this.plot?.root.querySelector('.u-over') as HTMLElement | null
+    if (!over) {
+      return null
+    }
+    const host = relativeTo.getBoundingClientRect()
+    const box = over.getBoundingClientRect()
+    return {
+      left: box.left - host.left,
+      top: box.top - host.top,
+      width: box.width,
+      height: box.height
+    }
+  }
+
+  overlayToData(px: number, py: number): { x: number; y: number } | null {
+    const u = this.plot
+    if (!u) {
+      return null
+    }
+    let x = u.posToVal(px, 'x')
+    const y = u.posToVal(py, 'y')
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      return null
+    }
+    if (this.xKind === 'time') {
+      x *= 1000
+    }
+    return { x, y }
+  }
+
+  dataToOverlay(x: number, y: number): { x: number; y: number } | null {
+    const u = this.plot
+    if (!u) {
+      return null
+    }
+    const xv = this.xKind === 'time' ? x / 1000 : x
+    const px = u.valToPos(xv, 'x')
+    const py = u.valToPos(y, 'y')
+    if (!Number.isFinite(px) || !Number.isFinite(py)) {
+      return null
+    }
+    return { x: px, y: py }
+  }
+
+  canvasScale(): {
+    x: (value: number) => number
+    y: (value: number) => number
+    plotLeft: number
+    plotTop: number
+    plotWidth: number
+    plotHeight: number
+  } | null {
+    const u = this.plot
+    if (!u) {
+      return null
+    }
+    const box = u.bbox
+    return {
+      x: (value) => u.valToPos(this.xKind === 'time' ? value / 1000 : value, 'x', true),
+      y: (value) => u.valToPos(value, 'y', true),
+      plotLeft: box.left,
+      plotTop: box.top,
+      plotWidth: box.width,
+      plotHeight: box.height
+    }
+  }
+
   destroy(): void {
     this.plot?.destroy()
     this.plot = null
     this.aligned = null
     this.onXRange = undefined
+    this.onFrame = undefined
     this.lastEmitted = null
     this.xScaleIgnore = 0
     this.xScaleQuietUntil = 0

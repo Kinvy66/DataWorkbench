@@ -98,6 +98,7 @@ describe('useChartStore', () => {
         grid: true,
         legend: true,
         series: [{ key: 'y', color: '#5280C1', width: 1.5 }],
+        annotations: [],
         data: null,
         window: null
       }
@@ -151,6 +152,111 @@ describe('useChartStore', () => {
     }
     expect(payload.content).toContain('Run 01')
     expect(payload.content).toContain('<path')
+  })
+
+  it('places text immediately and arrows on the second click', async () => {
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 3, cols: 2 }]
+    const chart = useChartStore()
+    await chart.createFromBind({ type: 'line', dataId: 'ds-1', x: 't', y: ['ch1'] })
+    chart.togglePlace('text')
+    expect(chart.placeAt({ x: 1, y: 2 })).toBe(true)
+    expect(chart.current?.annotations).toHaveLength(1)
+    expect(chart.current?.annotations[0]).toMatchObject({ kind: 'text', text: 'Note', x: 1, y: 2 })
+    expect(chart.placeKind).toBeNull()
+    chart.togglePlace('arrow')
+    expect(chart.placeAt({ x: 0, y: 0 })).toBe(false)
+    expect(chart.placeAt({ x: 3, y: 4 })).toBe(true)
+    expect(chart.current?.annotations).toHaveLength(2)
+    expect(chart.current?.annotations[1]).toMatchObject({ kind: 'arrow', x: 0, y: 0, x2: 3, y2: 4 })
+  })
+
+  it('restores annotations from charts.json and defaults missing lists', async () => {
+    invoke.mockResolvedValue({
+      x: [0, 1],
+      ys: [[1, 2]],
+      pointCount: 2,
+      sourceCount: 2,
+      downsampled: false,
+      xKind: 'number',
+      maxPoints: 5000
+    })
+    const chart = useChartStore()
+    await chart.restoreFromFile({
+      currentId: 'c1',
+      charts: [
+        {
+          id: 'c1',
+          type: 'line',
+          dataId: 'ds-1',
+          x: 't',
+          y: ['ch1'],
+          title: 'wave',
+          xLabel: 't',
+          yLabel: 'ch1',
+          grid: true,
+          legend: true,
+          series: [{ key: 'ch1', color: '#5280C1', width: 1.5 }],
+          annotations: [{ id: 'n1', kind: 'text', x: 1, y: 2, text: 'peak', color: '#CE6043' }]
+        },
+        {
+          id: 'c2',
+          type: 'line',
+          dataId: 'ds-1',
+          x: 't',
+          y: ['ch1'],
+          title: 'old',
+          xLabel: 't',
+          yLabel: 'ch1',
+          grid: true,
+          legend: true,
+          series: [{ key: 'ch1', color: '#5280C1', width: 1.5 }]
+        }
+      ]
+    })
+    expect(chart.charts[0]?.annotations[0]?.text).toBe('peak')
+    expect(chart.charts[1]?.annotations).toEqual([])
+  })
+
+  it('embeds annotations when exporting svg', async () => {
+    invoke.mockImplementation(async (method: string) => {
+      if (method === 'chart.buildSeries') {
+        return {
+          x: [0, 1, 2],
+          ys: [[1, 2, 3]],
+          pointCount: 3,
+          sourceCount: 3,
+          downsampled: false,
+          xKind: 'number',
+          maxPoints: 5000
+        }
+      }
+      if (method === 'chart.saveExport') {
+        return { ok: true }
+      }
+      return {}
+    })
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 3, cols: 2 }]
+    const chart = useChartStore()
+    await chart.createFromBind({
+      type: 'line',
+      dataId: 'ds-1',
+      x: 't',
+      y: ['ch1'],
+      title: 'Run 01'
+    })
+    chart.togglePlace('text')
+    chart.placeAt({ x: 1, y: 2 })
+    if (chart.current) {
+      chart.updateAnnotation(chart.current.annotations[0]!.id, { text: 'peak' })
+    }
+    const ok = await chart.saveExport('svg')
+    expect(ok).toBe(true)
+    const payload = invoke.mock.calls.find((call) => call[0] === 'chart.saveExport')?.[1] as {
+      content: string
+    }
+    expect(payload.content).toContain('peak')
   })
 
   it('saves pdf via chart.saveExport with svg markup', async () => {

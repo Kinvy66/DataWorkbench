@@ -16,7 +16,6 @@
 ## 一期不做
 
 - 子图网格（matplotlib 式 Figure 多 axes）—— 可用多个主区 tab 代替
-- 文本/箭头/区域标注拖拽
 - 数据探针十字线（可做简易悬停 tooltip，非探针体系）
 - 3D、热力、箱线、谱图
 - 与 Qwt 工程 `charts.xml` 互导
@@ -71,7 +70,8 @@ sequenceDiagram
   "title": "Run 01",
   "xLabel": "Time",
   "yLabel": "Value",
-  "series": [{"key": "ch1", "color": "#5280C1", "width": 1.5}]
+  "series": [{"key": "ch1", "color": "#5280C1", "width": 1.5}],
+  "annotations": [{"id": "n1", "kind": "text", "x": 1.2, "y": 3.4, "text": "peak", "color": "#CE6043"}]
 }
 ```
 
@@ -81,7 +81,7 @@ sequenceDiagram
 
 1. 箱线 / 直方更专业的 bin 参数  
 2. 多 subplot  
-3. 标注层（SVG overlay）  
+3. ~~标注层（SVG overlay）~~ **已落地**：`chart.annotate*` 点击放置；坐标写入 `charts.json`；SVG/PDF/PNG 导出带标注  
 4. ~~导出 PDF~~ **已落地**：Ribbon `chart.exportPdf`；渲染进程仍发 SVG markup，主进程 `printToPDF`  
 5. 颜色循环与色盲安全色板（可抄上游 icon 色）  
 
@@ -93,3 +93,4 @@ sequenceDiagram
 | 100 万点 | 构建序列 < 3s；交互不掉到 5fps 以下 |
 | SVG | 在浏览器或 Inkscape 打开可见曲线与标题 |
 | PDF | 另存为 `.pdf` 后可用阅读器打开；中文标题可见 |
+| 标注 | 点「文本」后在图上点击，属性可改字；保存工程再打开仍在 |

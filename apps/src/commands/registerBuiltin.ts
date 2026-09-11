@@ -559,4 +559,8 @@ export function registerBuiltinCommands(): void {
   commandBus.register('chart.exportPng', () => exportChart('png'), hasChart)
   commandBus.register('chart.exportSvg', () => exportChart('svg'), hasChart)
   commandBus.register('chart.exportPdf', () => exportChart('pdf'), hasChart)
+  commandBus.register('chart.annotateText', () => useChartStore().togglePlace('text'), hasChart)
+  commandBus.register('chart.annotatePoint', () => useChartStore().togglePlace('point'), hasChart)
+  commandBus.register('chart.annotateArrow', () => useChartStore().togglePlace('arrow'), hasChart)
+  commandBus.register('chart.annotateRegion', () => useChartStore().togglePlace('region'), hasChart)
 }

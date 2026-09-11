@@ -385,6 +385,53 @@ export function useRibbonSchema() {
             ]
           },
           {
+            id: 'chart-annotate',
+            title: t('ribbon.chartAnnotate'),
+            collections: [
+              {
+                id: 'chart-annotate-actions',
+                items: [
+                  {
+                    id: 'chart.annotateText',
+                    type: 'button',
+                    label: t('ribbon.chartAnnotateText'),
+                    tooltip: t('ribbon.chartAnnotateTextTip'),
+                    size: 'large',
+                    disabled: !hasChart,
+                    icon: ribbonIcon('app/chart-text-marker')
+                  },
+                  {
+                    id: 'chart.annotatePoint',
+                    type: 'button',
+                    label: t('ribbon.chartAnnotatePoint'),
+                    tooltip: t('ribbon.chartAnnotatePointTip'),
+                    size: 'large',
+                    disabled: !hasChart,
+                    icon: ribbonIcon('app/chart-corss-marker')
+                  },
+                  {
+                    id: 'chart.annotateArrow',
+                    type: 'button',
+                    label: t('ribbon.chartAnnotateArrow'),
+                    tooltip: t('ribbon.chartAnnotateArrowTip'),
+                    size: 'large',
+                    disabled: !hasChart,
+                    icon: ribbonIcon('app/chart-picker-xy')
+                  },
+                  {
+                    id: 'chart.annotateRegion',
+                    type: 'button',
+                    label: t('ribbon.chartAnnotateRegion'),
+                    tooltip: t('ribbon.chartAnnotateRegionTip'),
+                    size: 'large',
+                    disabled: !hasChart,
+                    icon: ribbonIcon('app/chart-selector-rect')
+                  }
+                ]
+              }
+            ]
+          },
+          {
             id: 'chart-export',
             title: t('ribbon.chartExport'),
             collections: [

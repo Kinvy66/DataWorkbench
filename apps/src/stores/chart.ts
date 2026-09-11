@@ -9,10 +9,14 @@ import {
   type ProjectChartsFile
 } from '@dw/rpc-types'
 import {
+  ANNOTATION_COLOR,
   canvasToPngDataUrl,
+  parseChartAnnotations,
   seriesColor,
   seriesToSvg,
   suggestedExportName,
+  type ChartAnnotation,
+  type ChartAnnotationKind,
   type ViewportWindow
 } from '@dw/chart-core'
 import { getDesktopBridge } from '@/rpc/bridge'
@@ -41,11 +45,13 @@ export type ChartSpec = {
   grid: boolean
   legend: boolean
   series: ChartSeriesStyle[]
+  annotations: ChartAnnotation[]
   data: ChartBuildSeriesResult | null
   window: ViewportWindow | null
 }
 
 let canvasProvider: (() => HTMLCanvasElement | null) | null = null
+let pngCapture: (() => string | null) | null = null
 const rebuildSeq = new Map<string, number>()
 
 function rpc() {
@@ -129,7 +135,10 @@ export const useChartStore = defineStore('chart', {
     charts: [] as ChartSpec[],
     currentId: null as string | null,
     bindDialogOpen: false,
-    pendingType: 'line' as BindableChartType
+    pendingType: 'line' as BindableChartType,
+    placeKind: null as ChartAnnotationKind | null,
+    placeAnchor: null as { x: number; y: number } | null,
+    selectedAnnotationId: null as string | null
   }),
   getters: {
     current(state): ChartSpec | null {
@@ -139,6 +148,9 @@ export const useChartStore = defineStore('chart', {
   actions: {
     setCanvasProvider(provider: (() => HTMLCanvasElement | null) | null): void {
       canvasProvider = provider
+    },
+    setPngCapture(provider: (() => string | null) | null): void {
+      pngCapture = provider
     },
     openBindDialog(type: BindableChartType): void {
       this.pendingType = type
@@ -159,9 +171,13 @@ export const useChartStore = defineStore('chart', {
     clear(): void {
       this.charts = []
       this.currentId = null
+      this.cancelPlace()
+      this.selectedAnnotationId = null
       rebuildSeq.clear()
     },
     async restoreFromFile(file: ProjectChartsFile): Promise<void> {
+      this.cancelPlace()
+      this.selectedAnnotationId = null
       this.charts = []
       this.currentId = null
       for (const spec of file.charts) {
@@ -183,6 +199,7 @@ export const useChartStore = defineStore('chart', {
           grid: spec.grid,
           legend: spec.legend,
           series: spec.series.map((item) => ({ ...item })),
+          annotations: parseChartAnnotations(spec.annotations),
           data,
           window: null
         })
@@ -193,9 +210,14 @@ export const useChartStore = defineStore('chart', {
           : (this.charts[0]?.id ?? null)
     },
     select(id: string): void {
-      if (this.charts.some((item) => item.id === id)) {
-        this.currentId = id
+      if (!this.charts.some((item) => item.id === id)) {
+        return
       }
+      if (this.currentId !== id) {
+        this.cancelPlace()
+        this.selectedAnnotationId = null
+      }
+      this.currentId = id
     },
     remove(id: string): void {
       rebuildSeq.delete(id)
@@ -224,6 +246,73 @@ export const useChartStore = defineStore('chart', {
       }
       Object.assign(series, patch)
       touchProject()
+    },
+    togglePlace(kind: ChartAnnotationKind): void {
+      if (!this.currentId) {
+        return
+      }
+      useWorkflowStore().centerTab = 'figure'
+      if (this.placeKind === kind) {
+        this.cancelPlace()
+        return
+      }
+      this.placeKind = kind
+      this.placeAnchor = null
+    },
+    cancelPlace(): void {
+      this.placeKind = null
+      this.placeAnchor = null
+    },
+    placeAt(point: { x: number; y: number }): boolean {
+      const chart = this.current
+      const kind = this.placeKind
+      if (!chart || !kind) {
+        return false
+      }
+      if (kind === 'arrow' || kind === 'region') {
+        if (!this.placeAnchor) {
+          this.placeAnchor = point
+          return false
+        }
+      }
+      const start = this.placeAnchor ?? point
+      const annotation: ChartAnnotation = {
+        id: crypto.randomUUID(),
+        kind,
+        color: ANNOTATION_COLOR,
+        text: kind === 'text' ? 'Note' : '',
+        x: start.x,
+        y: start.y,
+        x2: point.x,
+        y2: point.y
+      }
+      chart.annotations.push(annotation)
+      this.selectedAnnotationId = annotation.id
+      this.cancelPlace()
+      touchProject()
+      return true
+    },
+    updateAnnotation(id: string, patch: Partial<Pick<ChartAnnotation, 'text' | 'color'>>): void {
+      const item = this.current?.annotations.find((ann) => ann.id === id)
+      if (!item) {
+        return
+      }
+      Object.assign(item, patch)
+      touchProject()
+    },
+    removeAnnotation(id: string): void {
+      const chart = this.current
+      if (!chart) {
+        return
+      }
+      chart.annotations = chart.annotations.filter((item) => item.id !== id)
+      if (this.selectedAnnotationId === id) {
+        this.selectedAnnotationId = null
+      }
+      touchProject()
+    },
+    selectAnnotation(id: string | null): void {
+      this.selectedAnnotationId = id
     },
     async createFromBind(options: {
       type: BindableChartType
@@ -264,11 +353,14 @@ export const useChartStore = defineStore('chart', {
           color: seriesColor(index),
           width: 1.5
         })),
+        annotations: [],
         data: result,
         window: null
       }
       this.charts.push(spec)
       this.currentId = id
+      this.cancelPlace()
+      this.selectedAnnotationId = null
       workflow.centerTab = 'figure'
       touchProject()
       return spec
@@ -315,7 +407,7 @@ export const useChartStore = defineStore('chart', {
         if (!canvas || canvas.width < 1 || canvas.height < 1) {
           throwExportMissing()
         }
-        content = canvasToPngDataUrl(canvas)
+        content = pngCapture?.() ?? canvasToPngDataUrl(canvas)
       } else {
         content = seriesToSvg({
           kind: current.type,
@@ -333,7 +425,8 @@ export const useChartStore = defineStore('chart', {
             x: current.data.x.map((value) => (value == null ? Number.NaN : value)),
             ys: current.data.ys,
             xKind: current.data.xKind
-          }
+          },
+          annotations: current.annotations
         })
       }
       const result = await rpc().invoke('chart.saveExport', {

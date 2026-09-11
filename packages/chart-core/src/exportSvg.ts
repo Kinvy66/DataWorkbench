@@ -1,8 +1,8 @@
 import type { PlotKind, PlotSeriesData, SeriesStyle } from './UPlotChart'
+import { annotationSvgMarkup, type ChartAnnotation } from './annotations'
+import { SVG_TEXT_FONT, xmlEscape } from './svgText'
 
-/** CJK-capable stack so SVG and Chromium print-to-PDF keep Chinese titles. */
-export const SVG_TEXT_FONT =
-  'Microsoft YaHei, PingFang SC, Noto Sans SC, Segoe UI, sans-serif'
+export { SVG_TEXT_FONT, xmlEscape } from './svgText'
 
 export type SvgExportOptions = {
   kind: PlotKind
@@ -15,15 +15,7 @@ export type SvgExportOptions = {
   data: PlotSeriesData
   width?: number
   height?: number
-}
-
-export function xmlEscape(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
+  annotations?: ChartAnnotation[]
 }
 
 function formatTick(value: number, kind: PlotSeriesData['xKind']): string {
@@ -239,6 +231,20 @@ export function seriesToSvg(opts: SvgExportOptions): string {
       )
       ly += 18
     }
+  }
+
+  const annotations = opts.annotations ?? []
+  if (annotations.length > 0) {
+    parts.push(
+      annotationSvgMarkup(annotations, {
+        x: sx,
+        y: sy,
+        plotLeft: padL,
+        plotTop: padT,
+        plotWidth: plotW,
+        plotHeight: plotH
+      })
+    )
   }
 
   parts.push('</svg>')

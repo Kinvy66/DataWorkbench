@@ -33,6 +33,7 @@
 | Operate | Statistics | `data.describe` `data.pivotTable` | P3（对齐上游统计） |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |
 | Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` `chart.newHist` | P4 |
+| Chart | Annotate | `chart.annotateText` `chart.annotatePoint` `chart.annotateArrow` `chart.annotateRegion` | 二期标注 |
 | Chart | Export | `chart.exportPng` `chart.exportSvg` `chart.exportPdf` | P4 + 二期 PDF |
 
 所有 label 走 i18n key，例如 `ribbon.dataImport`。英文源对齐上游：「Add Data」。默认界面语言 `zh-CN`。

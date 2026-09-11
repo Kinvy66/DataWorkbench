@@ -109,6 +109,9 @@ describe('i18n', () => {
     expect(String(i18n.global.t('layout.figure'))).toBe('Figure')
     expect(String(i18n.global.t('ribbon.chartExportPngTip'))).toBe('Export the current chart as PNG')
     expect(String(i18n.global.t('ribbon.chartExportPdfTip'))).toBe('Export the current chart as PDF')
+    expect(String(i18n.global.t('ribbon.chartAnnotateTextTip'))).toBe(
+      'Click the plot to place a text label'
+    )
     expect(String(i18n.global.t('log.chartExportOk', { format: 'SVG' }))).toBe('Chart exported as SVG.')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.chart'))).toBe('图表')

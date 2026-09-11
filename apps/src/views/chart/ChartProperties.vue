@@ -72,6 +72,32 @@ const current = computed(() => chart.current)
           />
         </el-form-item>
       </div>
+      <div class="series">
+        <p class="series-name">{{ t('chart.annotations') }}</p>
+        <p v-if="!current.annotations.length" class="muted">{{ t('chart.annotationEmpty') }}</p>
+        <div v-for="item in current.annotations" :key="item.id" class="ann">
+          <p class="ann-kind">{{ t(`chart.annotationKind.${item.kind}`) }}</p>
+          <el-form-item :label="t('chart.annotationText')">
+            <el-input
+              :model-value="item.text"
+              @update:model-value="(value) => chart.updateAnnotation(item.id, { text: String(value) })"
+            />
+          </el-form-item>
+          <el-form-item :label="t('chart.color')">
+            <el-color-picker
+              :model-value="item.color"
+              @update:model-value="
+                (value: string | null) => {
+                  if (value) chart.updateAnnotation(item.id, { color: value })
+                }
+              "
+            />
+          </el-form-item>
+          <el-button size="small" text type="danger" @click="chart.removeAnnotation(item.id)">
+            {{ t('chart.annotationDelete') }}
+          </el-button>
+        </div>
+      </div>
     </el-form>
   </div>
 </template>
@@ -106,5 +132,13 @@ const current = computed(() => chart.current)
   font-size: 12px;
   font-weight: 600;
   color: #303133;
+}
+.ann {
+  margin-bottom: 10px;
+}
+.ann-kind {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: #606266;
 }
 </style>

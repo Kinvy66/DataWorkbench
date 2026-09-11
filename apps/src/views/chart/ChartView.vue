@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   UPlotChart,
+  annotationSvgMarkup,
   dataExtent,
   debounce,
+  drawAnnotations,
   planViewportRequest,
+  type ChartAnnotation,
+  type OverlayRect,
   type ViewportWindow
 } from '@dw/chart-core'
 import { CHART_VIEWPORT_DEBOUNCE_MS } from '@dw/rpc-types'
@@ -16,10 +20,64 @@ const props = defineProps<{
 }>()
 
 const chartStore = useChartStore()
+const wrap = ref<HTMLElement | null>(null)
 const host = ref<HTMLElement | null>(null)
 let plot: UPlotChart | null = null
 let observer: ResizeObserver | null = null
 let ready = false
+
+const overlay = ref<OverlayRect | null>(null)
+const pendingEnd = ref<{ x: number; y: number } | null>(null)
+
+const placing = computed(() => Boolean(chartStore.placeKind))
+
+const overlayItems = computed((): ChartAnnotation[] => {
+  const items = [...props.chart.annotations]
+  const kind = chartStore.placeKind
+  const start = chartStore.placeAnchor
+  const end = pendingEnd.value
+  if (kind && start && end && (kind === 'arrow' || kind === 'region')) {
+    items.push({
+      id: 'pending',
+      kind,
+      color: '#CE6043',
+      text: '',
+      x: start.x,
+      y: start.y,
+      x2: end.x,
+      y2: end.y
+    })
+  }
+  return items
+})
+
+const overlayMarkup = computed(() => {
+  const rect = overlay.value
+  if (!rect || !plot) {
+    return ''
+  }
+  return annotationSvgMarkup(overlayItems.value, {
+    x: (value) => plot?.dataToOverlay(value, 0)?.x ?? 0,
+    y: (value) => plot?.dataToOverlay(0, value)?.y ?? 0,
+    plotLeft: 0,
+    plotTop: 0,
+    plotWidth: rect.width,
+    plotHeight: rect.height
+  })
+})
+
+const overlayStyle = computed(() => {
+  const rect = overlay.value
+  if (!rect) {
+    return { display: 'none' as const }
+  }
+  return {
+    left: `${rect.left}px`,
+    top: `${rect.top}px`,
+    width: `${rect.width}px`,
+    height: `${rect.height}px`
+  }
+})
 
 const scheduleWindow = debounce((range: ViewportWindow) => {
   const spec = props.chart
@@ -53,6 +111,11 @@ function plotData() {
   }
 }
 
+function syncOverlay(): void {
+  const el = wrap.value
+  overlay.value = el && plot ? plot.overlayRect(el) : null
+}
+
 function render(): void {
   const el = host.value
   const data = plotData()
@@ -84,6 +147,9 @@ function render(): void {
     height,
     onXRange: (range) => {
       scheduleWindow(range)
+    },
+    onFrame: () => {
+      syncOverlay()
     }
   })
 }
@@ -108,7 +174,56 @@ function canvas(): HTMLCanvasElement | null {
   return plot?.canvas() ?? null
 }
 
+function pngDataUrl(): string | null {
+  const src = canvas()
+  const scale = plot?.canvasScale()
+  if (!src || src.width < 1 || src.height < 1) {
+    return null
+  }
+  const out = document.createElement('canvas')
+  out.width = src.width
+  out.height = src.height
+  const ctx = out.getContext('2d')
+  if (!ctx) {
+    return null
+  }
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, out.width, out.height)
+  ctx.drawImage(src, 0, 0)
+  if (scale) {
+    drawAnnotations(ctx, props.chart.annotations, scale)
+  }
+  return out.toDataURL('image/png')
+}
+
+function onOverlayClick(event: MouseEvent): void {
+  if (!placing.value || !plot) {
+    return
+  }
+  const point = plot.overlayToData(event.offsetX, event.offsetY)
+  if (!point) {
+    return
+  }
+  pendingEnd.value = null
+  chartStore.placeAt(point)
+}
+
+function onOverlayMove(event: MouseEvent): void {
+  if (!placing.value || !plot || !chartStore.placeAnchor) {
+    return
+  }
+  pendingEnd.value = plot.overlayToData(event.offsetX, event.offsetY)
+}
+
+function onKeyDown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') {
+    pendingEnd.value = null
+    chartStore.cancelPlace()
+  }
+}
+
 onMounted(() => {
+  window.addEventListener('keydown', onKeyDown)
   void nextTick(() => {
     render()
     ready = true
@@ -128,6 +243,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   ready = false
+  window.removeEventListener('keydown', onKeyDown)
   scheduleWindow.cancel()
   observer?.disconnect()
   plot?.destroy()
@@ -161,18 +277,52 @@ watch(
   }
 )
 
-defineExpose({ resetView, canvas })
+watch(
+  () => chartStore.placeKind,
+  (kind) => {
+    if (!kind) {
+      pendingEnd.value = null
+    }
+  }
+)
+
+defineExpose({ resetView, canvas, pngDataUrl })
 </script>
 
 <template>
-  <div ref="host" class="chart-host" />
+  <div ref="wrap" class="chart-wrap">
+    <div ref="host" class="chart-host" />
+    <svg
+      class="ann-overlay"
+      :class="{ placing }"
+      :style="overlayStyle"
+      :viewBox="overlay ? `0 0 ${overlay.width} ${overlay.height}` : '0 0 1 1'"
+      v-html="overlayMarkup"
+      @click="onOverlayClick"
+      @mousemove="onOverlayMove"
+    />
+  </div>
 </template>
 
 <style scoped>
-.chart-host {
+.chart-wrap {
+  position: relative;
   flex: 1;
   min-height: 0;
   width: 100%;
   height: 100%;
+}
+.chart-host {
+  width: 100%;
+  height: 100%;
+}
+.ann-overlay {
+  position: absolute;
+  pointer-events: none;
+  overflow: visible;
+}
+.ann-overlay.placing {
+  pointer-events: auto;
+  cursor: crosshair;
 }
 </style>

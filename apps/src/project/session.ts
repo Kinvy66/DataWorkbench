@@ -45,7 +45,8 @@ function persistChart(chart: ChartSpec): ProjectChartPersist {
     yLabel: chart.yLabel,
     grid: chart.grid,
     legend: chart.legend,
-    series: chart.series.map((item) => ({ key: item.key, color: item.color, width: item.width }))
+    series: chart.series.map((item) => ({ key: item.key, color: item.color, width: item.width })),
+    annotations: (chart.annotations ?? []).map((item) => ({ ...item }))
   }
 }
 

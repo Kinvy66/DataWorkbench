@@ -92,6 +92,15 @@ export default {
     chartExportSvgTip: 'Export the current chart as SVG',
     chartExportPdf: 'PDF',
     chartExportPdfTip: 'Export the current chart as PDF',
+    chartAnnotate: 'Annotate',
+    chartAnnotateText: 'Text',
+    chartAnnotateTextTip: 'Click the plot to place a text label',
+    chartAnnotatePoint: 'Point',
+    chartAnnotatePointTip: 'Click the plot to place a point marker',
+    chartAnnotateArrow: 'Arrow',
+    chartAnnotateArrowTip: 'Click start, then end, to draw an arrow',
+    chartAnnotateRegion: 'Region',
+    chartAnnotateRegionTip: 'Click two x positions to highlight a vertical band',
     layoutSwitcher: 'Switch ribbon layout',
     minimizeRibbon: 'Minimize ribbon',
     keyTips: 'Key Tips',
@@ -382,7 +391,23 @@ export default {
     columnNotFound: 'Column not found.',
     nonNumeric: 'That column is not numeric. Query or pick a numeric column.',
     emptySeries: 'Not enough numeric points to plot.',
-    exportMissing: 'Plot a chart before exporting.'
+    exportMissing: 'Plot a chart before exporting.',
+    annotations: 'Annotations',
+    annotationEmpty: 'No annotations. Use Chart → Annotate, then click the plot.',
+    annotationText: 'Label',
+    annotationDelete: 'Remove',
+    annotationKind: {
+      text: 'Text',
+      point: 'Point',
+      arrow: 'Arrow',
+      region: 'Region'
+    },
+    annotateHint: {
+      text: 'Click the plot to place a label. Esc cancels.',
+      point: 'Click the plot to place a point. Esc cancels.',
+      arrow: 'Click start, then end. Esc cancels.',
+      region: 'Click the left edge, then the right edge. Esc cancels.'
+    }
   },
   workflow: {
     unknownType: 'Unknown node type.',

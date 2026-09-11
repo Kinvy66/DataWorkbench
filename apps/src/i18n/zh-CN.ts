@@ -92,6 +92,15 @@ export default {
     chartExportSvgTip: '导出当前图为 SVG',
     chartExportPdf: 'PDF',
     chartExportPdfTip: '导出当前图为 PDF',
+    chartAnnotate: '标注',
+    chartAnnotateText: '文本',
+    chartAnnotateTextTip: '在图上点击放置文字',
+    chartAnnotatePoint: '点',
+    chartAnnotatePointTip: '在图上点击放置标记点',
+    chartAnnotateArrow: '箭头',
+    chartAnnotateArrowTip: '先点起点再点终点画箭头',
+    chartAnnotateRegion: '区域',
+    chartAnnotateRegionTip: '点两个 X 位置高亮竖向区间',
     layoutSwitcher: '切换功能区布局',
     minimizeRibbon: '最小化功能区',
     keyTips: '快捷提示',
@@ -380,7 +389,23 @@ export default {
     columnNotFound: '找不到该列。',
     nonNumeric: '该列不是数值列。请先筛选或选择数值列。',
     emptySeries: '没有足够的数值点可以绘图。',
-    exportMissing: '请先绘图再导出。'
+    exportMissing: '请先绘图再导出。',
+    annotations: '标注',
+    annotationEmpty: '还没有标注。用「图表 → 标注」后在图上点击。',
+    annotationText: '文字',
+    annotationDelete: '删除',
+    annotationKind: {
+      text: '文本',
+      point: '点',
+      arrow: '箭头',
+      region: '区域'
+    },
+    annotateHint: {
+      text: '在图上点击放置文字。Esc 取消。',
+      point: '在图上点击放置标记点。Esc 取消。',
+      arrow: '先点起点，再点终点。Esc 取消。',
+      region: '先点左边界，再点右边界。Esc 取消。'
+    }
   },
   workflow: {
     unknownType: '未知节点类型。',

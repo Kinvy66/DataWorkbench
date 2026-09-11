@@ -10,7 +10,11 @@ import ChartView from './ChartView.vue'
 const { t } = useI18n()
 const chart = useChartStore()
 const data = useDataStore()
-const view = ref<{ resetView: () => void; canvas: () => HTMLCanvasElement | null } | null>(null)
+const view = ref<{
+  resetView: () => void
+  canvas: () => HTMLCanvasElement | null
+  pngDataUrl: () => string | null
+} | null>(null)
 
 const current = computed(() => chart.current)
 
@@ -44,10 +48,12 @@ async function resetView(): Promise<void> {
 
 onMounted(() => {
   chart.setCanvasProvider(() => view.value?.canvas() ?? null)
+  chart.setPngCapture(() => view.value?.pngDataUrl() ?? null)
 })
 
 onUnmounted(() => {
   chart.setCanvasProvider(null)
+  chart.setPngCapture(null)
 })
 </script>
 
@@ -62,7 +68,8 @@ onUnmounted(() => {
     </el-tabs>
     <div v-if="current" class="toolbar">
       <el-button size="small" @click="resetView">{{ t('chart.resetView') }}</el-button>
-      <span v-if="current.data && (current.data.downsampled || current.window)" class="hint">
+      <span v-if="chart.placeKind" class="hint">{{ t(`chart.annotateHint.${chart.placeKind}`) }}</span>
+      <span v-else-if="current.data && (current.data.downsampled || current.window)" class="hint">
         {{ t('chart.downsampled', { points: current.data.pointCount, source: current.data.sourceCount }) }}
       </span>
     </div>

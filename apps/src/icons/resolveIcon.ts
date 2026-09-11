@@ -41,6 +41,10 @@ import iconChartCurve from '@/assets/icons/app/chart-type/chart-curve.svg?url'
 import iconChartScatter from '@/assets/icons/app/chart-type/chart-scatter.svg?url'
 import iconChartBar from '@/assets/icons/app/chart-type/chart-bar.svg?url'
 import iconChartHistogram from '@/assets/icons/app/chart-type/chart-histogram.svg?url'
+import iconChartTextMarker from '@/assets/icons/app/chart-text-marker.svg?url'
+import iconChartCrossMarker from '@/assets/icons/app/chart-corss-marker.svg?url'
+import iconChartPickerXy from '@/assets/icons/app/chart-picker-xy.svg?url'
+import iconChartSelectorRect from '@/assets/icons/app/chart-selector-rect.svg?url'
 import iconShowChart from '@/assets/icons/app/showChart.svg?url'
 import iconChart from '@/assets/icons/gui/chart.svg?url'
 
@@ -81,6 +85,10 @@ const urls: Record<string, string> = {
   'app/chart-type/chart-scatter': iconChartScatter,
   'app/chart-type/chart-bar': iconChartBar,
   'app/chart-type/chart-histogram': iconChartHistogram,
+  'app/chart-text-marker': iconChartTextMarker,
+  'app/chart-corss-marker': iconChartCrossMarker,
+  'app/chart-picker-xy': iconChartPickerXy,
+  'app/chart-selector-rect': iconChartSelectorRect,
   'app/showChart': iconShowChart,
   'gui/data': iconData,
   'gui/data-table': iconDataTable,

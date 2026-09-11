@@ -61,7 +61,8 @@ describe('project archive helpers', () => {
               yLabel: 'ch1',
               grid: true,
               legend: true,
-              series: [{ key: 'ch1', color: '#5280C1', width: 1.5 }]
+              series: [{ key: 'ch1', color: '#5280C1', width: 1.5 }],
+              annotations: [{ id: 'n1', kind: 'text', x: 1, y: 2, text: 'peak', color: '#CE6043' }]
             }
           ]
         },
@@ -77,6 +78,7 @@ describe('project archive helpers', () => {
       expect(opened.workflowId).toBe('wf-1')
       expect(opened.uiLayout.nodes.n1).toEqual({ x: 40, y: 80 })
       expect(opened.charts.charts[0]?.y).toEqual(['ch1'])
+      expect(opened.charts.charts[0]?.annotations?.[0]?.text).toBe('peak')
       expect(JSON.stringify(opened.charts)).not.toContain('"data":')
       expect(readFileSync(dest).length).toBeGreaterThan(20)
     } finally {

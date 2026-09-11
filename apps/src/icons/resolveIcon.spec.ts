@@ -44,6 +44,8 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/pivotTable')).toMatch(/pivotTable\.svg/)
     expect(resolveIconUrl('app/chart-type/chart-curve')).toMatch(/chart-curve\.svg/)
     expect(resolveIconUrl('app/chart-type/chart-histogram')).toMatch(/chart-histogram\.svg/)
+    expect(resolveIconUrl('app/chart-text-marker')).toMatch(/chart-text-marker\.svg/)
+    expect(resolveIconUrl('app/chart-corss-marker')).toMatch(/chart-corss-marker\.svg/)
     expect(resolveIconUrl('gui/chart')).toMatch(/chart\.svg/)
   })
 

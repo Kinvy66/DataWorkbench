@@ -86,6 +86,7 @@ describe('project session', () => {
         grid: true,
         legend: true,
         series: [{ key: 'value', color: '#5280C1', width: 1.5 }],
+        annotations: [],
         data: {
           x: [1, 2],
           ys: [[3, 4]],
