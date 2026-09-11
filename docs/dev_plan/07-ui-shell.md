@@ -1,6 +1,6 @@
 # UI 壳：Ribbon、布局、命令总线
 
-壳层对标上游 `AppMainWindow` + `DAAppRibbonArea` + ADS，但一期不做自由停靠。目标是「看起来像专业桌面分析软件」，而不是网页后台。
+壳层对标上游 `AppMainWindow` + `DAAppRibbonArea` + ADS。工作区用 **Golden Layout** 自由停靠（可把七个面板拖到别的分区）；图表区内再嵌套停靠仍不做。目标是「看起来像专业桌面分析软件」，而不是网页后台。
 
 ## 窗口结构
 
@@ -18,7 +18,7 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
-分隔条可拖。尺寸写入 `ui-layout.json` 的 `split` 字段。
+分隔条可拖。默认仍是左 / 中 / 右 / 底四块。面板标签可拖到其它栈。停靠树写入 `ui-layout.json` 的 `docking`（可选；旧文件没有则按 `splits` + 当前 tab 生成默认树）。`header.close` / `header.popout` 关闭，避免面板被关掉或弹出独立窗口。复位路径：主页 → **复位布局**（`view.resetLayout`）。
 
 ## Ribbon 信息架构（一期）
 
@@ -26,6 +26,7 @@
 |-----|------|---------|------|
 | File | | `file.new` `file.open` `file.save` `file.saveAs` `file.exit` | P5 已可用 |
 | Home | Clipboard | `edit.undo` `edit.redo` | P2 起 |
+| Home | Layout | `view.resetLayout` | 二期停靠 |
 | Data | Data Operation | `data.import` `data.remove` `data.rename` | P1（对齐上游 Data：添加/移除/重命名） |
 | Data | Export | `data.export` | P1 |
 | Operate | Data Cleaning | `data.dropNa` `data.dropDuplicates` `data.fillNa` `data.interpolate` `data.removeOutliersIqr` `data.removeOutliersZscore` `data.transformSkewed` | P3（对齐上游数据清洗） |
@@ -85,8 +86,8 @@ Ribbon item `@click` 只 `dispatch(item.id)`。`can()` 根据 Pinia：无数据�
 
 开发态**默认不**自动弹出 DevTools（`detach` 会多出一个独立窗口）。需要时在窗口内按 `Ctrl+Shift+I` 或 `F12`；或启动前设 `DW_DEVTOOLS=1`。Vue Flow 与表格性能问题用 Performance 面板，不要猜。
 
-## 二期（不在 MVP）
+## 二期
 
-- Golden Layout 自由停靠与布局持久化
-- 图表区内多 figure 分屏（上游 ADS 嵌套）
+- **Golden Layout 自由停靠与布局持久化（已落地）**：`golden-layout` 2.6，Vue Teleport 挂到 `container.element`；七个面板 `datasets` / `nodes` / `table` / `workflow` / `figure` / `properties` / `log`；工程 `ui-layout.docking` 可选，不 bump `PROJECT_FORMAT`。禁止弹出窗口。
+- 图表区内多 figure 分屏（上游 ADS 嵌套）— **未做**
 - Ribbon gallery 节点缩略图

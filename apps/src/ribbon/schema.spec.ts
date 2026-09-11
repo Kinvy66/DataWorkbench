@@ -41,6 +41,8 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'workflow.stop'")
     expect(source).toContain("id: 'edit.undo'")
     expect(source).toContain("id: 'edit.redo'")
+    expect(source).toContain("id: 'view.resetLayout'")
+    expect(source).toContain("id: 'layout'")
     expect(source).toContain("id: 'chart'")
     expect(source).toContain("id: 'chart.newLine'")
     expect(source).toContain("id: 'chart.newScatter'")

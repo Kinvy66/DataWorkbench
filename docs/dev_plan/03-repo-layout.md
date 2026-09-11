@@ -12,7 +12,7 @@ DataWorkbench/
 │   ├── src/                     # renderer Vue
 │   │   ├── assets/icons/        # 上游 SVG：app/ + gui/
 │   │   ├── commands/            # 命令总线
-│   │   ├── layout/              # 一期固定分区
+│   │   ├── layout/              # Golden Layout 停靠
 │   │   ├── ribbon/              # ML Ribbon schema
 │   │   ├── views/
 │   │   │   ├── data/

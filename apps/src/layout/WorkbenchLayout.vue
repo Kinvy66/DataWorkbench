@@ -1,8 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Splitpanes, Pane } from 'splitpanes'
-import 'splitpanes/dist/splitpanes.css'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { GoldenLayout, LayoutConfig } from 'golden-layout'
+import type { ComponentContainer, ComponentItem } from 'golden-layout'
+import 'golden-layout/dist/css/goldenlayout-base.css'
+import 'golden-layout/dist/css/themes/goldenlayout-light-theme.css'
 import { useI18n } from 'vue-i18n'
+import {
+  DOCK_PANELS,
+  defaultDockingConfig,
+  isDockPanelId,
+  persistableDocking,
+  sanitizeDocking,
+  type DockPanelId,
+  type DockTitles
+} from '@/layout/docking'
+import { registerDockingCapture } from '@/layout/docking-runtime'
 import { useLogStore } from '@/stores/log'
 import { useProjectStore } from '@/stores/project'
 import { useWorkflowStore } from '@/stores/workflow'
@@ -33,10 +45,15 @@ import ChartProperties from '@/views/chart/ChartProperties.vue'
 import ChartBindDialog from '@/views/chart/ChartBindDialog.vue'
 import ChartSubplotDialog from '@/views/chart/ChartSubplotDialog.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const log = useLogStore()
 const workflow = useWorkflowStore()
 const project = useProjectStore()
+const hostEl = ref<HTMLElement | null>(null)
+const hosts = reactive<Partial<Record<DockPanelId, HTMLElement>>>({})
+
+let layout: GoldenLayout | null = null
+let reloading = false
 
 const rightPanel = computed(() => {
   if (workflow.centerTab === 'figure') {
@@ -48,79 +65,222 @@ const rightPanel = computed(() => {
   return 'dataset'
 })
 
-function onMainResized(panes: Array<{ size: number }>): void {
-  if (project.restoring || panes.length < 2) {
-    return
+function dockTitles(): DockTitles {
+  return {
+    datasets: t('layout.datasets'),
+    nodes: t('layout.nodes'),
+    table: t('layout.table'),
+    workflow: t('layout.workflow'),
+    figure: t('layout.figure'),
+    properties: t('layout.properties'),
+    log: t('layout.log')
   }
-  project.setSplits({ main: panes[0]!.size, log: panes[1]!.size })
 }
 
-function onCenterResized(panes: Array<{ size: number }>): void {
-  if (project.restoring || panes.length < 3) {
+function resolveConfig(): LayoutConfig {
+  const fallback = defaultDockingConfig({
+    splits: project.splits,
+    centerTab: workflow.centerTab,
+    leftTab: workflow.leftTab,
+    titles: dockTitles(),
+    maximiseLabel: t('window.maximize')
+  })
+  return sanitizeDocking(project.docking, fallback)
+}
+
+function snapshotDocking(): Record<string, unknown> | null {
+  if (!layout) {
+    return project.docking
+  }
+  return persistableDocking(LayoutConfig.fromResolved(layout.saveLayout()))
+}
+
+function notifyShown(): void {
+  window.dispatchEvent(new Event('resize'))
+}
+
+function bindPanel(container: ComponentContainer, itemConfig: { componentType: unknown }): { virtual: false; component: undefined } {
+  const type = String(itemConfig.componentType)
+  if (isDockPanelId(type)) {
+    hosts[type] = container.element
+    container.element.classList.add('dw-gl-content')
+    container.on('show', notifyShown)
+  }
+  return { virtual: false, component: undefined }
+}
+
+function unbindPanel(container: ComponentContainer): void {
+  const type = String(container.componentType)
+  if (isDockPanelId(type) && hosts[type] === container.element) {
+    delete hosts[type]
+  }
+}
+
+function applyTitles(): void {
+  if (!layout) {
     return
   }
-  project.setSplits({ left: panes[0]!.size, center: panes[1]!.size, properties: panes[2]!.size })
+  const titles = dockTitles()
+  for (const id of DOCK_PANELS) {
+    layout.findFirstComponentItemById(id)?.setTitle(titles[id])
+  }
+}
+
+function activatePanel(id: string): void {
+  if (!layout || reloading) {
+    return
+  }
+  const item = layout.findFirstComponentItemById(id)
+  if (!item) {
+    return
+  }
+  item.parentItem.setActiveComponentItem(item, true, true)
+}
+
+function onActiveItem(item: ComponentItem): void {
+  if (reloading || project.restoring) {
+    return
+  }
+  const id = String(item.componentType)
+  if (id === 'table' || id === 'workflow' || id === 'figure') {
+    workflow.centerTab = id
+  } else if (id === 'datasets' || id === 'nodes') {
+    workflow.leftTab = id
+  }
+}
+
+function onStateChanged(): void {
+  if (reloading || project.restoring || !layout) {
+    return
+  }
+  const next = snapshotDocking()
+  if (JSON.stringify(next) === JSON.stringify(project.docking)) {
+    return
+  }
+  project.setDocking(next)
+}
+
+function reload(): void {
+  if (!layout) {
+    return
+  }
+  reloading = true
+  try {
+    layout.loadLayout(resolveConfig())
+    applyTitles()
+    activatePanel(workflow.leftTab)
+    activatePanel(workflow.centerTab)
+  } finally {
+    void nextTick(() => {
+      reloading = false
+      if (!project.restoring && !project.docking) {
+        project.hydrateDocking(snapshotDocking())
+      }
+      notifyShown()
+    })
+  }
 }
 
 function formatTime(at: number): string {
   return new Date(at).toLocaleTimeString()
 }
+
+onMounted(() => {
+  const host = hostEl.value
+  if (!host) {
+    return
+  }
+  layout = new GoldenLayout(host, bindPanel, unbindPanel)
+  layout.resizeWithContainerAutomatically = true
+  layout.on('stateChanged', onStateChanged)
+  layout.on('activeContentItemChanged', onActiveItem)
+  registerDockingCapture(snapshotDocking)
+  reload()
+})
+
+onUnmounted(() => {
+  registerDockingCapture(null)
+  if (layout) {
+    layout.off('stateChanged', onStateChanged)
+    layout.off('activeContentItemChanged', onActiveItem)
+    layout.destroy()
+    layout = null
+  }
+})
+
+watch(
+  () => project.dockingEpoch,
+  () => {
+    reload()
+  },
+  { flush: 'post' }
+)
+
+watch(
+  () => workflow.centerTab,
+  (tab) => {
+    activatePanel(tab)
+  }
+)
+
+watch(
+  () => workflow.leftTab,
+  (tab) => {
+    activatePanel(tab)
+  }
+)
+
+watch(locale, () => {
+  applyTitles()
+})
 </script>
 
 <template>
   <div class="workbench">
-    <Splitpanes class="default-theme main-split" horizontal @resized="onMainResized">
-      <Pane :size="project.splits.main" :min-size="40">
-        <Splitpanes class="default-theme" @resized="onCenterResized">
-          <Pane :size="project.splits.left" :min-size="12">
-            <section class="panel">
-              <el-tabs v-model="workflow.leftTab" class="panel-tabs">
-                <el-tab-pane :label="t('layout.datasets')" name="datasets">
-                  <DatasetList />
-                </el-tab-pane>
-                <el-tab-pane :label="t('layout.nodes')" name="nodes">
-                  <NodeToolbox />
-                </el-tab-pane>
-              </el-tabs>
-            </section>
-          </Pane>
-          <Pane :size="project.splits.center" :min-size="30">
-            <section class="panel">
-              <el-tabs v-model="workflow.centerTab" class="panel-tabs">
-                <el-tab-pane :label="t('layout.table')" name="table">
-                  <VirtualTable />
-                </el-tab-pane>
-                <el-tab-pane :label="t('layout.workflow')" name="workflow">
-                  <WorkflowCanvas />
-                </el-tab-pane>
-                <el-tab-pane :label="t('layout.figure')" name="figure">
-                  <ChartWorkspace />
-                </el-tab-pane>
-              </el-tabs>
-            </section>
-          </Pane>
-          <Pane :size="project.splits.properties" :min-size="12">
-            <section class="panel">
-              <header>{{ t('layout.properties') }}</header>
-              <NodeProperties v-if="rightPanel === 'node'" />
-              <ChartProperties v-else-if="rightPanel === 'chart'" />
-              <DatasetProperties v-else />
-            </section>
-          </Pane>
-        </Splitpanes>
-      </Pane>
-      <Pane :size="project.splits.log" :min-size="10">
-        <section class="panel log-panel">
-          <header>{{ t('layout.log') }}</header>
-          <ol class="log-lines">
-            <li v-for="line in log.lines" :key="line.id" :class="'lv-' + line.level">
-              <span class="ts">{{ formatTime(line.at) }}</span>
-              {{ line.message }}
-            </li>
-          </ol>
-        </section>
-      </Pane>
-    </Splitpanes>
+    <div id="dw-dock-stash" class="dock-stash" aria-hidden="true"></div>
+    <div ref="hostEl" class="gl-host" />
+    <Teleport :to="hosts.datasets ?? '#dw-dock-stash'">
+      <section class="dock-panel">
+        <DatasetList />
+      </section>
+    </Teleport>
+    <Teleport :to="hosts.nodes ?? '#dw-dock-stash'">
+      <section class="dock-panel">
+        <NodeToolbox />
+      </section>
+    </Teleport>
+    <Teleport :to="hosts.table ?? '#dw-dock-stash'">
+      <section class="dock-panel">
+        <VirtualTable />
+      </section>
+    </Teleport>
+    <Teleport :to="hosts.workflow ?? '#dw-dock-stash'">
+      <section class="dock-panel">
+        <WorkflowCanvas />
+      </section>
+    </Teleport>
+    <Teleport :to="hosts.figure ?? '#dw-dock-stash'">
+      <section class="dock-panel">
+        <ChartWorkspace />
+      </section>
+    </Teleport>
+    <Teleport :to="hosts.properties ?? '#dw-dock-stash'">
+      <section class="dock-panel">
+        <NodeProperties v-if="rightPanel === 'node'" />
+        <ChartProperties v-else-if="rightPanel === 'chart'" />
+        <DatasetProperties v-else />
+      </section>
+    </Teleport>
+    <Teleport :to="hosts.log ?? '#dw-dock-stash'">
+      <section class="dock-panel log-panel">
+        <ol class="log-lines">
+          <li v-for="line in log.lines" :key="line.id" :class="'lv-' + line.level">
+            <span class="ts">{{ formatTime(line.at) }}</span>
+            {{ line.message }}
+          </li>
+        </ol>
+      </section>
+    </Teleport>
     <DropNaDialog />
     <DropDuplicatesDialog />
     <FillNaDialog />
@@ -146,45 +306,43 @@ function formatTime(at: number): string {
 .workbench {
   flex: 1;
   min-height: 0;
-}
-.workbench :deep(.splitpanes) {
-  height: 100%;
-}
-.panel {
-  height: 100%;
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border: 1px solid #ebeef5;
-  box-sizing: border-box;
+  position: relative;
 }
-.panel header {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 10px;
-  border-bottom: 1px solid #ebeef5;
-  color: #303133;
-  background: #f5f7fa;
+.dock-stash {
+  display: none;
 }
-.panel-tabs {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.panel-tabs :deep(.el-tabs__header) {
-  margin: 0;
-  padding: 0 8px;
-  background: #f5f7fa;
-}
-.panel-tabs :deep(.el-tabs__content) {
+.gl-host {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  min-width: 0;
+  position: relative;
 }
-.panel-tabs :deep(.el-tab-pane) {
+.dock-panel {
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  background: #fff;
+  box-sizing: border-box;
+}
+.workbench :deep(.lm_goldenlayout) {
+  height: 100%;
+}
+.workbench :deep(.lm_content) {
+  overflow: hidden;
+  background: #fff;
+}
+.workbench :deep(.dw-gl-content) {
+  height: 100%;
+  overflow: hidden;
+}
+.workbench :deep(.lm_header) {
+  background: #f5f7fa;
+}
+.workbench :deep(.lm_tab) {
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 .log-panel .log-lines {
   margin: 0;

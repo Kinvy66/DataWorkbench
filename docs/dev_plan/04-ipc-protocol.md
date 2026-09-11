@@ -128,6 +128,8 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 
 ZIP 的压缩/解压在 **Electron 主进程**（`fflate`），Python 只认已解压目录。不要让 Python 再依赖 QuaZip。清单文件是 **`manifest.json`**（`magic: DataWorkbenchProject`, `format: 1`），不是 `project.json`。扩展名 `.dwproj`。不打开上游 `.dapro`。
 
+`uiLayout` 由渲染进程写入 ZIP 的 `ui-layout.json`（Python sidecar **不**建模）。字段含 `centerTab` / `leftTab` / `splits` / `nodes`，以及可选 `docking`（Golden Layout JSON）。缺 `docking` 的旧工程按 `splits` + tab 生成默认停靠树，**不 bump** `format`。
+
 `project.save` / `project.open` / `project.packLogic` / `project.unpackLogic` 超时 **120s**。失败码沿用 **3001** `data.ioError`，另有 `project.invalid` / `project.unsupportedFormat` / `project.dirMissing`。
 
 ## 错误码

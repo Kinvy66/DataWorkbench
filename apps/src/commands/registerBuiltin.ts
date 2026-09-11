@@ -5,6 +5,7 @@ import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
 import { useWorkflowStore } from '@/stores/workflow'
 import { useChartStore } from '@/stores/chart'
+import { useProjectStore } from '@/stores/project'
 import { i18n } from '@/i18n'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
@@ -506,6 +507,11 @@ export function registerBuiltinCommands(): void {
   })
   commandBus.register('file.saveAs', async () => {
     await saveProject(true)
+  })
+
+  commandBus.register('view.resetLayout', () => {
+    useProjectStore().resetDocking()
+    useLogStore().append('info', t('log.layoutReset'))
   })
 
   commandBus.register(

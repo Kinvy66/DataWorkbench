@@ -49,7 +49,7 @@ flowchart TB
 |------|--------|------|
 | APP + DAGui 壳（Ribbon/Dock） | `apps` Vue 壳（`@dw/app`） | 重写 |
 | SARibbon | `@mlightcad/ribbon` | 替换 |
-| Qt-Advanced-Docking-System | 一期固定分区，二期 Golden Layout | 降级后重写 |
+| Qt-Advanced-Docking-System | Golden Layout（工作区级）；图表区内嵌套仍不做 | 重写 |
 | DAPyWorkFlow C++ 代理 | 删除 | Python 引擎直连 RPC |
 | `DAWorkFlowPy` | `python/dw_workflow`（vendor + 改名空间） | 复用 |
 | DAData + 虚表 `fetchBlock` | `dw.host.data` + 前端虚表 | 协议复用，实现重写 |

@@ -68,6 +68,25 @@ export function useRibbonSchema() {
                 ]
               }
             ]
+          },
+          {
+            id: 'layout',
+            title: t('ribbon.layout'),
+            collections: [
+              {
+                id: 'layout-actions',
+                items: [
+                  {
+                    id: 'view.resetLayout',
+                    type: 'button',
+                    label: t('ribbon.resetLayout'),
+                    tooltip: t('ribbon.resetLayoutTip'),
+                    size: 'large',
+                    icon: ribbonIcon('app/viewAll')
+                  }
+                ]
+              }
+            ]
           }
         ]
       },

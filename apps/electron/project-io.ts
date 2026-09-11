@@ -75,7 +75,10 @@ export function normalizeUiLayout(raw: unknown): ProjectUiLayout {
       properties: asNumber(splitsRaw.properties, DEFAULT_PROJECT_SPLITS.properties),
       log: asNumber(splitsRaw.log, DEFAULT_PROJECT_SPLITS.log)
     },
-    nodes
+    nodes,
+    ...(src.docking && typeof src.docking === 'object' && !Array.isArray(src.docking)
+      ? { docking: src.docking as Record<string, unknown> }
+      : {})
   }
 }
 

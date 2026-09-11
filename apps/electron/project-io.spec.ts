@@ -31,6 +31,13 @@ describe('project archive helpers', () => {
     expect(layout.leftTab).toBe('datasets')
     expect(layout.splits).toEqual(DEFAULT_PROJECT_SPLITS)
     expect(layout.nodes.a).toEqual({ x: 10, y: 20 })
+    expect(layout.docking).toBeUndefined()
+  })
+
+  it('keeps a docking object when present', () => {
+    const docking = { root: { type: 'column', content: [] } }
+    const layout = normalizeUiLayout({ docking })
+    expect(layout.docking).toEqual(docking)
   })
 
   it('saves then opens layout and charts without sampled points', async () => {

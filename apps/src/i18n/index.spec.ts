@@ -133,5 +133,13 @@ describe('i18n', () => {
     expect(String(i18n.global.t('log.projectSaved'))).toBe('工程已保存。')
     expect(String(i18n.global.t('log.sidecarDead'))).toContain('重启应用')
     expect(String(i18n.global.t('log.sidecarCrashed', { code: 1, signal: '-' }))).toContain('自动重启')
+    i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.layout'))).toBe('Layout')
+    expect(String(i18n.global.t('ribbon.resetLayout'))).toBe('Reset Layout')
+    expect(String(i18n.global.t('log.layoutReset'))).toBe('Layout restored to default.')
+    i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.layout'))).toBe('布局')
+    expect(String(i18n.global.t('ribbon.resetLayout'))).toBe('复位布局')
+    expect(String(i18n.global.t('log.layoutReset'))).toBe('已恢复默认布局。')
   })
 })

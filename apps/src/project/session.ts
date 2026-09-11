@@ -1,4 +1,5 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { nextTick } from 'vue'
 import type {
   ProjectChartsFile,
   ProjectChartPersist,
@@ -7,6 +8,7 @@ import type {
   ProjectUiLayout
 } from '@dw/rpc-types'
 import { i18n } from '@/i18n'
+import { captureLiveDocking } from '@/layout/docking-runtime'
 import { isCancelled, translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
 import { useChartStore, type ChartSpec } from '@/stores/chart'
@@ -69,12 +71,14 @@ export function captureUiLayout(): ProjectUiLayout {
   const project = useProjectStore()
   const data = useDataStore()
   const workflow = useWorkflowStore()
+  const docking = captureLiveDocking() ?? project.docking ?? undefined
   return {
     centerTab: workflow.centerTab,
     leftTab: workflow.leftTab,
     currentDataId: data.currentId,
     splits: { ...project.splits },
-    nodes: workflow.captureLayout()
+    nodes: workflow.captureLayout(),
+    ...(docking ? { docking } : {})
   }
 }
 
@@ -173,9 +177,11 @@ export async function openProject(): Promise<boolean> {
       await workflow.adoptWorkflow(result.workflowId, result.uiLayout.nodes)
       workflow.centerTab = result.uiLayout.centerTab
       workflow.leftTab = result.uiLayout.leftTab
+      project.loadDocking(result.uiLayout.docking ?? null)
       await useChartStore().restoreFromFile(result.charts)
       project.markClean(result.path)
     } finally {
+      await nextTick()
       project.endRestore()
     }
     await syncDocumentTitle()

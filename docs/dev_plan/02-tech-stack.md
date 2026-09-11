@@ -27,18 +27,18 @@ AG Grid 交互更像 Excel，但 Community 对「外部窗口数据」要自己�
 
 二期若交互不够再换 AG Grid，store 接口保持 `getRow(i)` / `ensureWindow(start,end)` 不变。
 
-## 停靠布局：一期降级
+## 停靠布局
 
-上游 ADS 嵌套停靠（图表区内再停靠）实现成本高，且有焦点陷阱类问题。
+上游 ADS 嵌套停靠（图表区内再停靠）实现成本高，且有焦点陷阱类问题。**工作区级自由停靠已落地**（`golden-layout` 2.6，不是 dockview）。图表区内再嵌套 figure 仍不做。
 
-**一期（P0–P5）固定 IDE 布局：**
+默认 IDE 分区：
 
-- 左：数据列表 / 节点工具箱（tab）
-- 中：工作流 | 数据表 | 图表（主 tab）
+- 左：数据列表 / 节点工具箱（同一 stack）
+- 中：工作流 | 数据表 | 图表（同一 stack）
 - 右：属性面板
 - 底：日志
 
-用 `splitpanes` 或 CSS grid + 可拖拽分隔条即可。**二期**再引入 Golden Layout（框架无关）做可持久化自由停靠。不要在 P0 上 dockview（偏 React）。
+用户可把标签拖到其它栈。旧工程没有 `docking` 时仍按 `splits` 生成上述默认树。不要用 dockview（偏 React）。
 
 ## IPC
 

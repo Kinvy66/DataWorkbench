@@ -10,7 +10,7 @@ ZIP 由 **Electron 主进程** 读写。Python 只处理已解压目录中的逻
 project.dwproj
 ├── manifest.json              # magic, version, appVersion
 ├── workflow-logic.json        # DAWorkflowSerializer.to_dict 产物
-├── ui-layout.json             # 节点坐标、split 比例、打开的 tab
+├── ui-layout.json             # 节点坐标、split 比例、打开的 tab、可选 docking
 ├── charts.json                # 图表绑定与样式（含标注坐标、可选 figures 子图网格），无点数据
 ├── data-manager.json          # [{id, name, store: "inline-parquet"}]
 ├── datas/
@@ -44,7 +44,7 @@ project.dwproj
 1. 解压到临时目录。
 2. 校验 magic/format；主进程先解析 `ui-layout.json` / `charts.json` / `workflow-logic.json`。
 3. `project.unpackLogic`：把 parquet 与 workflow JSON **全部读进内存**，成功后再一次性替换 DataManager **和** workflow sessions。解析失败则当前应用状态不变。
-4. 渲染进程 `data.refreshList` + wrap 画布（`getGraph`，用文件里的节点坐标，禁止 `addNode`）+ 恢复 split/tab + `chart.buildSeries` 重建图（不读入库里的点）。
+4. 渲染进程 `data.refreshList` + wrap 画布（`getGraph`，用文件里的节点坐标，禁止 `addNode`）+ 恢复 split/tab/`docking` + `chart.buildSeries` 重建图（不读入库里的点）。
 5. 删除临时目录。任一步失败：工程视为未打开，临时目录删除，报错。不要半开状态允许保存覆盖用户文件。
 
 ## 与上游 `.dapro` 的关系

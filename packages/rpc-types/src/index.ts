@@ -750,6 +750,8 @@ export interface ProjectUiLayout {
   currentDataId: string | null
   splits: ProjectSplits
   nodes: Record<string, ProjectNodePosition>
+  /** Golden Layout JSON. Optional; missing files keep the default IDE split. */
+  docking?: Record<string, unknown>
 }
 
 export interface ProjectChartSeriesStyle {

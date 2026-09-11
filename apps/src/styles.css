@@ -75,7 +75,3 @@ body,
   ) {
   -webkit-app-region: no-drag;
 }
-
-.splitpanes.default-theme .splitpanes__splitter {
-  background-color: #dcdfe6;
-}
