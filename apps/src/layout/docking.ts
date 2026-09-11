@@ -111,6 +111,7 @@ export function defaultDockingConfig(options: {
         {
           type: 'stack',
           size: `${splits.log}%`,
+          minSize: '72px',
           content: [panel('log', titles.log)]
         }
       ]

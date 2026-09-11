@@ -15,7 +15,7 @@ import {
   type DockTitles
 } from '@/layout/docking'
 import { registerDockingCapture } from '@/layout/docking-runtime'
-import { useLogStore } from '@/stores/log'
+import LogPanel from '@/layout/LogPanel.vue'
 import { useProjectStore } from '@/stores/project'
 import { useWorkflowStore } from '@/stores/workflow'
 import DatasetList from '@/views/DatasetList.vue'
@@ -46,7 +46,6 @@ import ChartBindDialog from '@/views/chart/ChartBindDialog.vue'
 import ChartSubplotDialog from '@/views/chart/ChartSubplotDialog.vue'
 
 const { t, locale } = useI18n()
-const log = useLogStore()
 const workflow = useWorkflowStore()
 const project = useProjectStore()
 const hostEl = ref<HTMLElement | null>(null)
@@ -100,10 +99,13 @@ function notifyShown(): void {
 }
 
 function bindPanel(container: ComponentContainer, itemConfig: { componentType: unknown }): { virtual: false; component: undefined } {
-  const type = String(itemConfig.componentType)
+  const type = String(container.componentType ?? itemConfig.componentType)
   if (isDockPanelId(type)) {
-    hosts[type] = markRaw(container.element)
+    const mount = document.createElement('div')
+    mount.className = 'dw-gl-mount'
+    container.element.replaceChildren(mount)
     container.element.classList.add('dw-gl-content')
+    hosts[type] = markRaw(mount)
     container.on('show', notifyShown)
   }
   return { virtual: false, component: undefined }
@@ -111,7 +113,11 @@ function bindPanel(container: ComponentContainer, itemConfig: { componentType: u
 
 function unbindPanel(container: ComponentContainer): void {
   const type = String(container.componentType)
-  if (isDockPanelId(type) && hosts[type] === container.element) {
+  if (!isDockPanelId(type)) {
+    return
+  }
+  const mount = hosts[type]
+  if (mount && container.element.contains(mount)) {
     delete hosts[type]
   }
 }
@@ -181,10 +187,6 @@ function reload(): void {
   }
 }
 
-function formatTime(at: number): string {
-  return new Date(at).toLocaleTimeString()
-}
-
 onMounted(() => {
   const host = hostEl.value
   if (!host) {
@@ -237,49 +239,41 @@ watch(locale, () => {
 
 <template>
   <div class="workbench">
-    <div id="dw-dock-stash" class="dock-stash" aria-hidden="true"></div>
     <div ref="hostEl" class="gl-host" />
-    <Teleport :to="hosts.datasets ?? '#dw-dock-stash'">
+    <Teleport v-if="hosts.datasets" :to="hosts.datasets">
       <section class="dock-panel">
         <DatasetList />
       </section>
     </Teleport>
-    <Teleport :to="hosts.nodes ?? '#dw-dock-stash'">
+    <Teleport v-if="hosts.nodes" :to="hosts.nodes">
       <section class="dock-panel">
         <NodeToolbox />
       </section>
     </Teleport>
-    <Teleport :to="hosts.table ?? '#dw-dock-stash'">
+    <Teleport v-if="hosts.table" :to="hosts.table">
       <section class="dock-panel">
         <VirtualTable />
       </section>
     </Teleport>
-    <Teleport :to="hosts.workflow ?? '#dw-dock-stash'">
+    <Teleport v-if="hosts.workflow" :to="hosts.workflow">
       <section class="dock-panel">
         <WorkflowCanvas />
       </section>
     </Teleport>
-    <Teleport :to="hosts.figure ?? '#dw-dock-stash'">
+    <Teleport v-if="hosts.figure" :to="hosts.figure">
       <section class="dock-panel">
         <ChartWorkspace />
       </section>
     </Teleport>
-    <Teleport :to="hosts.properties ?? '#dw-dock-stash'">
+    <Teleport v-if="hosts.properties" :to="hosts.properties">
       <section class="dock-panel">
         <NodeProperties v-if="rightPanel === 'node'" />
         <ChartProperties v-else-if="rightPanel === 'chart'" />
         <DatasetProperties v-else />
       </section>
     </Teleport>
-    <Teleport :to="hosts.log ?? '#dw-dock-stash'">
-      <section class="dock-panel log-panel">
-        <ol class="log-lines">
-          <li v-for="line in log.lines" :key="line.id" :class="'lv-' + line.level">
-            <span class="ts">{{ formatTime(line.at) }}</span>
-            {{ line.message }}
-          </li>
-        </ol>
-      </section>
+    <Teleport v-if="hosts.log" :to="hosts.log">
+      <LogPanel />
     </Teleport>
     <DropNaDialog />
     <DropDuplicatesDialog />
@@ -310,9 +304,6 @@ watch(locale, () => {
   flex-direction: column;
   position: relative;
 }
-.dock-stash {
-  display: none;
-}
 .gl-host {
   flex: 1;
   min-height: 0;
@@ -330,42 +321,29 @@ watch(locale, () => {
 .workbench :deep(.lm_goldenlayout) {
   height: 100%;
 }
-.workbench :deep(.lm_content) {
+.workbench :deep(.lm_item) {
   overflow: hidden;
-  background: #fff;
 }
-.workbench :deep(.dw-gl-content) {
+.workbench :deep(.lm_content) {
   height: 100%;
   overflow: hidden;
+  background: #fff;
+  box-sizing: border-box;
+}
+.workbench :deep(.dw-gl-content),
+.workbench :deep(.dw-gl-mount) {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.workbench :deep(.dw-gl-mount) {
+  display: flex;
+  flex-direction: column;
 }
 .workbench :deep(.lm_header) {
   background: #f5f7fa;
 }
 .workbench :deep(.lm_tab) {
   font-family: 'Segoe UI', system-ui, sans-serif;
-}
-.log-panel {
-  color: #303133;
-}
-.log-panel .log-lines {
-  margin: 0;
-  padding: 6px 10px;
-  overflow: auto;
-  flex: 1;
-  min-height: 0;
-  font-family: Consolas, 'Courier New', monospace;
-  font-size: 12px;
-  list-style: none;
-  color: #303133;
-}
-.log-lines .ts {
-  color: #909399;
-  margin-right: 8px;
-}
-.lv-warning {
-  color: #b88230;
-}
-.lv-error {
-  color: #c45656;
 }
 </style>

@@ -41,6 +41,8 @@ describe('defaultDockingConfig', () => {
     const stacks = row && 'content' in row ? row.content : undefined
     expect(stacks?.[0]).toMatchObject({ type: 'stack', activeItemIndex: 1 })
     expect(stacks?.[1]).toMatchObject({ type: 'stack', activeItemIndex: 2 })
+    const logStack = config.root && 'content' in config.root ? config.root.content?.[1] : undefined
+    expect(logStack).toMatchObject({ type: 'stack', minSize: '72px' })
   })
 
   it('falls back when a saved docking config is missing a panel', () => {
