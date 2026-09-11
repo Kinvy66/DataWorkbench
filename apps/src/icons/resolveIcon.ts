@@ -4,6 +4,9 @@ import iconApp from '@/assets/icons/app/icon.svg?url'
 import iconPlugin from '@/assets/icons/app/plugin.svg?url'
 import iconAddData from '@/assets/icons/app/addData.svg?url'
 import iconSave from '@/assets/icons/app/save.svg?url'
+import iconSaveAs from '@/assets/icons/app/save-as.svg?url'
+import iconFile from '@/assets/icons/app/file.svg?url'
+import iconAppendProject from '@/assets/icons/app/appendProject.svg?url'
 import iconRemoveData from '@/assets/icons/app/removeData.svg?url'
 import iconDropNa from '@/assets/icons/app/dropNa.svg?url'
 import iconDropDuplicates from '@/assets/icons/app/dropDuplicates.svg?url'
@@ -26,6 +29,7 @@ import iconData from '@/assets/icons/gui/data.svg?url'
 import iconDataTable from '@/assets/icons/gui/data-table.svg?url'
 import iconWorkflow from '@/assets/icons/gui/workflow.svg?url'
 import iconSetting from '@/assets/icons/gui/setting.svg?url'
+import iconCancel from '@/assets/icons/gui/cancel.svg?url'
 import iconRun from '@/assets/icons/app/run.svg?url'
 import iconStop from '@/assets/icons/app/stop.svg?url'
 import iconUndo from '@/assets/icons/app/undo.svg?url'
@@ -45,6 +49,9 @@ const urls: Record<string, string> = {
   'app/plugin': iconPlugin,
   'app/addData': iconAddData,
   'app/save': iconSave,
+  'app/save-as': iconSaveAs,
+  'app/file': iconFile,
+  'app/appendProject': iconAppendProject,
   'app/removeData': iconRemoveData,
   'app/dropNa': iconDropNa,
   'app/dropDuplicates': iconDropDuplicates,
@@ -79,6 +86,7 @@ const urls: Record<string, string> = {
   'gui/data-table': iconDataTable,
   'gui/workflow': iconWorkflow,
   'gui/setting': iconSetting,
+  'gui/cancel': iconCancel,
   'gui/chart': iconChart
 }
 

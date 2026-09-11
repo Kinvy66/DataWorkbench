@@ -418,6 +418,7 @@ export function useRibbonSchema() {
     ]
   })
 
+  // Order is locked: AppRibbon paints Qt icons via nth-child (FileMenuItemModel has no icon).
   const fileMenuItems = computed<FileMenuItemModel[]>(() => [
     { id: 'file.new', label: t('ribbon.new') },
     { id: 'file.open', label: t('ribbon.open') },

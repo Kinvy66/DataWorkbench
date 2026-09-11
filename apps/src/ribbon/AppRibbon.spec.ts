@@ -32,4 +32,14 @@ describe('AppRibbon chrome layout', () => {
     expect(source).toContain('toggleLocale')
     expect(source).toContain('locale-btn')
   })
+
+  it('paints Qt File-menu icons onto the teleported dropdown', () => {
+    const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
+    expect(source).toContain('ml-ribbon-file-menu-dropdown')
+    expect(source).toContain("fileMenuIconCss('app/appendProject')")
+    expect(source).toContain("fileMenuIconCss('app/file')")
+    expect(source).toContain("fileMenuIconCss('app/save')")
+    expect(source).toContain("fileMenuIconCss('app/save-as')")
+    expect(source).toContain("fileMenuIconCss('gui/cancel')")
+  })
 })

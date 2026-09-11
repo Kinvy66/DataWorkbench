@@ -13,6 +13,10 @@ describe('resolveIconUrl', () => {
 
   it('resolves a ribbon action icon', () => {
     expect(resolveIconUrl('app/plugin')).toMatch(/plugin\.svg/)
+    expect(resolveIconUrl('app/file')).toMatch(/file\.svg/)
+    expect(resolveIconUrl('app/save-as')).toMatch(/save-as\.svg/)
+    expect(resolveIconUrl('app/appendProject')).toMatch(/appendProject\.svg/)
+    expect(resolveIconUrl('gui/cancel')).toMatch(/cancel\.svg/)
     expect(resolveIconUrl('app/addData')).toMatch(/addData\.svg/)
     expect(resolveIconUrl('app/renameColumns')).toMatch(/renameColumns\.svg/)
     expect(resolveIconUrl('app/run')).toMatch(/run\.svg/)

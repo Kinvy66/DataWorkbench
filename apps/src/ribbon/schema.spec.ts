@@ -47,6 +47,9 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'chart.newBar'")
     expect(source).toContain("id: 'chart.newHist'")
     expect(source).toContain("id: 'chart.exportPng'")
+    expect(source).toMatch(
+      /id: 'file\.new'[\s\S]*id: 'file\.open'[\s\S]*id: 'file\.save'[\s\S]*id: 'file\.saveAs'[\s\S]*id: 'file\.exit'/
+    )
     expect(source).toContain("id: 'file.new'")
     expect(source).toContain("id: 'file.open'")
     expect(source).toContain("id: 'file.save'")

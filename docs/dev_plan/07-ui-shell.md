@@ -74,7 +74,7 @@ Ribbon item `@click` 只 `dispatch(item.id)`。`can()` 根据 Pinia：无数据�
 
 窗口 ico：`apps/resources/icon.ico`（上游 `src/APP/icon.ico`）。SVG：`apps/src/assets/icons/app/`（上游 `src/APP/Icon`）与 `gui/`（DAGui 按钮子集）。版权见仓库根 `NOTICE`（LGPL-3.0）。
 
-渲染层用 `resolveIconUrl` / `DwIcon` / `ribbonIcon`。**按命令按需 `import '...svg?url'` 写入 `resolveIcon.ts` 的表**，不要 `import.meta.glob` 把整棵图标目录打进 renderer。File 菜单项当前无 `icon` 字段，保持纯文字。Classic 面板的 collection 默认是 3 行网格，`size: 'large'` 必须 `grid-row: 1 / -1` 跨满三行，否则按钮贴顶被裁、下面空两行。
+渲染层用 `resolveIconUrl` / `DwIcon` / `ribbonIcon`。**按命令按需 `import '...svg?url'` 写入 `resolveIcon.ts` 的表**，不要 `import.meta.glob` 把整棵图标目录打进 renderer。File 下拉对齐上游 ApplicationMenu：打开=`file.svg`、保存=`save.svg`、另存为=`save-as.svg`；新建用 `appendProject.svg`，退出用 `gui/cancel.svg`（ML Ribbon `FileMenuItemModel` 无 `icon`，在 `AppRibbon.vue` 用 CSS 画到菜单项上，顺序必须与 `schema.ts` 的 `fileMenuItems` 一致）。Classic 面板的 collection 默认是 3 行网格，`size: 'large'` 必须 `grid-row: 1 / -1` 跨满三行，否则按钮贴顶被裁、下面空两行。
 
 ## 主题
 

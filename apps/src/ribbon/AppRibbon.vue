@@ -7,6 +7,19 @@ import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
 import { useRibbonSchema } from './schema'
 import DwIcon from '@/icons/DwIcon.vue'
+import { resolveIconUrl } from '@/icons/resolveIcon'
+
+function fileMenuIconCss(name: string): string {
+  const src = resolveIconUrl(name).replace(/\\/g, '/')
+  return src ? `url("${src}")` : 'none'
+}
+
+/** Qt File menu: Open=file, Save=save, Save As=save-as. New/Exit reuse existing copies. */
+const fileMenuIconNew = fileMenuIconCss('app/appendProject')
+const fileMenuIconOpen = fileMenuIconCss('app/file')
+const fileMenuIconSave = fileMenuIconCss('app/save')
+const fileMenuIconSaveAs = fileMenuIconCss('app/save-as')
+const fileMenuIconExit = fileMenuIconCss('gui/cancel')
 
 const { t, locale } = useI18n()
 const { tabs, fileMenuItems } = useRibbonSchema()
@@ -126,5 +139,36 @@ function toggleLocale(): void {
 .locale-btn:hover {
   border-color: var(--dw-accent, #5280c1);
   color: var(--dw-accent, #5280c1);
+}
+</style>
+
+<style>
+/* File menu popper is teleported; FileMenuItemModel has no icon field. */
+.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  background: center / contain no-repeat;
+}
+.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(1)::before {
+  background-image: v-bind(fileMenuIconNew);
+}
+.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(2)::before {
+  background-image: v-bind(fileMenuIconOpen);
+}
+.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(3)::before {
+  background-image: v-bind(fileMenuIconSave);
+}
+.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(4)::before {
+  background-image: v-bind(fileMenuIconSaveAs);
+}
+.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item:nth-child(5)::before {
+  background-image: v-bind(fileMenuIconExit);
 }
 </style>
