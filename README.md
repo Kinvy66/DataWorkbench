@@ -108,6 +108,7 @@ py -3.12 -m pip install -r apps\dist\win-unpacked\resources\python\requirements.
 
 | 文档 | 读者 |
 |------|------|
+| [docs/wiki/README.md](docs/wiki/README.md) | **普通用户与测试**：安装、界面、导入清洗、工作流、图表、工程、15 分钟跟做、手工清单 |
 | [docs/dev_plan/README.md](docs/dev_plan/README.md) | 架构与排期 |
 | [AGENTS.md](AGENTS.md) | 在本仓库改代码的人 / AI |
 | [docs/dev_plan/00-goals-and-constraints.md](docs/dev_plan/00-goals-and-constraints.md) | 做什么、不做什么、验收红线 |
