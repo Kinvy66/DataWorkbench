@@ -34,7 +34,7 @@ function rpc() {
 }
 
 function persistChart(chart: ChartSpec): ProjectChartPersist {
-  return {
+  const out: ProjectChartPersist = {
     id: chart.id,
     type: chart.type,
     dataId: chart.dataId,
@@ -48,6 +48,21 @@ function persistChart(chart: ChartSpec): ProjectChartPersist {
     series: chart.series.map((item) => ({ key: item.key, color: item.color, width: item.width })),
     annotations: (chart.annotations ?? []).map((item) => ({ ...item }))
   }
+  if (chart.type === 'hist') {
+    if (chart.bins != null) {
+      out.bins = chart.bins
+    }
+    if (chart.binWidth != null && chart.binWidth > 0) {
+      out.binWidth = chart.binWidth
+    }
+    if (chart.histStat && chart.histStat !== 'count') {
+      out.histStat = chart.histStat
+    }
+    if (chart.histCumulative) {
+      out.histCumulative = true
+    }
+  }
+  return out
 }
 
 export function captureUiLayout(): ProjectUiLayout {

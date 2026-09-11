@@ -99,6 +99,25 @@ def test_chart_list_types_and_build_series(tmp_path: Path) -> None:
             proc,
             {
                 "jsonrpc": "2.0",
+                "id": 8,
+                "method": "chart.buildSeries",
+                "params": {
+                    "dataId": dataset_id,
+                    "y": ["ch1"],
+                    "kind": "hist",
+                    "histStat": "probability",
+                    "histCumulative": True,
+                },
+            },
+        )
+        hist_prob = read_rpc(proc)
+        prob_result = hist_prob["result"]
+        assert abs(prob_result["ys"][0][-1] - 1.0) < 1e-9
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
                 "id": 4,
                 "method": "chart.buildSeries",
                 "params": {"dataId": dataset_id, "x": "t", "y": ["label"]},

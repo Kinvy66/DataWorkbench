@@ -26,6 +26,9 @@ class BuildSeriesParams(BaseModel):
     kind: str | None = None
     maxPoints: int = DEFAULT_MAX_POINTS
     bins: int | None = None
+    binWidth: float | None = None
+    histStat: str | None = None
+    histCumulative: bool = False
     xMin: float | None = None
     xMax: float | None = None
 
@@ -71,6 +74,9 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
                 bins=parsed.bins,
                 x_min=parsed.xMin,
                 x_max=parsed.xMax,
+                bin_width=parsed.binWidth,
+                hist_stat=parsed.histStat,
+                hist_cumulative=parsed.histCumulative,
             )
         if not parsed.x:
             raise HostError(ErrorCode.InvalidParams, "x is required", "rpc.invalidParams")

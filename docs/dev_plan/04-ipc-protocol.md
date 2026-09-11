@@ -106,10 +106,10 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | 方法 | 说明 |
 |------|------|
 | `chart.listTypes` | `{types:[{id,name}]}`，一期 id：`line` / `scatter` / `bar` / `hist` |
-| `chart.buildSeries` | `{dataId, x?, y[], kind?, maxPoints?, bins?, xMin?, xMax?}` → `{x, ys, pointCount, sourceCount, downsampled, xKind, maxPoints}`。`kind:"hist"` 时 `x` 可省略，`y` 为要分箱的数值列；Python 返回箱中心 + 计数，默认 50 箱（钳制 5…200）。 |
+| `chart.buildSeries` | `{dataId, x?, y[], kind?, maxPoints?, bins?, binWidth?, histStat?, histCumulative?, xMin?, xMax?}` → `{x, ys, pointCount, sourceCount, downsampled, xKind, maxPoints}`。`kind:"hist"` 时 `x` 可省略，`y` 为要分箱的数值列；Python 返回箱中心 + 计数。默认 50 箱（钳制 5…200）。`binWidth>0` 时按箱宽分箱（箱数仍封顶 200）。`histStat`：`count`（默认）/`density`/`probability`/`percent`；`histCumulative` 对箱值做累加。 |
 | `chart.saveExport` | **仅 Electron 主进程**（不转发 sidecar）。`{format:'png'\|'svg'\|'pdf', content, suggestedName?, path?}` → `{ok:true}` 或 `{cancelled:true}`。PNG 的 `content` 为 `data:image/png;base64,...`；SVG 与 PDF 的 `content` 均为 UTF-8 SVG 标记（PDF 由主进程 hidden `BrowserWindow` `printToPDF` 转换后再写盘）。无 `path` 时弹出另存对话框。写失败 **3001** `data.ioError`。 |
 
-- `maxPoints` 默认 5000，钳制到 2…20000。生产降采样只在 Python（LTTB），前端禁止对百万点 `JSON.parse`。直方分箱同样只在 Python，不要把原始列拉到渲染进程再 `histogram`。
+- `maxPoints` 默认 5000，钳制到 2…20000。生产降采样只在 Python（LTTB），前端禁止对百万点 `JSON.parse`。直方分箱同样只在 Python，不要把原始列拉到渲染进程再 `histogram`。箱宽/统计量/累计由 `binWidth`/`histStat`/`histCumulative` 下发，缺省行为与一期相同（50 箱、count）。
 - 非数值 y（或既非数值也非日期的 x）：error **1002**，`i18nKey=chart.nonNumeric`。缺列：1002 `chart.columnNotFound`。缺数据集：1001 `data.notFound`。
 - 非有限 x 的行丢弃；y 的 NaN 变成 JSON `null`（uPlot 断线）。datetime x 为 epoch **毫秒**，`xKind:"time"`；uPlot 时间轴自行 ÷1000。
 - uPlot 视口停止 **150ms**（`CHART_VIEWPORT_DEBOUNCE_MS`）后带 `xMin`/`xMax` 再请求 `chart.buildSeries`，仍受 `maxPoints=5000` 限制，不要把窗口内百万点拉进渲染进程。小数据（未降采样且未窗口）不重复请求。时间轴 scale 是秒，协议用毫秒。复位视图省略 `xMin`/`xMax` 拉回全列。

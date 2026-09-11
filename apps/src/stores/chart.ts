@@ -2,9 +2,12 @@ import { defineStore } from 'pinia'
 import { nextTick } from 'vue'
 import {
   CHART_HIST_BINS_DEFAULT,
+  CHART_HIST_BINS_MAX,
+  CHART_HIST_BINS_MIN,
   CHART_MAX_POINTS_DEFAULT,
   type ChartBuildSeriesParams,
   type ChartBuildSeriesResult,
+  type ChartHistStat,
   type ChartTypeId,
   type ProjectChartsFile,
   type ProjectFigurePersist
@@ -60,8 +63,35 @@ export type ChartSpec = {
   legend: boolean
   series: ChartSeriesStyle[]
   annotations: ChartAnnotation[]
+  bins?: number
+  binWidth?: number
+  histStat?: ChartHistStat
+  histCumulative?: boolean
   data: ChartBuildSeriesResult | null
   window: ViewportWindow | null
+}
+
+const HIST_Y_LABELS: Record<ChartHistStat, readonly [string, string]> = {
+  count: ['Count', '频数'],
+  density: ['Density', '密度'],
+  probability: ['Probability', '概率'],
+  percent: ['Percent', '百分比']
+}
+
+function clampHistBins(value: number | undefined): number {
+  if (value == null || !Number.isFinite(value)) {
+    return CHART_HIST_BINS_DEFAULT
+  }
+  return Math.max(CHART_HIST_BINS_MIN, Math.min(Math.round(value), CHART_HIST_BINS_MAX))
+}
+
+function isDefaultHistYLabel(label: string): boolean {
+  return Object.values(HIST_Y_LABELS).some((pair) => pair.includes(label))
+}
+
+function histYLabelMatching(current: string, stat: ChartHistStat): string {
+  const zh = /[\u4e00-\u9fff]/.test(current)
+  return HIST_Y_LABELS[stat][zh ? 1 : 0]
 }
 
 let canvasProvider: (() => HTMLCanvasElement | null) | null = null
@@ -83,7 +113,7 @@ function isCurrentRebuild(id: string, token: number): boolean {
 }
 
 function seriesParams(
-  chart: Pick<ChartSpec, 'type' | 'dataId' | 'x' | 'y'>,
+  chart: Pick<ChartSpec, 'type' | 'dataId' | 'x' | 'y' | 'bins' | 'binWidth' | 'histStat' | 'histCumulative'>,
   range?: ViewportWindow
 ): ChartBuildSeriesParams {
   const isHist = chart.type === 'hist'
@@ -92,7 +122,7 @@ function seriesParams(
         dataId: chart.dataId,
         y: chart.y,
         kind: 'hist',
-        bins: CHART_HIST_BINS_DEFAULT
+        bins: clampHistBins(chart.bins)
       }
     : {
         dataId: chart.dataId,
@@ -100,6 +130,17 @@ function seriesParams(
         y: chart.y,
         maxPoints: CHART_MAX_POINTS_DEFAULT
       }
+  if (isHist) {
+    if (chart.binWidth != null && chart.binWidth > 0) {
+      params.binWidth = chart.binWidth
+    }
+    if (chart.histStat && chart.histStat !== 'count') {
+      params.histStat = chart.histStat
+    }
+    if (chart.histCumulative) {
+      params.histCumulative = true
+    }
+  }
   if (range) {
     params.xMin = range.xMin
     params.xMax = range.xMax
@@ -307,6 +348,10 @@ export const useChartStore = defineStore('chart', {
           legend: spec.legend,
           series: spec.series.map((item) => ({ ...item })),
           annotations: parseChartAnnotations(spec.annotations),
+          bins: spec.bins,
+          binWidth: spec.binWidth,
+          histStat: spec.histStat,
+          histCumulative: spec.histCumulative,
           data,
           window: null
         })
@@ -445,6 +490,37 @@ export const useChartStore = defineStore('chart', {
       Object.assign(series, patch)
       touchProject()
     },
+    async updateHist(
+      id: string,
+      patch: {
+        bins?: number
+        binWidth?: number | null
+        histStat?: ChartHistStat
+        histCumulative?: boolean
+      }
+    ): Promise<boolean> {
+      const chart = this.charts.find((item) => item.id === id)
+      if (!chart || chart.type !== 'hist') {
+        return false
+      }
+      if (patch.bins != null) {
+        chart.bins = clampHistBins(patch.bins)
+      }
+      if (patch.binWidth !== undefined) {
+        chart.binWidth = patch.binWidth != null && patch.binWidth > 0 ? patch.binWidth : undefined
+      }
+      if (patch.histStat) {
+        if (isDefaultHistYLabel(chart.yLabel)) {
+          chart.yLabel = histYLabelMatching(chart.yLabel, patch.histStat)
+        }
+        chart.histStat = patch.histStat
+      }
+      if (patch.histCumulative != null) {
+        chart.histCumulative = patch.histCumulative
+      }
+      touchProject()
+      return this.rebuildWindow(id, chart.window ?? undefined)
+    },
     togglePlace(kind: ChartAnnotationKind): void {
       if (!this.currentId) {
         return
@@ -536,18 +612,21 @@ export const useChartStore = defineStore('chart', {
       y: string[]
       title?: string
       yLabel?: string
+      bins?: number
     }): Promise<ChartSpec> {
       const data = useDataStore()
       const workflow = useWorkflowStore()
       const isHist = options.type === 'hist'
       const xName = isHist ? (options.y[0] ?? '') : (options.x ?? '')
+      const bins = isHist ? clampHistBins(options.bins) : undefined
       const result = (await rpc().invoke(
         'chart.buildSeries',
         seriesParams({
           type: options.type,
           dataId: options.dataId,
           x: xName,
-          y: options.y
+          y: options.y,
+          bins
         })
       )) as ChartBuildSeriesResult
       const datasetName = data.datasets.find((item) => item.id === options.dataId)?.name ?? 'chart'
@@ -569,6 +648,9 @@ export const useChartStore = defineStore('chart', {
           width: 1.5
         })),
         annotations: [],
+        bins,
+        histStat: isHist ? 'count' : undefined,
+        histCumulative: isHist ? false : undefined,
         data: result,
         window: null
       }

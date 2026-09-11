@@ -150,3 +150,49 @@ def test_build_histogram_range_filter() -> None:
     result = build_histogram(manager, data_id, ["v"], bins=5, x_min=0.0, x_max=3.0)
     assert result["sourceCount"] == 4
     assert sum(result["ys"][0]) == 4
+
+
+def test_build_histogram_bin_width_caps_count() -> None:
+    df = pd.DataFrame({"v": np.linspace(0.0, 10.0, 200)})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("wide", df)
+    result = build_histogram(manager, data_id, ["v"], bin_width=2.0)
+    assert result["pointCount"] == 5
+    assert result["x"][0] == 1.0
+    assert abs(result["x"][1] - result["x"][0] - 2.0) < 1e-9
+    tiny = build_histogram(manager, data_id, ["v"], bin_width=0.001)
+    assert tiny["pointCount"] == 200
+
+
+def test_build_histogram_probability_and_cumulative() -> None:
+    values = np.concatenate([np.zeros(25), np.ones(75)])
+    df = pd.DataFrame({"v": values})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("mix", df)
+    prob = build_histogram(manager, data_id, ["v"], bins=2, hist_stat="probability")
+    assert abs(sum(prob["ys"][0]) - 1.0) < 1e-9
+    percent = build_histogram(manager, data_id, ["v"], bins=2, hist_stat="percent")
+    assert abs(sum(percent["ys"][0]) - 100.0) < 1e-9
+    cum = build_histogram(manager, data_id, ["v"], bins=2, hist_cumulative=True)
+    assert cum["ys"][0][-1] == 100
+    density = build_histogram(manager, data_id, ["v"], bins=10, hist_stat="density")
+    assert density["pointCount"] == 10
+    width = (float(values.max()) - float(values.min())) / 10
+    area = sum(c * width for c in density["ys"][0])
+    assert abs(area - 1.0) < 0.08
+    freq = build_histogram(manager, data_id, ["v"], bins=2, hist_stat="frequency")
+    assert abs(sum(freq["ys"][0]) - 1.0) < 1e-9
+    try:
+        build_histogram(manager, data_id, ["v"], hist_stat="mode")
+        raise AssertionError("expected HostError")
+    except HostError as exc:
+        assert exc.i18n_key == "chart.histStatInvalid"
+
+
+def test_hist_edges_bin_width() -> None:
+    from dw_host.chart_series import hist_edges
+
+    edges = hist_edges(0.0, 10.0, bins=50, bin_width=2.5)
+    assert len(edges) == 5
+    assert edges[0] == 0.0
+    assert edges[-1] == 10.0

@@ -23,6 +23,7 @@ export const CHART_MAX_POINTS_MAX = 20000
 export const CHART_HIST_BINS_DEFAULT = 50
 export const CHART_HIST_BINS_MIN = 5
 export const CHART_HIST_BINS_MAX = 200
+export type ChartHistStat = 'count' | 'density' | 'probability' | 'percent'
 export const CHART_VIEWPORT_DEBOUNCE_MS = 150
 export const CHART_SUBPLOT_MAX_DIM = 3
 export const PROJECT_MAGIC = 'DataWorkbenchProject'
@@ -693,6 +694,9 @@ export interface ChartBuildSeriesParams {
   kind?: ChartTypeId
   maxPoints?: number
   bins?: number
+  binWidth?: number
+  histStat?: ChartHistStat
+  histCumulative?: boolean
   xMin?: number
   xMax?: number
 }
@@ -778,6 +782,10 @@ export interface ProjectChartPersist {
   legend: boolean
   series: ProjectChartSeriesStyle[]
   annotations?: ProjectChartAnnotation[]
+  bins?: number
+  binWidth?: number
+  histStat?: ChartHistStat
+  histCumulative?: boolean
 }
 
 export interface ProjectFigurePersist {

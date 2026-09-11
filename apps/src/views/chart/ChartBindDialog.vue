@@ -6,6 +6,7 @@ import { useChartStore, type BindableChartType } from '@/stores/chart'
 import { useDataStore } from '@/stores/data'
 import { useLogStore } from '@/stores/log'
 import { translateRpcError } from '@/rpc/rpcError'
+import { CHART_HIST_BINS_DEFAULT, CHART_HIST_BINS_MAX, CHART_HIST_BINS_MIN } from '@dw/rpc-types'
 
 const { t, te } = useI18n()
 const chart = useChartStore()
@@ -16,7 +17,8 @@ const applying = ref(false)
 const form = reactive({
   x: '',
   y: [] as string[],
-  title: ''
+  title: '',
+  bins: CHART_HIST_BINS_DEFAULT
 })
 
 const visible = computed({
@@ -78,6 +80,7 @@ function resetForm(): void {
   const yDefault = numericNames.value.find((name) => name !== form.x) ?? numericNames.value[0] ?? ''
   form.y = yDefault ? [yDefault] : []
   form.title = ''
+  form.bins = CHART_HIST_BINS_DEFAULT
 }
 
 watch(
@@ -113,7 +116,8 @@ async function confirm(): Promise<void> {
       x: isHist.value ? undefined : form.x,
       y: [...form.y],
       title: form.title,
-      yLabel: isHist.value ? t('chart.count') : undefined
+      yLabel: isHist.value ? t('chart.count') : undefined,
+      bins: isHist.value ? form.bins : undefined
     })
     chart.bindDialogOpen = false
     const line = t('log.chartOk', {
@@ -150,6 +154,15 @@ async function confirm(): Promise<void> {
         <el-select v-model="form.y" multiple filterable style="width: 100%">
           <el-option v-for="name in yCandidates" :key="name" :label="name" :value="name" />
         </el-select>
+      </el-form-item>
+      <el-form-item v-if="isHist" :label="t('chart.bins')">
+        <el-input-number
+          v-model="form.bins"
+          :min="CHART_HIST_BINS_MIN"
+          :max="CHART_HIST_BINS_MAX"
+          :step="1"
+          style="width: 100%"
+        />
       </el-form-item>
       <el-form-item :label="t('chart.title')">
         <el-input v-model="form.title" :placeholder="t('chart.titleHint')" />

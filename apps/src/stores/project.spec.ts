@@ -105,8 +105,22 @@ describe('project session', () => {
     expect(layout.currentDataId).toBe('ds-1')
     const charts = captureCharts()
     expect(charts.charts[0]?.y).toEqual(['value'])
+    expect(charts.charts[0]?.histStat).toBeUndefined()
     expect(JSON.stringify(charts)).not.toContain('"data":')
     expect(JSON.stringify(charts)).not.toContain('window')
+    chart.charts[0] = {
+      ...chart.charts[0]!,
+      type: 'hist',
+      bins: 20,
+      binWidth: 0.5,
+      histStat: 'density',
+      histCumulative: true
+    }
+    const histFile = captureCharts()
+    expect(histFile.charts[0]?.bins).toBe(20)
+    expect(histFile.charts[0]?.binWidth).toBe(0.5)
+    expect(histFile.charts[0]?.histStat).toBe('density')
+    expect(histFile.charts[0]?.histCumulative).toBe(true)
   })
 
   it('saves through project.save and clears dirty', async () => {

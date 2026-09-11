@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  CHART_HIST_BINS_DEFAULT,
+  CHART_HIST_BINS_MAX,
+  CHART_HIST_BINS_MIN,
+  type ChartHistStat
+} from '@dw/rpc-types'
 import { isGridFigure } from '@/chart/figures'
 import { useChartStore } from '@/stores/chart'
 import DwIcon from '@/icons/DwIcon.vue'
@@ -10,6 +16,30 @@ const chart = useChartStore()
 const current = computed(() => chart.current)
 const figure = computed(() => chart.currentFigure)
 const grid = computed(() => Boolean(figure.value && isGridFigure(figure.value)))
+const hist = computed(() => current.value?.type === 'hist')
+
+const histStats: ChartHistStat[] = ['count', 'density', 'probability', 'percent']
+
+function histStatLabel(stat: ChartHistStat): string {
+  if (stat === 'density') {
+    return t('chart.histStatDensity')
+  }
+  if (stat === 'probability') {
+    return t('chart.histStatProbability')
+  }
+  if (stat === 'percent') {
+    return t('chart.histStatPercent')
+  }
+  return t('chart.histStatCount')
+}
+
+function histBins(): number {
+  return current.value?.bins ?? CHART_HIST_BINS_DEFAULT
+}
+
+function histStat(): ChartHistStat {
+  return current.value?.histStat ?? 'count'
+}
 </script>
 
 <template>
@@ -57,6 +87,49 @@ const grid = computed(() => Boolean(figure.value && isGridFigure(figure.value)))
             @update:model-value="(value: boolean) => chart.updateStyle(current.id, { legend: value })"
           />
         </el-form-item>
+        <template v-if="hist">
+          <el-form-item :label="t('chart.bins')">
+            <el-input-number
+              :model-value="histBins()"
+              :min="CHART_HIST_BINS_MIN"
+              :max="CHART_HIST_BINS_MAX"
+              :step="1"
+              @update:model-value="
+                (value: number | undefined) => {
+                  if (value != null) void chart.updateHist(current.id, { bins: value })
+                }
+              "
+            />
+          </el-form-item>
+          <el-form-item :label="t('chart.binWidth')">
+            <el-input-number
+              :model-value="current.binWidth ?? 0"
+              :min="0"
+              :step="0.1"
+              @update:model-value="
+                (value: number | undefined) => {
+                  void chart.updateHist(current.id, { binWidth: value && value > 0 ? value : null })
+                }
+              "
+            />
+            <p class="muted">{{ t('chart.binWidthHint') }}</p>
+          </el-form-item>
+          <el-form-item :label="t('chart.histStat')">
+            <el-select
+              :model-value="histStat()"
+              style="width: 100%"
+              @update:model-value="(value: ChartHistStat) => void chart.updateHist(current.id, { histStat: value })"
+            >
+              <el-option v-for="stat in histStats" :key="stat" :label="histStatLabel(stat)" :value="stat" />
+            </el-select>
+          </el-form-item>
+          <el-form-item :label="t('chart.histCumulative')">
+            <el-switch
+              :model-value="Boolean(current.histCumulative)"
+              @update:model-value="(value: boolean) => void chart.updateHist(current.id, { histCumulative: value })"
+            />
+          </el-form-item>
+        </template>
         <div v-for="series in current.series" :key="series.key" class="series">
           <p class="series-name">{{ series.key }}</p>
           <el-form-item :label="t('chart.color')">

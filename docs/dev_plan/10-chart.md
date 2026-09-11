@@ -56,7 +56,7 @@ sequenceDiagram
 - 非数值列：error 1002，提示先 query 或选数值列（对齐上游 Agent 工具的错误策略，但无 Agent）
 - NaN：**丢掉非有限 x 的行**；y 的 NaN 序列化为 JSON `null`，uPlot 断线。不要改成插值填缝。
 - datetime x：转 epoch ms，uPlot 用 time 轴
-- **直方**（`kind:"hist"`）：对 `y` 列在 sidecar `numpy.histogram`，回传箱中心与计数。默认 50 箱。专业 bin 参数见二期。
+- **直方**（`kind:"hist"`）：对 `y` 列在 sidecar `numpy.histogram`，回传箱中心与箱值。默认 50 箱（钳制 5…200）。`binWidth>0` 优先于箱数（箱数仍封顶 200）。`histStat`：`count`（默认）/`density`/`probability`/`percent`；`histCumulative` 对箱值累加。分箱只在 Python，不要把原始列拉到渲染进程再分箱。
 
 ## 样式对象（存入工程 `charts.json`）
 
@@ -71,7 +71,11 @@ sequenceDiagram
   "xLabel": "Time",
   "yLabel": "Value",
   "series": [{"key": "ch1", "color": "#5280C1", "width": 1.5}],
-  "annotations": [{"id": "n1", "kind": "text", "x": 1.2, "y": 3.4, "text": "peak", "color": "#CE6043"}]
+  "annotations": [{"id": "n1", "kind": "text", "x": 1.2, "y": 3.4, "text": "peak", "color": "#CE6043"}],
+  "bins": 50,
+  "binWidth": 0.5,
+  "histStat": "density",
+  "histCumulative": false
 }
 ```
 
@@ -79,7 +83,7 @@ sequenceDiagram
 
 ## 二期（单独排期，不阻塞 MVP）
 
-1. 箱线 / 直方更专业的 bin 参数  
+1. ~~直方更专业的 bin 参数~~ **已落地**：`bins` / `binWidth` / `histStat` / `histCumulative`；绑定对话框只暴露箱数，其余在属性面板。不 bump `PROJECT_FORMAT`。箱线仍未做。  
 2. ~~多 subplot~~ **已落地**：`chart.newSubplots` 建 RxC 空网格（≤3×3）；选中格子后 New Line/Scatter/Bar/Hist 填入该格；导出整张 Figure。不是拖格子改布局。  
 3. ~~标注层（SVG overlay）~~ **已落地**：`chart.annotate*` 点击放置；坐标写入 `charts.json`；SVG/PDF/PNG 导出带标注  
 4. ~~导出 PDF~~ **已落地**：Ribbon `chart.exportPdf`；渲染进程仍发 SVG markup，主进程 `printToPDF`  
@@ -95,3 +99,4 @@ sequenceDiagram
 | PDF | 另存为 `.pdf` 后可用阅读器打开；中文标题可见 |
 | 标注 | 点「文本」后在图上点击，属性可改字；保存工程再打开仍在 |
 | 子图 | 建 1×2，两个格子各绑一条折线；导出 SVG 里能搜到两个标题 |
+| 直方分箱 | 绑定 50 箱后在属性改箱宽/密度，图更新；旧工程无这些字段仍按 50 箱 count |

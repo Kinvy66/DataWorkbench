@@ -15,6 +15,7 @@ MAX_MAX_POINTS = 20_000
 HIST_BINS_DEFAULT = 50
 HIST_BINS_MIN = 5
 HIST_BINS_MAX = 200
+HIST_STATS = ("count", "density", "probability", "percent")
 
 
 def clamp_max_points(value: int) -> int:
@@ -25,6 +26,49 @@ def clamp_hist_bins(value: int | None) -> int:
     if value is None:
         return HIST_BINS_DEFAULT
     return max(HIST_BINS_MIN, min(int(value), HIST_BINS_MAX))
+
+
+def normalize_hist_stat(value: str | None) -> str:
+    if not value:
+        return "count"
+    key = str(value).strip().lower()
+    if key in ("frequency", "probability"):
+        return "probability"
+    if key not in HIST_STATS:
+        raise HostError(
+            ErrorCode.ColumnOrValidation,
+            "histStat must be count, density, probability, or percent",
+            "chart.histStatInvalid",
+        )
+    return key
+
+
+def hist_edges(vmin: float, vmax: float, bins: int | None, bin_width: float | None) -> np.ndarray:
+    lo = float(vmin)
+    hi = float(vmax)
+    if lo == hi:
+        lo -= 0.5
+        hi += 0.5
+    span = hi - lo
+    if bin_width is not None and float(bin_width) > 0:
+        width = float(bin_width)
+        n = int(math.ceil(span / width)) if width > 0 else HIST_BINS_DEFAULT
+        n = max(2, min(n, HIST_BINS_MAX))
+        return np.linspace(lo, hi, n + 1)
+    n_bins = clamp_hist_bins(bins)
+    return np.linspace(lo, hi, n_bins + 1)
+
+
+def scale_hist_counts(counts: np.ndarray, n: int, stat: str, density: bool) -> np.ndarray:
+    if stat == "density" or density:
+        return counts
+    if n <= 0:
+        return counts
+    if stat == "probability":
+        return counts / float(n)
+    if stat == "percent":
+        return counts / float(n) * 100.0
+    return counts
 
 
 def _unique_names(names: list[str]) -> list[str]:
@@ -179,6 +223,9 @@ def build_histogram(
     bins: int | None = None,
     x_min: float | None = None,
     x_max: float | None = None,
+    bin_width: float | None = None,
+    hist_stat: str | None = None,
+    hist_cumulative: bool = False,
 ) -> dict[str, Any]:
     """Bin numeric columns in Python. Renderer only gets bin centers + counts."""
     ds = manager.get(data_id)
@@ -190,6 +237,8 @@ def build_histogram(
             "At least one y column is required",
             "chart.columnNotFound",
         )
+    stat = normalize_hist_stat(hist_stat)
+    density = stat == "density"
     cols = [_as_y_array(_column(df, name), name) for name in seen]
     kept: list[np.ndarray] = []
     for col in cols:
@@ -208,17 +257,20 @@ def build_histogram(
         )
     vmin = min(float(arr.min()) for arr in kept if arr.size)
     vmax = max(float(arr.max()) for arr in kept if arr.size)
-    if vmin == vmax:
-        vmin -= 0.5
-        vmax += 0.5
-    n_bins = clamp_hist_bins(bins)
-    edges = np.linspace(vmin, vmax, n_bins + 1)
+    edges = hist_edges(vmin, vmax, bins, bin_width)
+    n_bins = int(edges.size - 1)
     centers = (edges[:-1] + edges[1:]) * 0.5
-    counts = [np.histogram(arr, bins=edges)[0].astype(np.float64, copy=False) for arr in kept]
+    scaled: list[np.ndarray] = []
+    for arr in kept:
+        counts, _ = np.histogram(arr, bins=edges, density=density)
+        values = scale_hist_counts(counts.astype(np.float64, copy=False), int(arr.size), stat, density)
+        if hist_cumulative:
+            values = np.cumsum(values)
+        scaled.append(values)
     return {
         "x": [float(v) for v in centers.tolist()],
-        "ys": [[float(v) for v in col.tolist()] for col in counts],
-        "pointCount": int(n_bins),
+        "ys": [[float(v) for v in col.tolist()] for col in scaled],
+        "pointCount": n_bins,
         "sourceCount": source_count,
         "downsampled": False,
         "xKind": "number",

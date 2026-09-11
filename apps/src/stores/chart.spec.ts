@@ -564,4 +564,122 @@ describe('useChartStore', () => {
     expect(chart.currentSlotIndex).toBe(1)
     expect(chart.figures[0]?.title).toBe('Pair')
   })
+
+  it('sends custom hist bins on create and extra hist params on updateHist', async () => {
+    invoke.mockResolvedValue({
+      x: [0.5, 1.5],
+      ys: [[4, 6]],
+      pointCount: 2,
+      sourceCount: 10,
+      downsampled: false,
+      xKind: 'number',
+      maxPoints: 12
+    })
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 10, cols: 1 }]
+    const chart = useChartStore()
+    const created = await chart.createFromBind({
+      type: 'hist',
+      dataId: 'ds-1',
+      y: ['ch1'],
+      yLabel: 'Count',
+      bins: 12
+    })
+    expect(invoke).toHaveBeenCalledWith('chart.buildSeries', {
+      dataId: 'ds-1',
+      y: ['ch1'],
+      kind: 'hist',
+      bins: 12
+    })
+    expect(created.bins).toBe(12)
+    invoke.mockClear()
+    await chart.updateHist(created.id, { binWidth: 1.5, histStat: 'density' })
+    expect(invoke).toHaveBeenCalledWith('chart.buildSeries', {
+      dataId: 'ds-1',
+      y: ['ch1'],
+      kind: 'hist',
+      bins: 12,
+      binWidth: 1.5,
+      histStat: 'density'
+    })
+    expect(created.histStat).toBe('density')
+    expect(created.yLabel).toBe('Density')
+    chart.updateStyle(created.id, { yLabel: 'custom' })
+    invoke.mockClear()
+    await chart.updateHist(created.id, { histStat: 'percent' })
+    expect(created.yLabel).toBe('custom')
+    expect(created.histStat).toBe('percent')
+  })
+
+  it('restores hist fields and defaults missing ones on rebuild', async () => {
+    invoke.mockResolvedValue({
+      x: [0.5],
+      ys: [[1]],
+      pointCount: 1,
+      sourceCount: 1,
+      downsampled: false,
+      xKind: 'number',
+      maxPoints: 50
+    })
+    const chart = useChartStore()
+    await chart.restoreFromFile({
+      currentId: 'h1',
+      charts: [
+        {
+          id: 'h1',
+          type: 'hist',
+          dataId: 'ds-1',
+          x: 'v',
+          y: ['v'],
+          title: 'dense',
+          xLabel: 'v',
+          yLabel: 'Density',
+          grid: true,
+          legend: true,
+          series: [{ key: 'v', color: '#5280C1', width: 1.5 }],
+          bins: 20,
+          binWidth: 0.5,
+          histStat: 'density',
+          histCumulative: true
+        },
+        {
+          id: 'h2',
+          type: 'hist',
+          dataId: 'ds-1',
+          x: 'v',
+          y: ['v'],
+          title: 'old',
+          xLabel: 'v',
+          yLabel: 'Count',
+          grid: true,
+          legend: true,
+          series: [{ key: 'v', color: '#5280C1', width: 1.5 }]
+        }
+      ]
+    })
+    expect(chart.charts[0]?.bins).toBe(20)
+    expect(chart.charts[0]?.binWidth).toBe(0.5)
+    expect(chart.charts[0]?.histStat).toBe('density')
+    expect(chart.charts[0]?.histCumulative).toBe(true)
+    expect(chart.charts[1]?.bins).toBeUndefined()
+    invoke.mockClear()
+    await chart.rebuildWindow('h2')
+    expect(invoke).toHaveBeenCalledWith('chart.buildSeries', {
+      dataId: 'ds-1',
+      y: ['v'],
+      kind: 'hist',
+      bins: 50
+    })
+    invoke.mockClear()
+    await chart.rebuildWindow('h1')
+    expect(invoke).toHaveBeenCalledWith('chart.buildSeries', {
+      dataId: 'ds-1',
+      y: ['v'],
+      kind: 'hist',
+      bins: 20,
+      binWidth: 0.5,
+      histStat: 'density',
+      histCumulative: true
+    })
+  })
 })
