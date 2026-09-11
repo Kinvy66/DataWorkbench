@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { ribbonContextTabId } from './schema'
 
 const here = dirname(fileURLToPath(import.meta.url))
 
@@ -43,7 +44,11 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'edit.redo'")
     expect(source).toContain("id: 'view.resetLayout'")
     expect(source).toContain("id: 'layout'")
-    expect(source).toContain("id: 'chart'")
+    expect(source).toContain("id: 'figure'")
+    expect(source).toContain("id: 'chartOperate'")
+    expect(source).toContain('contextual: true')
+    expect(source).toContain("contextualMode: 'selection'")
+    expect(source).toContain('ribbonContextTabId')
     expect(source).toContain("id: 'chart.newLine'")
     expect(source).toContain("id: 'chart.newScatter'")
     expect(source).toContain("id: 'chart.newBar'")
@@ -63,6 +68,15 @@ describe('ribbon schema', () => {
     expect(source).not.toContain("label: t('ribbon.open'), disabled: true")
     expect(source).toContain('disabled: !hasChart')
     expect(source).toContain('disabled: !hasFigure')
+    expect(source).toContain("workflow.centerTab === 'table'")
+    expect(source).toContain("workflow.centerTab === 'workflow'")
+    expect(source).toContain("workflow.centerTab === 'figure'")
     expect(source).not.toContain("id: 'data.hist'")
+  })
+
+  it('maps the focused workspace window to the matching contextual tab', () => {
+    expect(ribbonContextTabId('table')).toBe('operate')
+    expect(ribbonContextTabId('workflow')).toBe('workflow')
+    expect(ribbonContextTabId('figure')).toBe('chartOperate')
   })
 })

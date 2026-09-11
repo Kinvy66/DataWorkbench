@@ -1,18 +1,43 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { MlRibbon } from '@mlightcad/ribbon'
 import '@mlightcad/ribbon/style.css'
 import type { RibbonLayout } from '@mlightcad/ribbon'
 import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
-import { useRibbonSchema } from './schema'
+import { ribbonContextTabId, useRibbonSchema } from './schema'
+import { useWorkflowStore } from '@/stores/workflow'
 import DwIcon from '@/icons/DwIcon.vue'
 
 const { t, locale } = useI18n()
+const workflow = useWorkflowStore()
 const { tabs, fileMenuItems } = useRibbonSchema()
 const activeTab = ref('home')
 const layout = ref<RibbonLayout>('classic')
 const minimized = ref(false)
+
+watch(
+  () => workflow.centerTab,
+  (tab) => {
+    activeTab.value = ribbonContextTabId(tab)
+  },
+  { immediate: true }
+)
+
+watch(
+  () =>
+    tabs.value
+      .filter((tab) => tab.visible !== false)
+      .map((tab) => tab.id)
+      .join(','),
+  (visibleIds) => {
+    const ids = visibleIds.split(',').filter(Boolean)
+    if (!ids.includes(activeTab.value)) {
+      const contextId = ribbonContextTabId(workflow.centerTab)
+      activeTab.value = ids.includes(contextId) ? contextId : 'home'
+    }
+  }
+)
 
 const ribbonTexts = computed(() => ({
   fileMenuLabel: t('ribbon.file'),

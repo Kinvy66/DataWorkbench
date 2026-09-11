@@ -38,7 +38,7 @@
 7. 点 `Query`，在表达式里填：`age > 25`
 8. 点 `Output to DataManager`，把 **data_name** 改成 `adults`（不要和原表同名，便于看出新表）。
 
-连好后应类似下图。再点顶部 **工作流 → 运行**。
+连好后应类似下图。确认中间是 **工作流** 页（顶部会出现 **工作流** 标签），再点 **工作流 → 运行**。
 
 ![三条节点已连线：Data Source → Query → Output to DataManager](../assets/wiki/05-workflow.png)
 

@@ -33,6 +33,13 @@ describe('AppRibbon chrome layout', () => {
     expect(source).toContain('locale-btn')
   })
 
+  it('selects the contextual ribbon tab when the focused workspace window changes', () => {
+    const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
+    expect(source).toContain('ribbonContextTabId')
+    expect(source).toContain('centerTab')
+    expect(source).toContain('{ immediate: true }')
+  })
+
   it('paints Qt File-menu icons onto the teleported dropdown', () => {
     const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
     expect(source).toContain('ml-ribbon-file-menu-dropdown')

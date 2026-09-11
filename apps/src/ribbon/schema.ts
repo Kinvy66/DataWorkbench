@@ -6,6 +6,25 @@ import { useChartStore } from '@/stores/chart'
 import { useDataStore } from '@/stores/data'
 import { useWorkflowStore } from '@/stores/workflow'
 
+export type RibbonCenterTab = 'table' | 'workflow' | 'figure'
+
+/** Accent colors for mlRibbon contextual blocks (icon-ui semantic palette). */
+export const RIBBON_CONTEXT_COLOR = {
+  dataframe: '#5280C1',
+  workflow: '#669E8B',
+  chart: '#CE6043'
+} as const
+
+export const RIBBON_CONTEXT_TAB: Record<RibbonCenterTab, string> = {
+  table: 'operate',
+  workflow: 'workflow',
+  figure: 'chartOperate'
+}
+
+export function ribbonContextTabId(centerTab: RibbonCenterTab): string {
+  return RIBBON_CONTEXT_TAB[centerTab]
+}
+
 export function useRibbonSchema() {
   const { t } = useI18n()
   const data = useDataStore()
@@ -153,10 +172,16 @@ export function useRibbonSchema() {
           }
         ]
       },
-      {
-        id: 'operate',
-        title: t('ribbon.operate'),
-        groups: [
+      ...(workflow.centerTab === 'table'
+        ? [
+            {
+              id: 'operate',
+              title: t('ribbon.operate'),
+              contextual: true,
+              contextualMode: 'selection',
+              contextualTitle: t('ribbon.contextDataFrame'),
+              contextualColor: RIBBON_CONTEXT_COLOR.dataframe,
+              groups: [
           {
             id: 'operate-clean',
             title: t('ribbon.dataClean'),
@@ -317,11 +342,19 @@ export function useRibbonSchema() {
             ]
           }
         ]
-      },
-      {
-        id: 'workflow',
-        title: t('ribbon.workflow'),
-        groups: [
+      }
+    ]
+        : []),
+      ...(workflow.centerTab === 'workflow'
+        ? [
+            {
+              id: 'workflow',
+              title: t('ribbon.workflow'),
+              contextual: true,
+              contextualMode: 'selection',
+              contextualTitle: t('ribbon.contextWorkflow'),
+              contextualColor: RIBBON_CONTEXT_COLOR.workflow,
+              groups: [
           {
             id: 'workflow-run',
             title: t('ribbon.workflowRunGroup'),
@@ -352,10 +385,12 @@ export function useRibbonSchema() {
             ]
           }
         ]
-      },
+      }
+    ]
+        : []),
       {
-        id: 'chart',
-        title: t('ribbon.chart'),
+        id: 'figure',
+        title: t('ribbon.figure'),
         groups: [
           {
             id: 'chart-new',
@@ -411,7 +446,19 @@ export function useRibbonSchema() {
                 ]
               }
             ]
-          },
+          }
+        ]
+      },
+      ...(workflow.centerTab === 'figure'
+        ? [
+            {
+              id: 'chartOperate',
+              title: t('ribbon.chart'),
+              contextual: true,
+              contextualMode: 'selection',
+              contextualTitle: t('ribbon.contextChart'),
+              contextualColor: RIBBON_CONTEXT_COLOR.chart,
+              groups: [
           {
             id: 'chart-annotate',
             title: t('ribbon.chartAnnotate'),
@@ -499,6 +546,8 @@ export function useRibbonSchema() {
           }
         ]
       }
+    ]
+        : [])
     ]
   })
 

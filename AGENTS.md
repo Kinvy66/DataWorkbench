@@ -112,7 +112,7 @@ Python sidecar 的 **stdout 只能打 JSON-RPC 行**。日志、traceback、`pri
 
 `@mlightcad/ribbon` 只展示 tab/group/item。点击 → `commandBus.dispatch(id)`。不要把业务写进 ribbon schema 闭包。插件以后也注册到 command bus。
 
-**对齐上游菜单**：Data 标签 = 上游 Data（添加/移除/重命名/导出）。清洗、过滤、统计 = 上游 DataFrame 上下文「操作」页，复刻为 **Operate** 标签。Ribbon 按钮只加上游同一 panel 已有的 action。Replace Values / Threshold Filter 上游无按钮，只做节点。不要把每个新 Core 操作塞进 Data。Home 不要擅自改成对齐 Qt。
+**对齐上游菜单**：Data 标签 = 上游 Data（添加/移除/重命名/导出）。常驻 **Figure / 绘图** = 上游 Figure（新建折线/散点/柱状/直方/子图）。清洗、过滤、统计 = 上游 DataFrame 上下文「操作」页，仅在焦点落在**表格**时出现。工作流运行页仅在焦点落在**工作流画布**时出现。标注/导出 = 上游 Chart Operate 上下文，仅在焦点落在**绘图**时出现。`@mlightcad/ribbon` 的 `contextual` / `contextualMode: 'selection'` / `contextualTitle` 实现该动态分类。Ribbon 按钮只加上游同一 panel 已有的 action。Replace Values / Threshold Filter 上游无按钮，只做节点。不要把每个新 Core 操作塞进 Data。Home 不要擅自改成对齐 Qt。
 
 ### T6. 改 RPC 三处同步
 

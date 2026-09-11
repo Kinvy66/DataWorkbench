@@ -103,6 +103,10 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.dataFilter'))).toBe('数据过滤')
     expect(String(i18n.global.t('ribbon.dataStatistic'))).toBe('统计')
     i18n.global.locale.value = 'en'
+    expect(String(i18n.global.t('ribbon.figure'))).toBe('Figure')
+    expect(String(i18n.global.t('ribbon.contextDataFrame'))).toBe('DataFrame')
+    expect(String(i18n.global.t('ribbon.contextWorkflow'))).toBe('Workflow')
+    expect(String(i18n.global.t('ribbon.contextChart'))).toBe('Chart Operate')
     expect(String(i18n.global.t('ribbon.chart'))).toBe('Chart')
     expect(String(i18n.global.t('ribbon.chartLine'))).toBe('Line')
     expect(String(i18n.global.t('ribbon.chartHist'))).toBe('Histogram')
@@ -115,6 +119,10 @@ describe('i18n', () => {
     )
     expect(String(i18n.global.t('log.chartExportOk', { format: 'SVG' }))).toBe('Chart exported as SVG.')
     i18n.global.locale.value = 'zh-CN'
+    expect(String(i18n.global.t('ribbon.figure'))).toBe('绘图')
+    expect(String(i18n.global.t('ribbon.contextDataFrame'))).toBe('DataFrame')
+    expect(String(i18n.global.t('ribbon.contextWorkflow'))).toBe('工作流')
+    expect(String(i18n.global.t('ribbon.contextChart'))).toBe('绘图操作')
     expect(String(i18n.global.t('ribbon.chart'))).toBe('图表')
     expect(String(i18n.global.t('ribbon.chartLine'))).toBe('折线')
     expect(String(i18n.global.t('ribbon.chartHist'))).toBe('直方')
