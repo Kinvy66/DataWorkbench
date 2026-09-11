@@ -169,7 +169,7 @@ gantt
 
 **验收**：关闭软件重开工程，工作流与至少一份导入数据还在（数据可 pickle 进 `datas/`，不追求惰性数据库）（**已落地**：ZIP 往返测试 + File 打开；文件日志 `userData/logs/main.log` 与 `sidecar.log`）。
 
-P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**、**图表标注层**。其余（子图、直方专业 bin、自由停靠、AG Grid）**未排期**，未经明确要求不要开工。
+P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**、**图表标注层**、**子图网格**。其余（直方专业 bin、自由停靠、AG Grid）**未排期**，未经明确要求不要开工。
 
 ## 并行规则
 

@@ -31,6 +31,7 @@ import SortDialog from '@/views/data/SortDialog.vue'
 import ChartWorkspace from '@/views/chart/ChartWorkspace.vue'
 import ChartProperties from '@/views/chart/ChartProperties.vue'
 import ChartBindDialog from '@/views/chart/ChartBindDialog.vue'
+import ChartSubplotDialog from '@/views/chart/ChartSubplotDialog.vue'
 
 const { t } = useI18n()
 const log = useLogStore()
@@ -137,6 +138,7 @@ function formatTime(at: number): string {
     <QueryDialog />
     <SortDialog />
     <ChartBindDialog />
+    <ChartSubplotDialog />
   </div>
 </template>
 

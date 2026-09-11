@@ -48,7 +48,17 @@ describe('project archive helpers', () => {
           nodes: { n1: { x: 40, y: 80 } }
         },
         charts: {
-          currentId: 'c1',
+          currentId: 'c2',
+          currentFigureId: 'fig-1',
+          figures: [
+            {
+              id: 'fig-1',
+              title: 'Pair',
+              rows: 1,
+              cols: 2,
+              slots: ['c1', 'c2']
+            }
+          ],
           charts: [
             {
               id: 'c1',
@@ -63,6 +73,19 @@ describe('project archive helpers', () => {
               legend: true,
               series: [{ key: 'ch1', color: '#5280C1', width: 1.5 }],
               annotations: [{ id: 'n1', kind: 'text', x: 1, y: 2, text: 'peak', color: '#CE6043' }]
+            },
+            {
+              id: 'c2',
+              type: 'line',
+              dataId: 'ds-1',
+              x: 't',
+              y: ['ch2'],
+              title: 'wave-2',
+              xLabel: 't',
+              yLabel: 'ch2',
+              grid: true,
+              legend: true,
+              series: [{ key: 'ch2', color: '#669E8B', width: 1.5 }]
             }
           ]
         },
@@ -79,6 +102,8 @@ describe('project archive helpers', () => {
       expect(opened.uiLayout.nodes.n1).toEqual({ x: 40, y: 80 })
       expect(opened.charts.charts[0]?.y).toEqual(['ch1'])
       expect(opened.charts.charts[0]?.annotations?.[0]?.text).toBe('peak')
+      expect(opened.charts.figures?.[0]?.slots).toEqual(['c1', 'c2'])
+      expect(opened.charts.currentFigureId).toBe('fig-1')
       expect(JSON.stringify(opened.charts)).not.toContain('"data":')
       expect(readFileSync(dest).length).toBeGreaterThan(20)
     } finally {

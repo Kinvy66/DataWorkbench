@@ -10,8 +10,8 @@ export {
   rangesNearlyEqual
 } from './viewport'
 export type { ViewportKind, ViewportWindow } from './viewport'
-export { seriesToSvg, xmlEscape, SVG_TEXT_FONT } from './exportSvg'
-export type { SvgExportOptions } from './exportSvg'
+export { seriesToSvg, figureToSvg, xmlEscape, SVG_TEXT_FONT } from './exportSvg'
+export type { SvgExportOptions, FigureSvgOptions } from './exportSvg'
 export { canvasToPngDataUrl, decodePngDataUrl } from './exportPng'
 export { suggestedExportName } from './exportName'
 export {

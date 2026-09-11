@@ -1,103 +1,115 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { isGridFigure } from '@/chart/figures'
 import { useChartStore } from '@/stores/chart'
 import DwIcon from '@/icons/DwIcon.vue'
 
 const { t } = useI18n()
 const chart = useChartStore()
 const current = computed(() => chart.current)
+const figure = computed(() => chart.currentFigure)
+const grid = computed(() => Boolean(figure.value && isGridFigure(figure.value)))
 </script>
 
 <template>
-  <div v-if="!current" class="empty">
+  <div v-if="!figure" class="empty">
     <DwIcon name="gui/chart" :size="48" />
     <p class="muted">{{ t('layout.propertiesEmpty') }}</p>
   </div>
   <div v-else class="props">
     <el-form label-position="top" size="small">
-      <el-form-item :label="t('chart.title')">
+      <el-form-item v-if="grid" :label="t('chart.figureTitle')">
         <el-input
-          :model-value="current.title"
-          @update:model-value="(value) => chart.updateStyle(current.id, { title: String(value) })"
+          :model-value="figure.title"
+          @update:model-value="(value) => chart.updateFigureTitle(figure.id, String(value))"
         />
       </el-form-item>
-      <el-form-item :label="t('chart.xLabel')">
-        <el-input
-          :model-value="current.xLabel"
-          @update:model-value="(value) => chart.updateStyle(current.id, { xLabel: String(value) })"
-        />
-      </el-form-item>
-      <el-form-item :label="t('chart.yLabel')">
-        <el-input
-          :model-value="current.yLabel"
-          @update:model-value="(value) => chart.updateStyle(current.id, { yLabel: String(value) })"
-        />
-      </el-form-item>
-      <el-form-item :label="t('chart.grid')">
-        <el-switch
-          :model-value="current.grid"
-          @update:model-value="(value: boolean) => chart.updateStyle(current.id, { grid: value })"
-        />
-      </el-form-item>
-      <el-form-item :label="t('chart.legend')">
-        <el-switch
-          :model-value="current.legend"
-          @update:model-value="(value: boolean) => chart.updateStyle(current.id, { legend: value })"
-        />
-      </el-form-item>
-      <div v-for="series in current.series" :key="series.key" class="series">
-        <p class="series-name">{{ series.key }}</p>
-        <el-form-item :label="t('chart.color')">
-          <el-color-picker
-            :model-value="series.color"
-            @update:model-value="
-              (value: string | null) => {
-                if (value) chart.updateSeries(current.id, series.key, { color: value })
-              }
-            "
+      <p v-if="!current" class="muted">{{ t('chart.subplotEmpty') }}</p>
+      <template v-if="current">
+        <el-form-item :label="t('chart.title')">
+          <el-input
+            :model-value="current.title"
+            @update:model-value="(value) => chart.updateStyle(current.id, { title: String(value) })"
           />
         </el-form-item>
-        <el-form-item :label="t('chart.width')">
-          <el-input-number
-            :model-value="series.width"
-            :min="0.5"
-            :max="8"
-            :step="0.5"
-            @update:model-value="
-              (value: number | undefined) => {
-                if (value != null) chart.updateSeries(current.id, series.key, { width: value })
-              }
-            "
+        <el-form-item :label="t('chart.xLabel')">
+          <el-input
+            :model-value="current.xLabel"
+            @update:model-value="(value) => chart.updateStyle(current.id, { xLabel: String(value) })"
           />
         </el-form-item>
-      </div>
-      <div class="series">
-        <p class="series-name">{{ t('chart.annotations') }}</p>
-        <p v-if="!current.annotations.length" class="muted">{{ t('chart.annotationEmpty') }}</p>
-        <div v-for="item in current.annotations" :key="item.id" class="ann">
-          <p class="ann-kind">{{ t(`chart.annotationKind.${item.kind}`) }}</p>
-          <el-form-item :label="t('chart.annotationText')">
-            <el-input
-              :model-value="item.text"
-              @update:model-value="(value) => chart.updateAnnotation(item.id, { text: String(value) })"
-            />
-          </el-form-item>
+        <el-form-item :label="t('chart.yLabel')">
+          <el-input
+            :model-value="current.yLabel"
+            @update:model-value="(value) => chart.updateStyle(current.id, { yLabel: String(value) })"
+          />
+        </el-form-item>
+        <el-form-item :label="t('chart.grid')">
+          <el-switch
+            :model-value="current.grid"
+            @update:model-value="(value: boolean) => chart.updateStyle(current.id, { grid: value })"
+          />
+        </el-form-item>
+        <el-form-item :label="t('chart.legend')">
+          <el-switch
+            :model-value="current.legend"
+            @update:model-value="(value: boolean) => chart.updateStyle(current.id, { legend: value })"
+          />
+        </el-form-item>
+        <div v-for="series in current.series" :key="series.key" class="series">
+          <p class="series-name">{{ series.key }}</p>
           <el-form-item :label="t('chart.color')">
             <el-color-picker
-              :model-value="item.color"
+              :model-value="series.color"
               @update:model-value="
                 (value: string | null) => {
-                  if (value) chart.updateAnnotation(item.id, { color: value })
+                  if (value) chart.updateSeries(current.id, series.key, { color: value })
                 }
               "
             />
           </el-form-item>
-          <el-button size="small" text type="danger" @click="chart.removeAnnotation(item.id)">
-            {{ t('chart.annotationDelete') }}
-          </el-button>
+          <el-form-item :label="t('chart.width')">
+            <el-input-number
+              :model-value="series.width"
+              :min="0.5"
+              :max="8"
+              :step="0.5"
+              @update:model-value="
+                (value: number | undefined) => {
+                  if (value != null) chart.updateSeries(current.id, series.key, { width: value })
+                }
+              "
+            />
+          </el-form-item>
         </div>
-      </div>
+        <div class="series">
+          <p class="series-name">{{ t('chart.annotations') }}</p>
+          <p v-if="!current.annotations.length" class="muted">{{ t('chart.annotationEmpty') }}</p>
+          <div v-for="item in current.annotations" :key="item.id" class="ann">
+            <p class="ann-kind">{{ t(`chart.annotationKind.${item.kind}`) }}</p>
+            <el-form-item :label="t('chart.annotationText')">
+              <el-input
+                :model-value="item.text"
+                @update:model-value="(value) => chart.updateAnnotation(item.id, { text: String(value) })"
+              />
+            </el-form-item>
+            <el-form-item :label="t('chart.color')">
+              <el-color-picker
+                :model-value="item.color"
+                @update:model-value="
+                  (value: string | null) => {
+                    if (value) chart.updateAnnotation(item.id, { color: value })
+                  }
+                "
+              />
+            </el-form-item>
+            <el-button size="small" text type="danger" @click="chart.removeAnnotation(item.id)">
+              {{ t('chart.annotationDelete') }}
+            </el-button>
+          </div>
+        </div>
+      </template>
     </el-form>
   </div>
 </template>

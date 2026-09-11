@@ -32,7 +32,7 @@
 | Operate | Data Filtering | `data.eval` `data.query` `data.search` `data.filterByColumn` `data.sort` | P3（检索与按列为 medium，其余 large） |
 | Operate | Statistics | `data.describe` `data.pivotTable` | P3（对齐上游统计） |
 | Workflow | Run | `workflow.run` `workflow.stop` `workflow.pause` | P2 |
-| Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` `chart.newHist` | P4 |
+| Chart | New | `chart.newLine` `chart.newScatter` `chart.newBar` `chart.newHist` `chart.newSubplots` | P4 + 二期子图 |
 | Chart | Annotate | `chart.annotateText` `chart.annotatePoint` `chart.annotateArrow` `chart.annotateRegion` | 二期标注 |
 | Chart | Export | `chart.exportPng` `chart.exportSvg` `chart.exportPdf` | P4 + 二期 PDF |
 

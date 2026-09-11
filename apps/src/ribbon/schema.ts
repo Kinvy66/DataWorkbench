@@ -15,6 +15,7 @@ export function useRibbonSchema() {
   const tabs = computed<RibbonTabModel[]>(() => {
     const hasDataset = Boolean(data.currentId)
     const hasChart = Boolean(chart.currentId)
+    const hasFigure = chart.hasExportableFigure
     return [
       {
         id: 'home',
@@ -379,6 +380,14 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !hasDataset,
                     icon: ribbonIcon('app/chart-type/chart-histogram')
+                  },
+                  {
+                    id: 'chart.newSubplots',
+                    type: 'button',
+                    label: t('ribbon.chartSubplots'),
+                    tooltip: t('ribbon.chartSubplotsTip'),
+                    size: 'large',
+                    icon: ribbonIcon('app/showChart')
                   }
                 ]
               }
@@ -444,7 +453,7 @@ export function useRibbonSchema() {
                     label: t('ribbon.chartExportPng'),
                     tooltip: t('ribbon.chartExportPngTip'),
                     size: 'large',
-                    disabled: !hasChart,
+                    disabled: !hasFigure,
                     icon: ribbonIcon('app/save')
                   },
                   {
@@ -453,7 +462,7 @@ export function useRibbonSchema() {
                     label: t('ribbon.chartExportSvg'),
                     tooltip: t('ribbon.chartExportSvgTip'),
                     size: 'large',
-                    disabled: !hasChart,
+                    disabled: !hasFigure,
                     icon: ribbonIcon('app/save')
                   },
                   {
@@ -462,7 +471,7 @@ export function useRibbonSchema() {
                     label: t('ribbon.chartExportPdf'),
                     tooltip: t('ribbon.chartExportPdfTip'),
                     size: 'large',
-                    disabled: !hasChart,
+                    disabled: !hasFigure,
                     icon: ribbonIcon('app/save')
                   }
                 ]

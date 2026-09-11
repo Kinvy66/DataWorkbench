@@ -6,24 +6,38 @@ import {
   type ChartBuildSeriesParams,
   type ChartBuildSeriesResult,
   type ChartTypeId,
-  type ProjectChartsFile
+  type ProjectChartsFile,
+  type ProjectFigurePersist
 } from '@dw/rpc-types'
 import {
   ANNOTATION_COLOR,
   canvasToPngDataUrl,
+  figureToSvg,
   parseChartAnnotations,
   seriesColor,
   seriesToSvg,
   suggestedExportName,
   type ChartAnnotation,
   type ChartAnnotationKind,
+  type SvgExportOptions,
   type ViewportWindow
 } from '@dw/chart-core'
+import {
+  emptyFigure,
+  isGridFigure,
+  parseProjectFigure,
+  parseSubplotLayout,
+  slotIndexOf,
+  wrapChartAsFigure,
+  type ChartFigure
+} from '@/chart/figures'
 import { getDesktopBridge } from '@/rpc/bridge'
 import { isCancelled } from '@/rpc/rpcError'
 import { useDataStore } from './data'
 import { touchProject } from './project'
 import { useWorkflowStore } from './workflow'
+
+export type { ChartFigure } from '@/chart/figures'
 
 export type BindableChartType = ChartTypeId
 
@@ -130,11 +144,68 @@ async function waitForCanvas(
   return getCanvas()
 }
 
+async function waitForPng(tries = 20): Promise<string | null> {
+  const first = pngCapture?.() ?? null
+  if (first && first.length > 80) {
+    return first
+  }
+  if (typeof requestAnimationFrame !== 'function') {
+    return first
+  }
+  for (let i = 0; i < tries; i++) {
+    await afterPaint()
+    const next = pngCapture?.() ?? null
+    if (next && next.length > 80) {
+      return next
+    }
+  }
+  return pngCapture?.() ?? null
+}
+
+function svgOptionsFromChart(chart: ChartSpec): SvgExportOptions | null {
+  if (!chart.data) {
+    return null
+  }
+  return {
+    kind: chart.type,
+    title: chart.title,
+    xLabel: chart.xLabel,
+    yLabel: chart.yLabel,
+    legend: chart.legend,
+    grid: chart.grid,
+    styles: chart.series.map((item) => ({
+      label: item.key,
+      color: item.color,
+      width: item.width
+    })),
+    data: {
+      x: chart.data.x.map((value) => (value == null ? Number.NaN : value)),
+      ys: chart.data.ys,
+      xKind: chart.data.xKind
+    },
+    annotations: chart.annotations
+  }
+}
+
+function persistFigure(figure: ChartFigure): ProjectFigurePersist {
+  return {
+    id: figure.id,
+    title: figure.title,
+    rows: figure.rows,
+    cols: figure.cols,
+    slots: [...figure.slots]
+  }
+}
+
 export const useChartStore = defineStore('chart', {
   state: () => ({
     charts: [] as ChartSpec[],
+    figures: [] as ChartFigure[],
     currentId: null as string | null,
+    currentFigureId: null as string | null,
+    currentSlotIndex: 0,
     bindDialogOpen: false,
+    subplotDialogOpen: false,
     pendingType: 'line' as BindableChartType,
     placeKind: null as ChartAnnotationKind | null,
     placeAnchor: null as { x: number; y: number } | null,
@@ -143,6 +214,19 @@ export const useChartStore = defineStore('chart', {
   getters: {
     current(state): ChartSpec | null {
       return state.charts.find((item) => item.id === state.currentId) ?? null
+    },
+    currentFigure(state): ChartFigure | null {
+      return state.figures.find((item) => item.id === state.currentFigureId) ?? null
+    },
+    hasExportableFigure(state): boolean {
+      const figure = state.figures.find((item) => item.id === state.currentFigureId)
+      if (!figure) {
+        return Boolean(state.currentId)
+      }
+      return figure.slots.some((id) => {
+        const chart = state.charts.find((item) => item.id === id)
+        return Boolean(chart?.data)
+      })
     }
   },
   actions: {
@@ -156,6 +240,9 @@ export const useChartStore = defineStore('chart', {
       this.pendingType = type
       this.bindDialogOpen = true
     },
+    openSubplotDialog(): void {
+      this.subplotDialogOpen = true
+    },
     prune(existingIds: string[]): void {
       const keep = new Set(existingIds)
       for (const item of this.charts) {
@@ -164,13 +251,30 @@ export const useChartStore = defineStore('chart', {
         }
       }
       this.charts = this.charts.filter((item) => keep.has(item.dataId))
-      if (this.currentId && !this.charts.some((item) => item.id === this.currentId)) {
+      const chartIds = new Set(this.charts.map((item) => item.id))
+      this.figures = this.figures
+        .map((figure) => ({
+          ...figure,
+          slots: figure.slots.map((id) => (id && chartIds.has(id) ? id : null))
+        }))
+        .filter((figure) => isGridFigure(figure) || figure.slots.some(Boolean))
+      if (this.currentId && !chartIds.has(this.currentId)) {
         this.currentId = this.charts[0]?.id ?? null
+      }
+      if (this.currentFigureId && !this.figures.some((item) => item.id === this.currentFigureId)) {
+        this.currentFigureId = this.figures[0]?.id ?? null
+        this.currentSlotIndex = 0
+        if (this.currentFigure) {
+          this.currentId = this.currentFigure.slots[0] ?? this.charts[0]?.id ?? null
+        }
       }
     },
     clear(): void {
       this.charts = []
+      this.figures = []
       this.currentId = null
+      this.currentFigureId = null
+      this.currentSlotIndex = 0
       this.cancelPlace()
       this.selectedAnnotationId = null
       rebuildSeq.clear()
@@ -179,7 +283,10 @@ export const useChartStore = defineStore('chart', {
       this.cancelPlace()
       this.selectedAnnotationId = null
       this.charts = []
+      this.figures = []
       this.currentId = null
+      this.currentFigureId = null
+      this.currentSlotIndex = 0
       for (const spec of file.charts) {
         let data: ChartBuildSeriesResult | null = null
         try {
@@ -204,26 +311,103 @@ export const useChartStore = defineStore('chart', {
           window: null
         })
       }
+      const chartIds = new Set(this.charts.map((item) => item.id))
+      const parsed = (file.figures ?? [])
+        .map((item) => parseProjectFigure(item, chartIds))
+        .filter((item): item is ChartFigure => item != null)
+      const used = new Set(parsed.flatMap((figure) => figure.slots.filter((id): id is string => Boolean(id))))
+      const wrapped = this.charts.filter((chart) => !used.has(chart.id)).map((chart) => wrapChartAsFigure(chart))
+      this.figures = [...parsed, ...wrapped]
       this.currentId =
         file.currentId && this.charts.some((item) => item.id === file.currentId)
           ? file.currentId
           : (this.charts[0]?.id ?? null)
+      const fromFile =
+        file.currentFigureId && this.figures.some((item) => item.id === file.currentFigureId)
+          ? file.currentFigureId
+          : null
+      const fromChart = this.figures.find((figure) => figure.slots.includes(this.currentId))?.id ?? null
+      this.currentFigureId = fromFile ?? fromChart ?? this.figures[0]?.id ?? null
+      this.currentSlotIndex = this.currentFigure ? slotIndexOf(this.currentFigure, this.currentId) : 0
+    },
+    captureFigures(): ProjectFigurePersist[] {
+      if (this.figures.length) {
+        return this.figures.map(persistFigure)
+      }
+      return this.charts.map((chart) => persistFigure(wrapChartAsFigure(chart)))
     },
     select(id: string): void {
-      if (!this.charts.some((item) => item.id === id)) {
+      const chart = this.charts.find((item) => item.id === id)
+      if (!chart) {
         return
       }
+      const figure = this.figures.find((item) => item.slots.includes(id))
       if (this.currentId !== id) {
         this.cancelPlace()
         this.selectedAnnotationId = null
       }
       this.currentId = id
+      if (figure) {
+        this.currentFigureId = figure.id
+        this.currentSlotIndex = slotIndexOf(figure, id)
+      }
+    },
+    selectFigure(id: string): void {
+      const figure = this.figures.find((item) => item.id === id)
+      if (!figure) {
+        return
+      }
+      if (this.currentFigureId !== id) {
+        this.cancelPlace()
+        this.selectedAnnotationId = null
+        this.currentSlotIndex = figure.slots.findIndex((slot) => Boolean(slot))
+        if (this.currentSlotIndex < 0) {
+          this.currentSlotIndex = 0
+        }
+      }
+      this.currentFigureId = id
+      this.currentId = figure.slots[this.currentSlotIndex] ?? null
+    },
+    selectSlot(index: number): void {
+      const figure = this.currentFigure
+      if (!figure || index < 0 || index >= figure.slots.length) {
+        return
+      }
+      const nextId = figure.slots[index]
+      if (this.currentSlotIndex !== index || this.currentId !== nextId) {
+        this.cancelPlace()
+        this.selectedAnnotationId = null
+      }
+      this.currentSlotIndex = index
+      this.currentId = nextId
     },
     remove(id: string): void {
-      rebuildSeq.delete(id)
-      this.charts = this.charts.filter((item) => item.id !== id)
-      if (this.currentId === id) {
-        this.currentId = this.charts[0]?.id ?? null
+      this.removeFigure(id)
+    },
+    removeFigure(id: string): void {
+      const figure = this.figures.find((item) => item.id === id)
+      if (!figure) {
+        const chart = this.charts.find((item) => item.id === id)
+        if (chart) {
+          const host = this.figures.find((item) => item.slots.includes(id))
+          if (host) {
+            this.removeFigure(host.id)
+          }
+        }
+        return
+      }
+      for (const slot of figure.slots) {
+        if (slot) {
+          rebuildSeq.delete(slot)
+        }
+      }
+      const drop = new Set(figure.slots.filter((slot): slot is string => Boolean(slot)))
+      this.charts = this.charts.filter((item) => !drop.has(item.id))
+      this.figures = this.figures.filter((item) => item.id !== id)
+      if (this.currentFigureId === id) {
+        this.currentFigureId = this.figures[0]?.id ?? null
+        this.currentSlotIndex = 0
+        this.currentId = this.currentFigure?.slots[0] ?? this.charts[0]?.id ?? null
       }
       touchProject()
     },
@@ -236,6 +420,20 @@ export const useChartStore = defineStore('chart', {
         return
       }
       Object.assign(chart, patch)
+      if (patch.title != null) {
+        const figure = this.figures.find((item) => item.slots.includes(id))
+        if (figure && !isGridFigure(figure)) {
+          figure.title = patch.title
+        }
+      }
+      touchProject()
+    },
+    updateFigureTitle(id: string, title: string): void {
+      const figure = this.figures.find((item) => item.id === id)
+      if (!figure) {
+        return
+      }
+      figure.title = title
       touchProject()
     },
     updateSeries(id: string, key: string, patch: Partial<ChartSeriesStyle>): void {
@@ -314,6 +512,23 @@ export const useChartStore = defineStore('chart', {
     selectAnnotation(id: string | null): void {
       this.selectedAnnotationId = id
     },
+    createSubplots(layout: string): ChartFigure | null {
+      const dims = parseSubplotLayout(layout)
+      if (!dims) {
+        return null
+      }
+      const figure = emptyFigure(dims.rows, dims.cols)
+      this.figures.push(figure)
+      this.currentFigureId = figure.id
+      this.currentSlotIndex = 0
+      this.currentId = null
+      this.cancelPlace()
+      this.selectedAnnotationId = null
+      useWorkflowStore().centerTab = 'figure'
+      this.subplotDialogOpen = false
+      touchProject()
+      return figure
+    },
     async createFromBind(options: {
       type: BindableChartType
       dataId: string
@@ -357,8 +572,25 @@ export const useChartStore = defineStore('chart', {
         data: result,
         window: null
       }
-      this.charts.push(spec)
-      this.currentId = id
+      const figure = this.currentFigure
+      if (figure && isGridFigure(figure)) {
+        const slot = this.currentSlotIndex
+        const previous = figure.slots[slot]
+        if (previous) {
+          rebuildSeq.delete(previous)
+          this.charts = this.charts.filter((item) => item.id !== previous)
+        }
+        this.charts.push(spec)
+        figure.slots[slot] = id
+        this.currentId = id
+      } else {
+        this.charts.push(spec)
+        const next = wrapChartAsFigure(spec)
+        this.figures.push(next)
+        this.currentFigureId = next.id
+        this.currentSlotIndex = 0
+        this.currentId = id
+      }
       this.cancelPlace()
       this.selectedAnnotationId = null
       workflow.centerTab = 'figure'
@@ -394,8 +626,12 @@ export const useChartStore = defineStore('chart', {
       return this.rebuildWindow(id)
     },
     async saveExport(format: 'png' | 'svg' | 'pdf'): Promise<boolean> {
+      const figure = this.currentFigure
       const current = this.current
-      if (!current?.data) {
+      const exportable = figure
+        ? figure.slots.some((id) => this.charts.find((item) => item.id === id)?.data)
+        : Boolean(current?.data)
+      if (!exportable) {
         throwExportMissing()
       }
       const workflow = useWorkflowStore()
@@ -403,35 +639,41 @@ export const useChartStore = defineStore('chart', {
       let content: string
       if (format === 'png') {
         await nextTick()
-        const canvas = await waitForCanvas(() => canvasProvider?.() ?? null)
-        if (!canvas || canvas.width < 1 || canvas.height < 1) {
+        const captured = await waitForPng()
+        if (captured && captured.length > 80) {
+          content = captured
+        } else {
+          const canvas = await waitForCanvas(() => canvasProvider?.() ?? null)
+          if (!canvas || canvas.width < 1 || canvas.height < 1) {
+            throwExportMissing()
+          }
+          content = canvasToPngDataUrl(canvas)
+        }
+      } else if (figure && isGridFigure(figure)) {
+        const panels = figure.slots.map((id) => {
+          const chart = this.charts.find((item) => item.id === id)
+          return chart ? svgOptionsFromChart(chart) : null
+        })
+        if (!panels.some(Boolean)) {
           throwExportMissing()
         }
-        content = pngCapture?.() ?? canvasToPngDataUrl(canvas)
-      } else {
-        content = seriesToSvg({
-          kind: current.type,
-          title: current.title,
-          xLabel: current.xLabel,
-          yLabel: current.yLabel,
-          legend: current.legend,
-          grid: current.grid,
-          styles: current.series.map((item) => ({
-            label: item.key,
-            color: item.color,
-            width: item.width
-          })),
-          data: {
-            x: current.data.x.map((value) => (value == null ? Number.NaN : value)),
-            ys: current.data.ys,
-            xKind: current.data.xKind
-          },
-          annotations: current.annotations
+        content = figureToSvg({
+          title: figure.title,
+          rows: figure.rows,
+          cols: figure.cols,
+          panels
         })
+      } else {
+        const chart = current && current.data ? current : this.charts.find((item) => item.data) ?? null
+        if (!chart?.data) {
+          throwExportMissing()
+        }
+        content = seriesToSvg(svgOptionsFromChart(chart)!)
       }
+      const nameSource = figure?.title || current?.title || 'chart'
       const result = await rpc().invoke('chart.saveExport', {
         format,
-        suggestedName: suggestedExportName(current.title, format),
+        suggestedName: suggestedExportName(nameSource, format),
         content
       })
       return !isCancelled(result)

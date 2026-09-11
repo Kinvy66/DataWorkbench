@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { seriesToSvg, suggestedExportName, xmlEscape } from '@dw/chart-core'
+import { figureToSvg, seriesToSvg, suggestedExportName, xmlEscape } from '@dw/chart-core'
 
 describe('seriesToSvg', () => {
   it('draws a line path and the title', () => {
@@ -89,6 +89,30 @@ describe('seriesToSvg', () => {
     expect(rects.length).toBeGreaterThan(1)
     expect(svg).not.toContain('<path')
     expect(svg).not.toContain('<circle')
+  })
+})
+
+describe('figureToSvg', () => {
+  const panel = {
+    kind: 'line' as const,
+    title: 'A',
+    legend: false,
+    grid: false,
+    styles: [{ label: 'y', color: '#5280C1', width: 1 }],
+    data: { x: [0, 1], ys: [[1, 2]], xKind: 'number' as const }
+  }
+
+  it('nests panel titles in a grid', () => {
+    const svg = figureToSvg({
+      title: 'Grid',
+      rows: 1,
+      cols: 2,
+      panels: [panel, { ...panel, title: 'B' }]
+    })
+    expect(svg).toContain('Grid')
+    expect(svg).toContain('>A<')
+    expect(svg).toContain('>B<')
+    expect(svg.match(/<svg /g)?.length).toBeGreaterThanOrEqual(3)
   })
 })
 

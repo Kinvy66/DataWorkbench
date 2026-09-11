@@ -536,8 +536,12 @@ export function registerBuiltinCommands(): void {
     },
     () => useDataStore().hasSelection
   )
+  commandBus.register('chart.newSubplots', () => {
+    useChartStore().openSubplotDialog()
+  })
 
   const hasChart = () => Boolean(useChartStore().currentId)
+  const hasFigure = () => useChartStore().hasExportableFigure
 
   async function exportChart(format: 'png' | 'svg' | 'pdf'): Promise<void> {
     const log = useLogStore()
@@ -556,9 +560,9 @@ export function registerBuiltinCommands(): void {
     }
   }
 
-  commandBus.register('chart.exportPng', () => exportChart('png'), hasChart)
-  commandBus.register('chart.exportSvg', () => exportChart('svg'), hasChart)
-  commandBus.register('chart.exportPdf', () => exportChart('pdf'), hasChart)
+  commandBus.register('chart.exportPng', () => exportChart('png'), hasFigure)
+  commandBus.register('chart.exportSvg', () => exportChart('svg'), hasFigure)
+  commandBus.register('chart.exportPdf', () => exportChart('pdf'), hasFigure)
   commandBus.register('chart.annotateText', () => useChartStore().togglePlace('text'), hasChart)
   commandBus.register('chart.annotatePoint', () => useChartStore().togglePlace('point'), hasChart)
   commandBus.register('chart.annotateArrow', () => useChartStore().togglePlace('arrow'), hasChart)

@@ -174,7 +174,7 @@ function canvas(): HTMLCanvasElement | null {
   return plot?.canvas() ?? null
 }
 
-function pngDataUrl(): string | null {
+function snapshotCanvas(): HTMLCanvasElement | null {
   const src = canvas()
   const scale = plot?.canvasScale()
   if (!src || src.width < 1 || src.height < 1) {
@@ -193,7 +193,11 @@ function pngDataUrl(): string | null {
   if (scale) {
     drawAnnotations(ctx, props.chart.annotations, scale)
   }
-  return out.toDataURL('image/png')
+  return out
+}
+
+function pngDataUrl(): string | null {
+  return snapshotCanvas()?.toDataURL('image/png') ?? null
 }
 
 function onOverlayClick(event: MouseEvent): void {
@@ -286,7 +290,7 @@ watch(
   }
 )
 
-defineExpose({ resetView, canvas, pngDataUrl })
+defineExpose({ resetView, canvas, pngDataUrl, snapshotCanvas })
 </script>
 
 <template>

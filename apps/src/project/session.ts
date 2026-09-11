@@ -67,6 +67,8 @@ export function captureCharts(): ProjectChartsFile {
   const chart = useChartStore()
   return {
     currentId: chart.currentId,
+    currentFigureId: chart.currentFigureId,
+    figures: chart.captureFigures(),
     charts: chart.charts.map(persistChart)
   }
 }

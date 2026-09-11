@@ -15,7 +15,7 @@
 
 ## 一期不做
 
-- 子图网格（matplotlib 式 Figure 多 axes）—— 可用多个主区 tab 代替
+- 子图格子自由拖拽改布局（Qwt overlay）—— 固定 RxC 网格即可
 - 数据探针十字线（可做简易悬停 tooltip，非探针体系）
 - 3D、热力、箱线、谱图
 - 与 Qwt 工程 `charts.xml` 互导
@@ -75,12 +75,12 @@ sequenceDiagram
 }
 ```
 
-不存采样点。打开工程后按绑定重新 `buildSeries`。
+不存采样点。打开工程后按绑定重新 `buildSeries`。`charts.json` 顶层可有 `figures`（`rows`/`cols`/`slots`）；缺省则每个 chart 视为独立 1×1。不要 bump `PROJECT_FORMAT`。
 
 ## 二期（单独排期，不阻塞 MVP）
 
 1. 箱线 / 直方更专业的 bin 参数  
-2. 多 subplot  
+2. ~~多 subplot~~ **已落地**：`chart.newSubplots` 建 RxC 空网格（≤3×3）；选中格子后 New Line/Scatter/Bar/Hist 填入该格；导出整张 Figure。不是拖格子改布局。  
 3. ~~标注层（SVG overlay）~~ **已落地**：`chart.annotate*` 点击放置；坐标写入 `charts.json`；SVG/PDF/PNG 导出带标注  
 4. ~~导出 PDF~~ **已落地**：Ribbon `chart.exportPdf`；渲染进程仍发 SVG markup，主进程 `printToPDF`  
 5. 颜色循环与色盲安全色板（可抄上游 icon 色）  
@@ -94,3 +94,4 @@ sequenceDiagram
 | SVG | 在浏览器或 Inkscape 打开可见曲线与标题 |
 | PDF | 另存为 `.pdf` 后可用阅读器打开；中文标题可见 |
 | 标注 | 点「文本」后在图上点击，属性可改字；保存工程再打开仍在 |
+| 子图 | 建 1×2，两个格子各绑一条折线；导出 SVG 里能搜到两个标题 |

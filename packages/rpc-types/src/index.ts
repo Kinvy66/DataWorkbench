@@ -24,6 +24,7 @@ export const CHART_HIST_BINS_DEFAULT = 50
 export const CHART_HIST_BINS_MIN = 5
 export const CHART_HIST_BINS_MAX = 200
 export const CHART_VIEWPORT_DEBOUNCE_MS = 150
+export const CHART_SUBPLOT_MAX_DIM = 3
 export const PROJECT_MAGIC = 'DataWorkbenchProject'
 export const PROJECT_FORMAT = 1
 export const PROJECT_EXT = 'dwproj'
@@ -779,8 +780,18 @@ export interface ProjectChartPersist {
   annotations?: ProjectChartAnnotation[]
 }
 
+export interface ProjectFigurePersist {
+  id: string
+  title: string
+  rows: number
+  cols: number
+  slots: Array<string | null>
+}
+
 export interface ProjectChartsFile {
   currentId: string | null
+  currentFigureId?: string | null
+  figures?: ProjectFigurePersist[]
   charts: ProjectChartPersist[]
 }
 

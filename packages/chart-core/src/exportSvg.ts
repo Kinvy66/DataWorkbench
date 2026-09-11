@@ -85,7 +85,17 @@ function minPositiveDx(xs: number[]): number {
   return min
 }
 
-export function seriesToSvg(opts: SvgExportOptions): string {
+export type FigureSvgOptions = {
+  title?: string
+  rows: number
+  cols: number
+  panels: Array<SvgExportOptions | null>
+  panelWidth?: number
+  panelHeight?: number
+  gap?: number
+}
+
+function seriesSvgInner(opts: SvgExportOptions): { width: number; height: number; inner: string } {
   const width = opts.width ?? 960
   const height = opts.height ?? 540
   const padL = 64
@@ -98,11 +108,7 @@ export function seriesToSvg(opts: SvgExportOptions): string {
   const sx = (x: number) => padL + ((x - xMin) / (xMax - xMin)) * plotW
   const sy = (y: number) => padT + (1 - (y - yMin) / (yMax - yMin)) * plotH
   const xs = opts.data.x
-  const parts: string[] = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
-    `<rect width="${width}" height="${height}" fill="#ffffff"/>`
-  ]
+  const parts: string[] = [`<rect width="${width}" height="${height}" fill="#ffffff"/>`]
 
   if (opts.grid) {
     for (let i = 0; i <= 4; i++) {
@@ -247,6 +253,56 @@ export function seriesToSvg(opts: SvgExportOptions): string {
     )
   }
 
+  return { width, height, inner: parts.join('\n') }
+}
+
+export function seriesToSvg(opts: SvgExportOptions): string {
+  const { width, height, inner } = seriesSvgInner(opts)
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+    inner,
+    '</svg>'
+  ].join('\n')
+}
+
+export function figureToSvg(opts: FigureSvgOptions): string {
+  const rows = Math.max(1, opts.rows)
+  const cols = Math.max(1, opts.cols)
+  const gap = opts.gap ?? 10
+  const cellW = opts.panelWidth ?? 640
+  const cellH = opts.panelHeight ?? 360
+  const titleH = opts.title ? 40 : 8
+  const width = gap + cols * (cellW + gap)
+  const height = titleH + rows * (cellH + gap)
+  const parts: string[] = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+    `<rect width="${width}" height="${height}" fill="#ffffff"/>`
+  ]
+  if (opts.title) {
+    parts.push(
+      `<text x="${width / 2}" y="28" text-anchor="middle" font-size="16" font-weight="600" fill="#303133" font-family="${SVG_TEXT_FONT}">${xmlEscape(opts.title)}</text>`
+    )
+  }
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = gap + c * (cellW + gap)
+      const y = titleH + r * (cellH + gap)
+      const panel = opts.panels[r * cols + c] ?? null
+      parts.push(
+        `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" fill="#ffffff" stroke="#ebeef5"/>`
+      )
+      if (panel) {
+        const nested = seriesSvgInner({ ...panel, width: cellW, height: cellH })
+        parts.push(
+          `<svg x="${x}" y="${y}" width="${cellW}" height="${cellH}" viewBox="0 0 ${cellW} ${cellH}">`
+        )
+        parts.push(nested.inner)
+        parts.push('</svg>')
+      }
+    }
+  }
   parts.push('</svg>')
   return parts.join('\n')
 }

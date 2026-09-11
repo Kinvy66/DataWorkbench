@@ -82,8 +82,11 @@ export function normalizeUiLayout(raw: unknown): ProjectUiLayout {
 export function normalizeCharts(raw: unknown): ProjectChartsFile {
   const src = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   const charts = Array.isArray(src.charts) ? src.charts : []
+  const figures = Array.isArray(src.figures) ? src.figures : undefined
   return {
     currentId: typeof src.currentId === 'string' ? src.currentId : null,
+    currentFigureId: typeof src.currentFigureId === 'string' ? src.currentFigureId : null,
+    ...(figures ? { figures: figures.filter((item) => item && typeof item === 'object') as ProjectChartsFile['figures'] } : {}),
     charts: charts.filter((item) => item && typeof item === 'object') as ProjectChartsFile['charts']
   }
 }

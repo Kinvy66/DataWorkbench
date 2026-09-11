@@ -49,6 +49,8 @@ describe('useChartStore', () => {
     expect(created.window).toBeNull()
     expect(created.series[0].color).toBe('#5280C1')
     expect(chart.currentId).toBe(created.id)
+    expect(chart.figures).toHaveLength(1)
+    expect(chart.figures[0]?.slots).toEqual([created.id])
     expect(workflow.centerTab).toBe('figure')
   })
 
@@ -216,6 +218,8 @@ describe('useChartStore', () => {
     })
     expect(chart.charts[0]?.annotations[0]?.text).toBe('peak')
     expect(chart.charts[1]?.annotations).toEqual([])
+    expect(chart.figures).toHaveLength(2)
+    expect(chart.currentFigureId).toBeTruthy()
   })
 
   it('embeds annotations when exporting svg', async () => {
@@ -459,5 +463,105 @@ describe('useChartStore', () => {
     await expect(stale).resolves.toBe(false)
     expect(chart.charts[0].window).toEqual({ xMin: 20, xMax: 30 })
     expect(chart.charts[0].data?.x).toEqual([20, 30])
+  })
+
+  it('creates a subplot grid and binds the selected cell', async () => {
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 3, cols: 2 }]
+    const chart = useChartStore()
+    const figure = chart.createSubplots('2x2')
+    expect(figure?.slots).toEqual([null, null, null, null])
+    expect(chart.currentId).toBeNull()
+    const first = await chart.createFromBind({ type: 'line', dataId: 'ds-1', x: 't', y: ['ch1'], title: 'TL' })
+    expect(chart.figures).toHaveLength(1)
+    expect(chart.figures[0]?.slots[0]).toBe(first.id)
+    chart.selectSlot(1)
+    const second = await chart.createFromBind({ type: 'line', dataId: 'ds-1', x: 't', y: ['ch1'], title: 'TR' })
+    expect(chart.figures[0]?.slots[1]).toBe(second.id)
+    expect(chart.charts.map((item) => item.title)).toEqual(['TL', 'TR'])
+    invoke.mockImplementation(async (method: string) => {
+      if (method === 'chart.saveExport') {
+        return { ok: true }
+      }
+      if (method === 'chart.buildSeries') {
+        return {
+          x: [0, 1, 2],
+          ys: [[1, 2, 3]],
+          pointCount: 3,
+          sourceCount: 3,
+          downsampled: false,
+          xKind: 'number',
+          maxPoints: 5000
+        }
+      }
+      return {}
+    })
+    expect(await chart.saveExport('svg')).toBe(true)
+    const payload = invoke.mock.calls.find((call) => call[0] === 'chart.saveExport')?.[1] as {
+      content: string
+      suggestedName: string
+    }
+    expect(payload.suggestedName).toBe('2×2.svg')
+    expect(payload.content).toContain('TL')
+    expect(payload.content).toContain('TR')
+  })
+
+  it('restores a saved subplot figure', async () => {
+    invoke.mockResolvedValue({
+      x: [0, 1],
+      ys: [[1, 2]],
+      pointCount: 2,
+      sourceCount: 2,
+      downsampled: false,
+      xKind: 'number',
+      maxPoints: 5000
+    })
+    const chart = useChartStore()
+    await chart.restoreFromFile({
+      currentId: 'c2',
+      currentFigureId: 'fig-1',
+      figures: [
+        {
+          id: 'fig-1',
+          title: 'Pair',
+          rows: 1,
+          cols: 2,
+          slots: ['c1', 'c2']
+        }
+      ],
+      charts: [
+        {
+          id: 'c1',
+          type: 'line',
+          dataId: 'ds-1',
+          x: 't',
+          y: ['a'],
+          title: 'A',
+          xLabel: 't',
+          yLabel: 'a',
+          grid: true,
+          legend: true,
+          series: [{ key: 'a', color: '#5280C1', width: 1.5 }]
+        },
+        {
+          id: 'c2',
+          type: 'line',
+          dataId: 'ds-1',
+          x: 't',
+          y: ['b'],
+          title: 'B',
+          xLabel: 't',
+          yLabel: 'b',
+          grid: true,
+          legend: true,
+          series: [{ key: 'b', color: '#669E8B', width: 1.5 }]
+        }
+      ]
+    })
+    expect(chart.figures).toHaveLength(1)
+    expect(chart.currentFigureId).toBe('fig-1')
+    expect(chart.currentId).toBe('c2')
+    expect(chart.currentSlotIndex).toBe(1)
+    expect(chart.figures[0]?.title).toBe('Pair')
   })
 })

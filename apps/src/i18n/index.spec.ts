@@ -106,6 +106,7 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.chart'))).toBe('Chart')
     expect(String(i18n.global.t('ribbon.chartLine'))).toBe('Line')
     expect(String(i18n.global.t('ribbon.chartHist'))).toBe('Histogram')
+    expect(String(i18n.global.t('ribbon.chartSubplots'))).toBe('Subplots')
     expect(String(i18n.global.t('layout.figure'))).toBe('Figure')
     expect(String(i18n.global.t('ribbon.chartExportPngTip'))).toBe('Export the current chart as PNG')
     expect(String(i18n.global.t('ribbon.chartExportPdfTip'))).toBe('Export the current chart as PDF')
@@ -117,6 +118,7 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.chart'))).toBe('图表')
     expect(String(i18n.global.t('ribbon.chartLine'))).toBe('折线')
     expect(String(i18n.global.t('ribbon.chartHist'))).toBe('直方')
+    expect(String(i18n.global.t('ribbon.chartSubplots'))).toBe('子图')
     expect(String(i18n.global.t('layout.figure'))).toBe('绘图')
     expect(String(i18n.global.t('chart.exportMissing'))).toBe('请先绘图再导出。')
     expect(String(i18n.global.t('chart.downsampled', { points: 5000, source: 1000000 }))).toBe(
