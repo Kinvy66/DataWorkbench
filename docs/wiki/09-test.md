@@ -93,3 +93,13 @@
 - 不测 50 万行性能（那是开发合同；日常用 wiki-demo 即可）。
 
 全部 A–F 打钩，即可认为普通用户路径可验收。细节说明见 [03](./03-data.md)～[07](./07-project.md)，异常见 [10](./10-faq.md)。
+
+## H. 安装包 / 便携目录（对应红线：不必先装 Python）
+
+开发者在仓库根执行 `pnpm pack:win`。脚本结束会跑 `scripts/smoke-pack-win.ps1`：确认 NSIS 安装包存在、便携目录内嵌 `python-runtime`、**没有**打进 `.venv` / 测试目录，并且用内嵌解释器完成 `host.hello`（不读本机 `DW_PYTHON`）。
+
+手工再确认：
+
+- [ ] 双击 `apps/dist/DataWorkbench-Setup-*.exe` 能走完向导（Program Files 会要管理员）。
+- [ ] 或解压/打开 `apps/dist/win-unpacked/DataWorkbench.exe`，日志「Sidecar 已就绪」且 pandas 为真。
+- [ ] 本机即使装了另一套 Python，日志里 `Starting sidecar:` 仍指向 `python-runtime\python.exe`（除非你故意设了 `DW_PYTHON`）。

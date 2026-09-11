@@ -19,6 +19,8 @@ extraResources:
       - '!**/*.pyc'
       - '!**/.pytest_cache/**'
       - '!pytest.xml'
+      - '!.env'
+      - '!.env.*'
   - from: resources/python-runtime
     to: python-runtime
     filter:

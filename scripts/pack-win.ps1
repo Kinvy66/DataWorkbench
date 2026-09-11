@@ -30,3 +30,8 @@ if (-not (Test-Path $runtime)) {
 Write-Host "Installer: $($setup.FullName)"
 Write-Host "Portable directory: $(Join-Path $dist 'win-unpacked')"
 Write-Host "Give users the Setup .exe. They do not need to install Python."
+
+& (Join-Path $PSScriptRoot 'smoke-pack-win.ps1')
+if ($LASTEXITCODE -ne 0) {
+    throw "smoke-pack-win failed: $LASTEXITCODE"
+}

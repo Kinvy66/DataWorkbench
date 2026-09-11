@@ -62,7 +62,7 @@ Windows 上 pytest 输出若被吞，用 `--junitxml=pytest.xml` 再读文件，
 - [x] 未打进安装包：测试 csv 大文件、`.env`、上游整个 C++ 仓库
 - [x] NOTICE / LICENSE（含 LGPL vendor 说明）
 - [x] 崩溃：杀 python.exe 后 UI 提示且主窗口仍在（自动重启一次已实现；发布前仍手测杀进程）
-- [ ] `pnpm pack:win` 产物可在干净 Windows 10 上打开（安装向导 + 内嵌 Python，不必先装 CPython）
+- [x] `pnpm pack:win` 产物可启动且使用内嵌 CPython（不必先装系统 Python）。本机用 `scripts/smoke-pack-win.ps1` 模拟干净环境：清除 `DW_PYTHON` / `DW_PYTHON_ROOT`、`PYTHONNOUSERSITE=1`、断言 `resources/python-runtime/python.exe` + `host.hello` / `pandasAvailable=True`，并短拉 `DataWorkbench.exe` 读 `userData/logs`。无独立干净虚拟机时以此脚本为门禁；向导安装仍建议在未装 Python 的机器上再点一次。
 
 ## 给后续 AI 的执行顺序
 

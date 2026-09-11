@@ -99,6 +99,8 @@ pnpm pack:win
 - `apps/dist/DataWorkbench-Setup-<version>.exe` — **发给最终用户**（向导、开始菜单、桌面快捷方式；默认 `C:\Program Files\DataWorkbench`，会弹出 UAC）
 - `apps/dist/win-unpacked/` — 便携目录（同样内嵌 Python）
 
+`pnpm pack:win` 结束会跑 `scripts/smoke-pack-win.ps1`：用内嵌解释器做 `host.hello`，并短拉一次 exe 确认日志里是 `python-runtime`（不依赖本机已装的 Python）。
+
 用户**不必**安装 Python。`DW_PYTHON` 仍可覆盖解释器。不把 `.venv`、测试 csv、`.env` 打进发布目录。只打便携目录时用 `pnpm pack:portable`。
 
 上游 Qt 仓库若在本机，可设 `DAWB_UPSTREAM` 指向该路径，按 [docs/dev_plan/06-python-reuse.md](docs/dev_plan/06-python-reuse.md) 同步纯 Python 引擎（不要 submodule 整个 C++ 工程）。
