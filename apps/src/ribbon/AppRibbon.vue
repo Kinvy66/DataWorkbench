@@ -7,13 +7,13 @@ import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
 import { parseAppLocale, writeStoredLocale } from '@/i18n/locale'
 import { ribbonContextTabId, useRibbonSchema } from './schema'
+import { ribbonActiveTab as activeTab } from './activeTab'
 import { useWorkflowStore } from '@/stores/workflow'
 import DwIcon from '@/icons/DwIcon.vue'
 
 const { t, locale } = useI18n()
 const workflow = useWorkflowStore()
 const { tabs, fileMenuItems } = useRibbonSchema()
-const activeTab = ref('home')
 const layout = ref<RibbonLayout>('classic')
 const minimized = ref(false)
 

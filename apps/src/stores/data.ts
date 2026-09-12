@@ -76,6 +76,17 @@ export const useDataStore = defineStore('data', {
       }
       this.schema = (await getDesktopBridge().rpc.invoke('data.getSchema', { id })) as DataGetSchemaResult
     },
+    async importFromPath(filePath: string): Promise<DataImportResult> {
+      const result = await getDesktopBridge().rpc.invoke('data.import', { path: filePath })
+      if (isCancelled(result)) {
+        throw new Error('Import cancelled [@@data.cancelled]')
+      }
+      const imported = result as DataImportResult
+      await this.refreshList()
+      await this.select(imported.id)
+      touchProject()
+      return imported
+    },
     async importInteractive(): Promise<DataImportResult | null> {
       const result = await getDesktopBridge().rpc.invoke('data.import', {})
       if (isCancelled(result)) {

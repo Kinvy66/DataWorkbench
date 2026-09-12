@@ -6,7 +6,7 @@
 
 开始前：[01](./01-install.md) 启动自检已过。
 
-## A. 窗口与计算进程（对应「sidecar 不能把整个软件打死」）
+## A. 窗口与计算进程（对应「后台计算挂了不能把整个软件打死」）
 
 - [ ] 窗口标题区有软件图标，顶部能看到 **文件 / 主页 / 数据 / 视图 / 绘图**。点中间表格后出现 **操作**；点工作流后出现 **工作流视图** 和 **工作流**；点绘图后出现 **图表**。
 - [ ] 底部状态栏显示 **就绪**，日志出现「计算引擎已就绪」。
@@ -81,13 +81,13 @@
 - [ ] Ctrl+N 新建；有未保存改动时应弹出「未保存的更改」。
 - [ ] 把一个 txt 改后缀成 `.dwproj` 再打开：提示不是 DataWorkbench 工程，当前内容不被半覆盖。
 
-## G. Sidecar 崩溃（可选，对应红线：提示并拉起，不杀整个窗口）
+## G. 计算引擎崩溃（可选，对应红线：提示并拉起，不杀整个窗口）
 
 仅在你愿意打断一次后台进程时做：
 
 1. 先保存工程。
-2. 打开任务管理器，结束与本软件一起出现的 `python.exe`（sidecar），**不要**结束 `DataWorkbench.exe` / `electron.exe`。
-3. 日志应出现崩溃并「正在自动重启一次」，随后「Sidecar 已重启。内存中的数据已丢失…」。
+2. 打开任务管理器，结束与本软件一起出现的 `python.exe`（计算引擎），**不要**结束 `DataWorkbench.exe` / `electron.exe`。
+3. 日志应出现崩溃并「正在自动重启一次」，随后「计算引擎已重启。未保存的数据已丢失，请打开已保存的工程。」
 4. 窗口还在。打开刚才保存的工程，表能回来。
 5. 若连续搞挂两次，可能提示无法再重启，此时关软件重开即可。
 
@@ -103,10 +103,10 @@
 
 ## H. 安装包 / 便携目录（对应红线：不必先装 Python）
 
-开发者在仓库根执行 `pnpm pack:win`。脚本结束会跑 `scripts/smoke-pack-win.ps1`：确认 NSIS 安装包存在、便携目录内嵌 `python-runtime`、**没有**打进 `.venv` / 测试目录，并且用内嵌解释器完成 `host.hello`（不读本机 `DW_PYTHON`）。
+开发者在仓库根执行 `pnpm pack:win`。脚本结束会跑 `scripts/smoke-pack-win.ps1`：确认 NSIS 安装包存在、便携目录内嵌 `python-runtime`、**没有**打进 `.venv` / 测试目录，并且用内嵌解释器完成一次计算握手（不读本机 `DW_PYTHON`）。
 
 手工再确认：
 
-- [ ] 双击 `apps/dist/DataWorkbench-Setup-*.exe` 能走完向导（Program Files 会要管理员）。
+- [ ] 双击 `apps/dist/DataWorkbench-Setup-*.exe` 能走完向导（Program Files 会要管理员）。文件名版本号以构建为准，当前产品是 **1.0.0**。
 - [ ] 或解压/打开 `apps/dist/win-unpacked/DataWorkbench.exe`，状态栏 **就绪**，日志「计算引擎已就绪」。
-- [ ] 本机即使装了另一套 Python，日志里 `Starting sidecar:` 仍指向 `python-runtime\python.exe`（除非你故意设了 `DW_PYTHON`）。
+- [ ] 本机即使装了另一套 Python，**设置 → 打开日志文件夹** 里的 `main.log` 仍指向 `python-runtime\python.exe`（除非你故意设了 `DW_PYTHON`）。界面日志不再打印 `Starting sidecar:`。

@@ -52,7 +52,8 @@ describe('AppRibbon chrome layout', () => {
 
   it('starts on Home and only follows workspace focus after it changes', () => {
     const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
-    expect(source).toContain("activeTab = ref('home')")
+    expect(source).toContain("ribbonActiveTab as activeTab")
+    expect(source).toContain("'home'")
     expect(source).toContain('ribbonContextTabId')
     expect(source).toContain('centerTab')
     expect(source).not.toContain('{ immediate: true }')

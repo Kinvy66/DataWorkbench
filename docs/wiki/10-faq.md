@@ -13,16 +13,20 @@
 后台计算引擎没起来。检查：
 
 1. **安装包 / 便携目录**：应已内嵌 Python。用 **主页 → 设置 → 打开日志文件夹**，把 `main.log` / `sidecar.log` 发给开发者。
-2. **开发模式**：本机是否 **Python 3.11 或 3.12**（`py -3.12 --version`），以及是否安装了 sidecar 依赖：`py -3.12 -m pip install -r python/requirements.txt`。
+2. **开发模式**：本机是否 **Python 3.11 或 3.12**（`py -3.12 --version`），以及是否安装了计算依赖：`py -3.12 -m pip install -r python/requirements.txt`。
 3. 可用 `$env:DW_PYTHON = "C:\路径\python.exe"` 覆盖解释器后再启动。
 
 ### 想换成英文界面
 
 **主页 → 设置** 选 English，或点功能区右上角 **EN**。语言记在本机，下次打开还在。
 
+### `pnpm dev` 停在「Already up to date」，没有弹出窗口
+
+pnpm 在跑 `electron-vite` 之前会先补完依赖。Electron 33 的 npm 包常缺 `checksums.json`，自带 `postinstall` 失败后，命令就停在「installing dependencies」，看起来像启动失败。仓库已改成用 `scripts/ensure-electron.mjs` 下载二进制。开发者再执行一次 `pnpm dev`；仍失败按根目录 [README.md](../../README.md) 里 Electron 补救步骤处理。普通用户请改用安装包 `DataWorkbench-Setup-*.exe`。
+
 ### `spawn electron.exe ENOENT`（只有开发模式）
 
-Electron 二进制没下下来。按仓库根目录 [README.md](../../README.md) 里「electron.exe ENOENT」一节处理。普通用户请改用安装包 `DataWorkbench-Setup-*.exe`。
+Electron 二进制没下下来。处理方式同上。
 
 ### 安装时提示「不能打开要写入的文件」（uninstallerIcon.ico / Program Files）
 

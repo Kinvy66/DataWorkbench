@@ -29,8 +29,17 @@ import {
   isWindowChromeAction,
   wantsNativeApplicationMenu
 } from './windowChrome'
+import {
+  applyWikiCaptureAppPaths,
+  installWikiCapture,
+  notifyWikiCaptureReady,
+  wikiCaptureConfig
+} from './wiki-capture'
 
 registerHelpScheme()
+
+const wikiCapture = wikiCaptureConfig()
+applyWikiCaptureAppPaths(wikiCapture)
 
 const sidecar = new SidecarBridge({ resourcesPath: process.resourcesPath })
 let mainWindow: BrowserWindow | null = null
@@ -305,6 +314,7 @@ app.whenReady().then(() => {
   })
   sidecar.start()
   fileLog('main', 'Sidecar spawn requested')
+  installWikiCapture(wikiCapture, () => mainWindow)
   createWindow()
   const launchFile = findProjectPathFromArgv(process.argv)
   if (launchFile) {
@@ -342,6 +352,7 @@ async function handleRendererRpc(
   }
   if (method === 'app.rendererReady') {
     flushRendererEvents()
+    notifyWikiCaptureReady(wikiCapture, mainWindow)
     return { ok: true }
   }
   if (method === 'app.openUrl') {

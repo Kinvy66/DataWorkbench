@@ -54,5 +54,21 @@ contextBridge.exposeInMainWorld('dw', {
         ipcRenderer.removeListener('dw:window-state', listener)
       }
     }
+  },
+  wiki: {
+    onRun(cb: (opts: { csvPath: string }) => void): void {
+      ipcRenderer.on('wiki:run', (_event, opts: { csvPath: string }) => {
+        cb(opts)
+      })
+    },
+    shot(name: string): Promise<unknown> {
+      return ipcRenderer.invoke('wiki:shot', name)
+    },
+    done(): Promise<unknown> {
+      return ipcRenderer.invoke('wiki:done')
+    },
+    fail(message: string): Promise<unknown> {
+      return ipcRenderer.invoke('wiki:fail', message)
+    }
   }
 })

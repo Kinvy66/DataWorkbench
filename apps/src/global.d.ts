@@ -14,6 +14,12 @@ declare global {
         isMaximized(): Promise<boolean>
         onMaximizedChange(cb: (maximized: boolean) => void): () => void
       }
+      wiki?: {
+        onRun(cb: (opts: { csvPath: string }) => void): void
+        shot(name: string): Promise<unknown>
+        done(): Promise<unknown>
+        fail(message: string): Promise<unknown>
+      }
     }
   }
 }

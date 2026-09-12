@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useDataStore } from '@/stores/data'
 import { useLogStore } from '@/stores/log'
 import { translateRpcError } from '@/rpc/rpcError'
+import { wikiPrefill } from '@/wiki-prefill'
 
 const { t, te } = useI18n()
 const store = useDataStore()
@@ -44,7 +45,8 @@ watch(
 
 watch(visible, (open) => {
   if (open) {
-    queryString.value = ''
+    queryString.value = wikiPrefill.queryExpression
+    wikiPrefill.queryExpression = ''
   }
 })
 

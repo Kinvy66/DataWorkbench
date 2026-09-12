@@ -23,6 +23,7 @@ import { useAppUiStore } from '@/stores/appUi'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
 import DwIcon from '@/icons/DwIcon.vue'
+import { listenForWikiCapture } from '@/wiki-capture'
 import type { HostCrashedParams, WorkflowFinishedParams, WorkflowNodeStateParams } from '@dw/rpc-types'
 
 const { t, locale, te } = useI18n()
@@ -228,6 +229,7 @@ onMounted(() => {
       log.append('warning', t('log.pollution'))
     })
   )
+  listenForWikiCapture()
   void rpc.invoke('app.rendererReady').catch(() => {
     // Without the handshake, startup log.line / host.ready stay queued in main.
   })
