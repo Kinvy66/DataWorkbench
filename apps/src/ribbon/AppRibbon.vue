@@ -133,6 +133,33 @@ function toggleLocale(): void {
   object-fit: contain;
   object-position: center;
 }
+/*
+ * mlRibbon paints each contextual tab as a rounded bordered pill. Restyle toward
+ * SARibbon / Office: a color bar on top and a light wash, same tab chrome as Home.
+ */
+.ribbon-shell :deep(.ml-ribbon-contextual-tabs) {
+  align-items: stretch;
+}
+.ribbon-shell :deep(.ml-ribbon-contextual-tabs__ctx) {
+  gap: 0;
+  align-items: stretch;
+  margin-left: 4px;
+}
+.ribbon-shell :deep(.ml-ribbon-contextual-tabs__block) {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: color-mix(in oklab, var(--ctx-color) 16%, transparent);
+  box-shadow: inset 0 3px 0 var(--ctx-color);
+}
+.ribbon-shell :deep(.ml-ribbon-contextual-tabs__block .ml-ribbon-tab) {
+  border-bottom-color: transparent;
+}
+.ribbon-shell :deep(.ml-ribbon-contextual-tabs__block .ml-ribbon-tab.is-active) {
+  background: color-mix(in oklab, var(--ctx-color) 28%, #fff);
+  color: color-mix(in oklab, var(--ctx-color) 50%, #111);
+  border-bottom-color: var(--ctx-color);
+}
 .ribbon-extra {
   display: flex;
   align-items: center;
