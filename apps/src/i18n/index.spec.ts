@@ -25,10 +25,14 @@ describe('i18n', () => {
     expect(String(i18n.global.t('log.workflowStopped'))).toBe('Workflow stopped.')
     expect(String(i18n.global.t('layout.fitView'))).toBe('Fit view')
     expect(String(i18n.global.t('ribbon.undo'))).toBe('Undo')
+    expect(String(i18n.global.t('ribbon.copy'))).toBe('Copy')
+    expect(String(i18n.global.t('ribbon.paste'))).toBe('Paste')
+    expect(String(i18n.global.t('edit.noCells'))).toBe('Select a table cell first.')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('layout.fitView'))).toBe('适应画布')
     expect(String(i18n.global.t('log.workflowStopped'))).toBe('工作流已停止。')
     expect(String(i18n.global.t('ribbon.undo'))).toBe('撤销')
+    expect(String(i18n.global.t('ribbon.copy'))).toBe('复制')
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.dataOperate'))).toBe('Data Operation')
     expect(String(i18n.global.t('ribbon.operate'))).toBe('Operate')
@@ -150,7 +154,8 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.create'))).toBe('Create')
     expect(String(i18n.global.t('ribbon.workflowView'))).toBe('Workflow View')
     expect(String(i18n.global.t('ribbon.showTable'))).toBe('Show Table Area')
-    expect(String(i18n.global.t('log.layoutReset'))).toBe('Layout restored to default.')
+    expect(String(i18n.global.t('help.windowTitle'))).toBe('Help')
+    expect(String(i18n.global.t('help.guideHint'))).not.toMatch(/GitHub/)
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.layout'))).toBe('布局')
     expect(String(i18n.global.t('ribbon.resetLayout'))).toBe('复位布局')
@@ -158,6 +163,7 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.create'))).toBe('创建')
     expect(String(i18n.global.t('ribbon.workflowView'))).toBe('工作流视图')
     expect(String(i18n.global.t('ribbon.showTable'))).toBe('表格区域')
-    expect(String(i18n.global.t('log.layoutReset'))).toBe('已恢复默认布局。')
+    expect(String(i18n.global.t('help.windowTitle'))).toBe('帮助文档')
+    expect(String(i18n.global.t('help.guideHint'))).not.toMatch(/GitHub/)
   })
 })

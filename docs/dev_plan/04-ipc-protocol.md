@@ -113,7 +113,12 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 
 | 方法 | 说明 |
 |------|------|
-| `app.openUrl` | **仅 Electron 主进程**（不转发 sidecar）。`{url}` → `{ok:true}`。用 `shell.openExternal` 打开帮助链接。只允许 `https://github.com/Kinvy66/DataWorkbench` 及其子路径；其它 URL **−32602** `help.urlBlocked`。渲染进程禁止自己开浏览器。 |
+| `app.openUrl` | **仅 Electron 主进程**（不转发 sidecar）。`{url}` → `{ok:true}`。用 `shell.openExternal` 打开关于页的仓库链接。只允许 `https://github.com/Kinvy66/DataWorkbench` 及其子路径；其它 URL **−32602** `help.urlBlocked`。渲染进程禁止自己开浏览器。帮助正文**不要**走这条，用 `app.openHelp`。 |
+| `app.openHelp` | **仅 Electron 主进程**。`{page?}` → `{ok:true}`。打开（或聚焦）非模态帮助窗口，渲染安装包内 `docs/wiki` 的 Markdown。缺省 `README.md`。非法页名 **−32602** `help.pageNotFound`。 |
+| `help.list` | **仅 Electron 主进程**。`{}` → `{pages:[{id,title}]}`。标题取各页 `#` 标题。 |
+| `help.read` | **仅 Electron 主进程**。`{page}` → `{id,title,markdown}`。只允许白名单 `.md`。图片改写为 `dwhelp://bundle/...`，由主进程协议从 `docs/assets/wiki` 读盘。缺页 **3001** `help.pageNotFound`。 |
+| `app.clipboardWrite` | **仅 Electron 主进程**。`{text?}` 或 `{pngDataUrl?}` → `{ok:true}`。表格复制写 TSV 文本；绘图复制写 PNG。渲染进程禁止自己碰系统剪贴板。 |
+| `app.clipboardRead` | **仅 Electron 主进程**。`{}` → `{text}`。表格粘贴读 TSV。 |
 
 - `maxPoints` 默认 5000，钳制到 2…20000。生产降采样只在 Python（LTTB），前端禁止对百万点 `JSON.parse`。直方分箱同样只在 Python，不要把原始列拉到渲染进程再 `histogram`。箱宽/统计量/累计由 `binWidth`/`histStat`/`histCumulative` 下发，缺省行为与一期相同（50 箱、count）。箱线（`kind:"box"`）同样只在 Python 算 Tukey 统计，离群点每列最多 200 个（`CHART_BOX_OUTLIERS_MAX`）。
 - 非数值 y（或既非数值也非日期的 x）：error **1002**，`i18nKey=chart.nonNumeric`。缺列：1002 `chart.columnNotFound`。缺数据集：1001 `data.notFound`。
@@ -161,7 +166,7 @@ window.dw.rpc.invoke(method: string, params?: unknown): Promise<unknown>
 window.dw.rpc.on(method: string, cb: (params: unknown) => void): () => void
 ```
 
-渲染进程不得使用 `ipcRenderer` 其它频道。超时：普通 RPC 30s；`workflow.execute` 不超时（用 stop）；`data.import` / `chart.buildSeries` / `project.*` 120s。`chart.saveExport`、`project.save`、`project.open`、`app.openUrl` 由主进程处理，不把 ZIP 丢给 sidecar。
+渲染进程不得使用 `ipcRenderer` 其它频道。超时：普通 RPC 30s；`workflow.execute` 不超时（用 stop）；`data.import` / `chart.buildSeries` / `project.*` 120s。`chart.saveExport`、`project.save`、`project.open`、`app.openUrl`、`app.openHelp`、`help.list`、`help.read`、`app.clipboardWrite`、`app.clipboardRead` 由主进程处理，不把 ZIP 丢给 sidecar。
 
 ## 调试
 

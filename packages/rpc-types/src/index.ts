@@ -84,6 +84,11 @@ export const RpcMethod = {
   ChartBuildSeries: 'chart.buildSeries',
   ChartSaveExport: 'chart.saveExport',
   AppOpenUrl: 'app.openUrl',
+  AppOpenHelp: 'app.openHelp',
+  HelpList: 'help.list',
+  HelpRead: 'help.read',
+  AppClipboardWrite: 'app.clipboardWrite',
+  AppClipboardRead: 'app.clipboardRead',
   ProjectSave: 'project.save',
   ProjectOpen: 'project.open',
   ProjectPackLogic: 'project.packLogic',
@@ -751,6 +756,47 @@ export interface AppOpenUrlParams {
 
 export interface AppOpenUrlResult {
   ok: true
+}
+
+/** Main-process only. Opens the bundled wiki in a non-modal window. */
+export interface AppOpenHelpParams {
+  page?: string
+}
+
+export interface AppOpenHelpResult {
+  ok: true
+}
+
+export interface HelpPageSummary {
+  id: string
+  title: string
+}
+
+export interface HelpListResult {
+  pages: HelpPageSummary[]
+}
+
+export interface HelpReadParams {
+  page?: string
+}
+
+export interface HelpReadResult {
+  id: string
+  title: string
+  markdown: string
+}
+
+export interface AppClipboardWriteParams {
+  text?: string
+  pngDataUrl?: string
+}
+
+export interface AppClipboardWriteResult {
+  ok: true
+}
+
+export interface AppClipboardReadResult {
+  text: string
 }
 
 export interface ProjectManifest {

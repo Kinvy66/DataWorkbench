@@ -13,6 +13,7 @@ describe('VirtualTable', () => {
     expect(source).toContain('GRID_MAX_BLOCKS_IN_CACHE')
     expect(source).toContain('createInfiniteDatasource')
     expect(source).toContain('fetchBlock')
+    expect(source).toContain('bindTableClipboard')
     expect(source).not.toContain('useVirtualizer')
     expect(source).not.toContain('clientSide')
     expect(source).not.toContain('ag-grid-enterprise')

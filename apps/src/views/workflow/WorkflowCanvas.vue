@@ -91,6 +91,10 @@ function onPaneClick(): void {
   store.selectedNodeId = null
 }
 
+function onSelectionChange(payload: { nodes: Array<{ id: string }> }): void {
+  store.selectedNodeId = payload.nodes[payload.nodes.length - 1]?.id ?? null
+}
+
 const dragOrigin = new Map<string, { x: number; y: number }>()
 
 function onNodeDragStart(_event: MouseEvent, node: { id: string; position: { x: number; y: number } }): void {
@@ -135,12 +139,14 @@ function onDrop(event: DragEvent): void {
       :nodes-draggable="store.canEditGraph"
       :nodes-connectable="store.canEditGraph"
       :elements-selectable="true"
+      :delete-key-code="null"
       fit-view-on-init
       @nodes-change="onNodesChange"
       @edges-change="onEdgesChange"
       @connect="onConnect"
       @node-click="onNodeClick"
       @pane-click="onPaneClick"
+      @selection-change="onSelectionChange"
       @node-drag-start="onNodeDragStart"
       @node-drag-stop="onNodeDragStop"
     >

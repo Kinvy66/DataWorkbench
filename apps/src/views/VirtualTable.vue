@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { AgGridVue } from 'ag-grid-vue3'
 import type {
+  CellClickedEvent,
   CellValueChangedEvent,
   ColDef,
   GetRowIdParams,
@@ -20,10 +21,26 @@ import {
   columnIndexFromField,
   createInfiniteDatasource,
   fieldForColumn,
+  loadGridRecords,
   type GridRowRecord
 } from '@/data/gridDatasource'
 import { DEFAULT_COL_WIDTH, INDEX_COL_WIDTH, MIN_COL_WIDTH } from '@/data/columnLayout'
+import { bindTableClipboard } from '@/data/tableClipboard'
+import {
+  CLIPBOARD_MAX_CELLS,
+  assertRangeSize,
+  clampRange,
+  cellInRange,
+  deletePatches,
+  formatTsvCell,
+  normalizeRange,
+  parseTsv,
+  pastePatches,
+  serializeTsv,
+  type CellRange
+} from '@/data/tableTsv'
 import { translateRpcError } from '@/rpc/rpcError'
+import { getDesktopBridge } from '@/rpc/bridge'
 import DwIcon from '@/icons/DwIcon.vue'
 
 registerAppGridModules()
@@ -32,6 +49,8 @@ const { t, te } = useI18n()
 const store = useDataStore()
 const gridHost = ref<HTMLElement | null>(null)
 const gridApi = ref<GridApi<GridRowRecord> | null>(null)
+const range = ref<CellRange | null>(null)
+const anchor = ref<{ row: number; col: number } | null>(null)
 let pendingPatches: Array<{ row: number; col: number; value: unknown }> = []
 let patchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -57,6 +76,16 @@ const theme = themeQuartz.withParams({
   spacing: 4
 })
 
+function isRangeCell(params: { node?: { rowIndex?: number | null } | null; colDef?: { colId?: string; field?: string } }): boolean {
+  const current = range.value
+  if (!current || params.colDef?.colId === '_index') {
+    return false
+  }
+  const row = params.node?.rowIndex
+  const col = columnIndexFromField(params.colDef?.field)
+  return typeof row === 'number' && col != null && cellInRange(current, row, col)
+}
+
 const defaultColDef: ColDef<GridRowRecord> = {
   resizable: true,
   minWidth: MIN_COL_WIDTH,
@@ -71,6 +100,9 @@ const defaultColDef: ColDef<GridRowRecord> = {
       return null
     }
     return value
+  },
+  cellClassRules: {
+    'dw-cell-range': (params) => isRangeCell(params)
   }
 }
 
@@ -125,13 +157,7 @@ const datasource = computed<IDatasource | undefined>(() => {
 })
 
 function formatCell(value: unknown): string {
-  if (value === null || value === undefined) {
-    return ''
-  }
-  if (typeof value === 'boolean') {
-    return value ? 'true' : 'false'
-  }
-  return String(value)
+  return formatTsvCell(value)
 }
 
 function getRowId(params: GetRowIdParams<GridRowRecord>): string {
@@ -140,6 +166,12 @@ function getRowId(params: GetRowIdParams<GridRowRecord>): string {
     return String(row)
   }
   return String(params.node?.rowIndex ?? '')
+}
+
+function setRange(next: CellRange | null): void {
+  range.value = next
+  store.cellRange = next
+  gridApi.value?.refreshCells({ force: true })
 }
 
 function onGridReady(event: GridReadyEvent<GridRowRecord>): void {
@@ -160,6 +192,37 @@ function recoverHiddenLayout(): void {
 
 function onWindowResize(): void {
   recoverHiddenLayout()
+}
+
+function onCellClicked(event: CellClickedEvent<GridRowRecord>): void {
+  const row = event.rowIndex
+  if (typeof row !== 'number' || row < 0) {
+    return
+  }
+  const lastCol = Math.max(0, columns.value.length - 1)
+  let col = columnIndexFromField(event.colDef.field)
+  if (event.colDef.colId === '_index') {
+    col = 0
+  }
+  if (col == null) {
+    return
+  }
+  const native = event.event as MouseEvent | undefined
+  if (native?.shiftKey && anchor.value) {
+    const next =
+      event.colDef.colId === '_index'
+        ? normalizeRange(anchor.value.row, 0, row, lastCol)
+        : normalizeRange(anchor.value.row, anchor.value.col, row, col)
+    setRange(clampRange(next, rowCount.value, columns.value.length))
+    return
+  }
+  if (event.colDef.colId === '_index') {
+    anchor.value = { row, col: 0 }
+    setRange(clampRange(normalizeRange(row, 0, row, lastCol), rowCount.value, columns.value.length))
+    return
+  }
+  anchor.value = { row, col }
+  setRange(normalizeRange(row, col, row, col))
 }
 
 function queuePatch(row: number, col: number, value: unknown): void {
@@ -200,6 +263,105 @@ function onCellValueChanged(event: CellValueChangedEvent<GridRowRecord>): void {
   queuePatch(row, col, text)
 }
 
+async function writeText(text: string): Promise<void> {
+  await getDesktopBridge().rpc.invoke('app.clipboardWrite', { text })
+}
+
+async function readText(): Promise<string> {
+  const result = (await getDesktopBridge().rpc.invoke('app.clipboardRead', {})) as { text?: string }
+  return typeof result.text === 'string' ? result.text : ''
+}
+
+async function copyRange(): Promise<boolean> {
+  const schema = store.schema
+  const current = range.value
+  if (!current || !schema || !store.currentId) {
+    return false
+  }
+  const clipped = clampRange(current, schema.rowCount, schema.columns.length)
+  if (!clipped) {
+    return false
+  }
+  assertRangeSize(clipped)
+  const records = await loadGridRecords({
+    startRow: clipped.r0,
+    endRow: clipped.r1 + 1,
+    rowCount: schema.rowCount,
+    colCount: schema.columns.length,
+    fetchBlock: (startRow, count) => store.fetchBlock(startRow, count)
+  })
+  const rect: unknown[][] = []
+  for (let row = clipped.r0; row <= clipped.r1; row++) {
+    const rec = records[row - clipped.r0]
+    const line: unknown[] = []
+    for (let col = clipped.c0; col <= clipped.c1; col++) {
+      line.push(rec?.[fieldForColumn(col)] ?? null)
+    }
+    rect.push(line)
+  }
+  await writeText(serializeTsv(rect))
+  return true
+}
+
+async function pasteRange(): Promise<number> {
+  const schema = store.schema
+  const origin = range.value
+  if (!schema || !store.currentId || !origin) {
+    return 0
+  }
+  const text = await readText()
+  const table = parseTsv(text)
+  if (!table.length) {
+    const err = new Error('Clipboard is empty [@@edit.clipboardEmpty]')
+    ;(err as Error & { i18nKey: string }).i18nKey = 'edit.clipboardEmpty'
+    throw err
+  }
+  const result = pastePatches(origin.r0, origin.c0, table, schema.rowCount, schema.columns.length)
+  if (!result.patches.length) {
+    const err = new Error('Nothing to paste [@@edit.pasteEmpty]')
+    ;(err as Error & { i18nKey: string }).i18nKey = 'edit.pasteEmpty'
+    throw err
+  }
+  if (result.patches.length > CLIPBOARD_MAX_CELLS) {
+    const err = new Error(`Clipboard range is too large (${result.patches.length}) [@@edit.tooManyCells]`)
+    ;(err as Error & { i18nKey: string }).i18nKey = 'edit.tooManyCells'
+    throw err
+  }
+  await store.patchCells(result.patches)
+  gridApi.value?.refreshInfiniteCache()
+  return result.patches.length
+}
+
+async function deleteRange(): Promise<number> {
+  const schema = store.schema
+  const current = range.value
+  if (!current || !schema || !store.currentId) {
+    return 0
+  }
+  const clipped = clampRange(current, schema.rowCount, schema.columns.length)
+  if (!clipped) {
+    return 0
+  }
+  assertRangeSize(clipped)
+  const patches = deletePatches(clipped)
+  await store.patchCells(patches)
+  gridApi.value?.refreshInfiniteCache()
+  return patches.length
+}
+
+function selectAllRange(): void {
+  const schema = store.schema
+  if (!schema || schema.rowCount <= 0 || schema.columns.length <= 0) {
+    return
+  }
+  const next = clampRange(
+    normalizeRange(0, 0, schema.rowCount - 1, schema.columns.length - 1),
+    schema.rowCount,
+    schema.columns.length
+  )
+  setRange(next)
+}
+
 watch(
   () => store.currentId,
   () => {
@@ -208,14 +370,31 @@ watch(
       clearTimeout(patchTimer)
       patchTimer = null
     }
+    anchor.value = null
+    setRange(null)
   }
 )
 
 onMounted(() => {
   window.addEventListener('resize', onWindowResize)
+  bindTableClipboard({
+    hasRange: () => Boolean(range.value),
+    copy: copyRange,
+    paste: pasteRange,
+    cut: async () => {
+      const copied = await copyRange()
+      if (!copied) {
+        return 0
+      }
+      return deleteRange()
+    },
+    deleteCells: deleteRange,
+    selectAll: selectAllRange
+  })
 })
 
 onUnmounted(() => {
+  bindTableClipboard(null)
   window.removeEventListener('resize', onWindowResize)
   if (patchTimer) {
     clearTimeout(patchTimer)
@@ -249,6 +428,7 @@ onUnmounted(() => {
       :localeText="localeText"
       stopEditingWhenCellsLoseFocus
       @grid-ready="onGridReady"
+      @cell-clicked="onCellClicked"
       @cell-value-changed="onCellValueChanged"
     />
   </div>
@@ -285,5 +465,8 @@ onUnmounted(() => {
 .table-shell :deep(.dw-row-index) {
   color: #909399;
   background: #fafafa;
+}
+.table-shell :deep(.dw-cell-range) {
+  background: #e8f0fb;
 }
 </style>

@@ -728,6 +728,19 @@ export const useChartStore = defineStore('chart', {
     async resetWindow(id: string): Promise<boolean> {
       return this.rebuildWindow(id)
     },
+    async capturePngDataUrl(): Promise<string | null> {
+      useWorkflowStore().centerTab = 'figure'
+      await nextTick()
+      const captured = await waitForPng()
+      if (captured && captured.length > 80) {
+        return captured
+      }
+      const canvas = await waitForCanvas(() => canvasProvider?.() ?? null)
+      if (!canvas || canvas.width < 1 || canvas.height < 1) {
+        return null
+      }
+      return canvasToPngDataUrl(canvas)
+    },
     async saveExport(format: 'png' | 'svg' | 'pdf'): Promise<boolean> {
       const figure = this.currentFigure
       const current = this.current

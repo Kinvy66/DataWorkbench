@@ -50,6 +50,16 @@ export default {
     undoTip: '撤销上一次工作流编辑',
     redo: '重做',
     redoTip: '重做上一次撤销的工作流编辑',
+    cut: '剪切',
+    cutTip: '剪切选中内容（表格单元格或工作流节点）',
+    copy: '复制',
+    copyTip: '复制选中内容；焦点在绘图时复制当前图',
+    paste: '粘贴',
+    pasteTip: '粘贴到当前表格或工作流画布',
+    delete: '删除',
+    deleteTip: '删除选中内容（表格单元格变为空）',
+    selectAll: '全选',
+    selectAllTip: '选中整张表或全部工作流节点',
     data: '数据',
     dataOperate: '数据操作',
     dataExportGroup: '导出',
@@ -517,6 +527,16 @@ export default {
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'
   },
+  edit: {
+    noCells: '请先选中表格单元格。',
+    noSelection: '请先选中工作流节点。',
+    clipboardEmpty: '剪贴板为空。',
+    pasteEmpty: '没有可粘贴进表格的内容。',
+    tooManyCells: '选区太大，无法一次复制或修改。请缩小选区。',
+    pasted: '已粘贴 {count} 个单元格。',
+    chartCopied: '已把图复制到剪贴板。',
+    notOnFigure: '剪切、粘贴、删除只作用于表格或工作流，不作用于绘图。'
+  },
   settings: {
     title: '设置',
     language: '界面语言',
@@ -535,13 +555,17 @@ export default {
   help: {
     title: '帮助',
     guide: '用户手册',
-    guideHint: '在 GitHub 打开 wiki（窗口、数据、图表、工程）。',
+    guideHint: '在本机窗口打开手册（窗口、数据、图表、工程）。',
     tutorial: '入门教程',
     tutorialHint: '从导入到导出的短流程。',
     faq: '常见问题',
     faqHint: '常见报错以及日志含义。',
-    shortcuts: '快捷键：Ctrl+N 新建，Ctrl+O 打开，Ctrl+S 保存，Ctrl+Shift+S 另存为，Ctrl+Z / Ctrl+Y 撤销/重做工作流画布。',
+    shortcuts: '快捷键：Ctrl+N 新建，Ctrl+O 打开，Ctrl+S 保存，Ctrl+Shift+S 另存为，Ctrl+Z / Ctrl+Y 撤销/重做工作流画布，Ctrl+C / Ctrl+V / Ctrl+X / Ctrl+A / Delete 按焦点复制粘贴剪切全选删除。',
     urlBlocked: '该帮助链接不被允许。',
+    pageNotFound: '安装包中没有这一页帮助。',
+    windowTitle: '帮助文档',
+    contents: '目录',
+    missingPage: '安装包中没有这一页帮助。',
     close: '关闭'
   }
 }

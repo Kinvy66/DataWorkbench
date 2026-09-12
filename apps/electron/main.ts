@@ -16,6 +16,11 @@ import { AppFileLog, type AppLogKind } from './app-log'
 import { RendererEventGate } from './renderer-events'
 import { RpcError } from './rpc-error'
 import { isAllowedHelpUrl } from './open-url'
+import { findDocsRoot, listWikiPages, normalizeWikiPageId, readWikiPage } from './help-docs'
+import { installHelpProtocol, registerHelpScheme } from './help-protocol'
+import { closeHelpWindow, openHelpWindow } from './help-window'
+import { parseClipboardWriteParams } from './clipboard-params'
+import { readAppClipboardText, writeAppClipboard } from './app-clipboard'
 import { SidecarBridge } from './sidecar'
 import {
   applyWindowChromeAction,
@@ -24,10 +29,24 @@ import {
   wantsNativeApplicationMenu
 } from './windowChrome'
 
+registerHelpScheme()
+
 const sidecar = new SidecarBridge({ resourcesPath: process.resourcesPath })
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
 let appLog: AppFileLog | null = null
+let docsRootCache: string | null = null
+
+function bundledDocsRoot(): string {
+  if (!docsRootCache) {
+    docsRootCache = findDocsRoot({
+      startDir: __dirname,
+      cwd: process.cwd(),
+      resourcesPath: process.resourcesPath
+    })
+  }
+  return docsRootCache
+}
 
 function fileLog(kind: AppLogKind, text: string): void {
   try {
@@ -239,6 +258,7 @@ function onWindowChrome(sender: Electron.WebContents, action: unknown) {
 app.whenReady().then(() => {
   appLog = new AppFileLog({ userDataDir: app.getPath('userData') })
   fileLog('main', 'App ready')
+  installHelpProtocol(() => bundledDocsRoot())
   installApplicationMenu()
   sidecar.onLog((entry) => {
     const level = entry.stream === 'protocol' ? 'warning' : 'info'
@@ -296,6 +316,13 @@ async function handleRendererRpc(
     }
     await shell.openExternal(url)
     return { ok: true }
+  }
+  if (method === 'app.clipboardWrite') {
+    writeAppClipboard(parseClipboardWriteParams(params))
+    return { ok: true }
+  }
+  if (method === 'app.clipboardRead') {
+    return { text: readAppClipboardText() }
   }
   const win = targetWindow(event.sender)
   if (method === 'app.setDocument') {

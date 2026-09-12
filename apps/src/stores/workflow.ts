@@ -22,6 +22,12 @@ import {
   type HistoryCommand,
   type HistoryEdge
 } from './workflowHistory'
+import {
+  WORKFLOW_PASTE_OFFSET,
+  offsetWorkflowClip,
+  snapshotWorkflowClip,
+  type WorkflowClip
+} from '@/workflow/graphClipboard'
 
 export type NodeRunState = 'idle' | 'running' | 'ok' | 'error'
 
@@ -63,6 +69,7 @@ export const useWorkflowStore = defineStore('workflow', {
     nodes: [] as Node[],
     edges: [] as Edge[],
     selectedNodeId: null as string | null,
+    graphClip: null as WorkflowClip | null,
     running: false,
     paramValues: {} as Record<string, Record<string, unknown>>,
     centerTab: 'table' as 'table' | 'workflow' | 'figure',
@@ -104,6 +111,22 @@ export const useWorkflowStore = defineStore('workflow', {
     },
     canRedo(): boolean {
       return !this.running && this.redoStack.length > 0
+    },
+    selectedNodeIds(): string[] {
+      const marked = this.nodes.filter((node) => node.selected).map((node) => node.id)
+      if (marked.length) {
+        return marked
+      }
+      return this.selectedNodeId ? [this.selectedNodeId] : []
+    },
+    canCopyGraph(): boolean {
+      return this.canEditGraph && this.selectedNodeIds.length > 0
+    },
+    canPasteGraph(): boolean {
+      return this.canEditGraph && Boolean(this.graphClip?.nodes.length)
+    },
+    canSelectAllGraph(): boolean {
+      return this.canEditGraph && this.nodes.length > 0
     }
   },
   actions: {
@@ -390,6 +413,7 @@ export const useWorkflowStore = defineStore('workflow', {
       this.edges = []
       this.paramValues = {}
       this.selectedNodeId = null
+      this.graphClip = null
       this.undoStack = []
       this.redoStack = []
       this.running = false
@@ -621,6 +645,75 @@ export const useWorkflowStore = defineStore('workflow', {
     },
     setEdges(edges: Edge[]): void {
       this.edges = edges
+    },
+    copySelection(): boolean {
+      const clip = snapshotWorkflowClip({
+        nodes: this.nodes,
+        edges: this.edges,
+        params: this.paramValues,
+        fallbackId: this.selectedNodeId
+      })
+      if (!clip) {
+        return false
+      }
+      this.graphClip = clip
+      return true
+    },
+    async pasteClip(): Promise<number> {
+      if (!this.graphClip || this.running) {
+        return 0
+      }
+      const clip = offsetWorkflowClip(this.graphClip, WORKFLOW_PASTE_OFFSET, WORKFLOW_PASTE_OFFSET)
+      const idMap: string[] = []
+      for (const node of clip.nodes) {
+        const nodeId = await this.addNode(node.qualifiedName, node.position)
+        idMap.push(nodeId)
+        for (const [name, value] of Object.entries(node.params)) {
+          await this.setParam(nodeId, name, value)
+        }
+      }
+      for (const edge of clip.edges) {
+        const source = idMap[edge.fromIndex]
+        const target = idMap[edge.toIndex]
+        if (!source || !target) {
+          continue
+        }
+        await this.connectPorts({
+          source,
+          target,
+          sourceHandle: edge.fromPort,
+          targetHandle: edge.toPort
+        })
+      }
+      const selected = new Set(idMap)
+      this.nodes = this.nodes.map((node) => ({ ...node, selected: selected.has(node.id) }))
+      this.selectedNodeId = idMap[0] ?? null
+      this.graphClip = clip
+      return idMap.length
+    },
+    async deleteSelection(): Promise<number> {
+      const nodeIds = this.selectedNodeIds
+      const nodeSet = new Set(nodeIds)
+      const edgeIds = this.edges
+        .filter(
+          (edge) =>
+            Boolean(edge.selected) && !nodeSet.has(edge.source) && !nodeSet.has(edge.target)
+        )
+        .map((edge) => edge.id)
+      for (const nodeId of nodeIds) {
+        await this.removeNode(nodeId)
+      }
+      for (const edgeId of edgeIds) {
+        await this.removeEdge(edgeId)
+      }
+      return nodeIds.length + edgeIds.length
+    },
+    selectAllNodes(): void {
+      if (!this.nodes.length) {
+        return
+      }
+      this.nodes = this.nodes.map((node) => ({ ...node, selected: true }))
+      this.selectedNodeId = this.nodes[0]?.id ?? null
     }
   }
 })

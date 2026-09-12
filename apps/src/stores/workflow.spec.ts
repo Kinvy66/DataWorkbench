@@ -402,4 +402,23 @@ describe('useWorkflowStore', () => {
     store.applyNodeState('wf-1', 'node-1', 'ok', 'hello')
     expect(store.nodes[0]?.data).toMatchObject({ state: 'ok', displayText: 'hello' })
   })
+
+  it('copies selected nodes and pastes a disconnected duplicate via addNode', async () => {
+    const store = useWorkflowStore()
+    await store.addNode(constantType.qualifiedName, { x: 10, y: 20 })
+    await store.addNode(dataMgrType.qualifiedName, { x: 80, y: 20 })
+    await store.connectPorts({
+      source: 'node-1',
+      target: 'node-2',
+      sourceHandle: 'value',
+      targetHandle: 'data'
+    })
+    store.nodes = store.nodes.map((node) => ({ ...node, selected: true }))
+    expect(store.copySelection()).toBe(true)
+    const count = await store.pasteClip()
+    expect(count).toBe(2)
+    expect(store.nodes).toHaveLength(4)
+    expect(store.edges).toHaveLength(2)
+    expect(invoke.mock.calls.some((call) => call[0] === 'workflow.addNode')).toBe(true)
+  })
 })

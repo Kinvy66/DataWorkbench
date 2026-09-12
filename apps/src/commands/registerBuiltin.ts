@@ -11,6 +11,7 @@ import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
 import { confirmAndQuit, newProject, openProject, saveProject } from '@/project/session'
 import { useAppUiStore } from '@/stores/appUi'
+import { tableClipboard } from '@/data/tableClipboard'
 import {
   APP_HELP_FAQ_URL,
   APP_HELP_GUIDE_URL,
@@ -476,6 +477,137 @@ export function registerBuiltinCommands(): void {
     },
     () => useWorkflowStore().canRedo
   )
+
+  function editFocus(): 'table' | 'workflow' | 'figure' {
+    return useWorkflowStore().centerTab
+  }
+
+  commandBus.register('edit.copy', async () => {
+    try {
+      const tab = editFocus()
+      if (tab === 'table') {
+        const host = tableClipboard()
+        if (!host?.hasRange()) {
+          ElMessage.warning(t('edit.noCells'))
+          return
+        }
+        const ok = await host.copy()
+        if (!ok) {
+          ElMessage.warning(t('edit.noCells'))
+        }
+        return
+      }
+      if (tab === 'workflow') {
+        if (!useWorkflowStore().copySelection()) {
+          ElMessage.warning(t('edit.noSelection'))
+        }
+        return
+      }
+      const png = await useChartStore().capturePngDataUrl()
+      if (!png) {
+        ElMessage.warning(t('chart.exportMissing'))
+        return
+      }
+      await getDesktopBridge().rpc.invoke('app.clipboardWrite', { pngDataUrl: png })
+      ElMessage.success(t('edit.chartCopied'))
+    } catch (err) {
+      reportError(err)
+    }
+  })
+
+  commandBus.register('edit.cut', async () => {
+    try {
+      const tab = editFocus()
+      if (tab === 'table') {
+        const host = tableClipboard()
+        if (!host?.hasRange()) {
+          ElMessage.warning(t('edit.noCells'))
+          return
+        }
+        const n = await host.cut()
+        if (!n) {
+          ElMessage.warning(t('edit.noCells'))
+        }
+        return
+      }
+      if (tab === 'workflow') {
+        const workflow = useWorkflowStore()
+        if (!workflow.copySelection()) {
+          ElMessage.warning(t('edit.noSelection'))
+          return
+        }
+        await workflow.deleteSelection()
+        return
+      }
+      ElMessage.info(t('edit.notOnFigure'))
+    } catch (err) {
+      reportError(err)
+    }
+  })
+
+  commandBus.register('edit.paste', async () => {
+    try {
+      const tab = editFocus()
+      if (tab === 'table') {
+        const host = tableClipboard()
+        if (!host?.hasRange()) {
+          ElMessage.warning(t('edit.noCells'))
+          return
+        }
+        const n = await host.paste()
+        if (n > 0) {
+          ElMessage.success(t('edit.pasted', { count: n }))
+        }
+        return
+      }
+      if (tab === 'workflow') {
+        const n = await useWorkflowStore().pasteClip()
+        if (!n) {
+          ElMessage.warning(t('edit.clipboardEmpty'))
+        }
+        return
+      }
+      ElMessage.info(t('edit.notOnFigure'))
+    } catch (err) {
+      reportError(err)
+    }
+  })
+
+  commandBus.register('edit.delete', async () => {
+    try {
+      const tab = editFocus()
+      if (tab === 'table') {
+        const host = tableClipboard()
+        if (!host?.hasRange()) {
+          ElMessage.warning(t('edit.noCells'))
+          return
+        }
+        await host.deleteCells()
+        return
+      }
+      if (tab === 'workflow') {
+        const n = await useWorkflowStore().deleteSelection()
+        if (!n) {
+          ElMessage.warning(t('edit.noSelection'))
+        }
+        return
+      }
+      ElMessage.info(t('edit.notOnFigure'))
+    } catch (err) {
+      reportError(err)
+    }
+  })
+
+  commandBus.register('edit.selectAll', async () => {
+    const tab = editFocus()
+    if (tab === 'table') {
+      tableClipboard()?.selectAll()
+      return
+    }
+    if (tab === 'workflow') {
+      useWorkflowStore().selectAllNodes()
+    }
+  })
 
   commandBus.register(
     'workflow.run',

@@ -33,6 +33,11 @@ import iconAppSetting from '@/assets/icons/app/setting.svg?url'
 import iconAbout from '@/assets/icons/app/about.svg?url'
 import iconShowInformation from '@/assets/icons/app/showInfomation.svg?url'
 import iconCancel from '@/assets/icons/gui/cancel.svg?url'
+import iconCut from '@/assets/icons/gui/cut.svg?url'
+import iconCopy from '@/assets/icons/gui/copy.svg?url'
+import iconPaste from '@/assets/icons/gui/paste.svg?url'
+import iconDelete from '@/assets/icons/gui/delete.svg?url'
+import iconSelectAll from '@/assets/icons/gui/select-all.svg?url'
 import iconRun from '@/assets/icons/app/run.svg?url'
 import iconStop from '@/assets/icons/app/stop.svg?url'
 import iconUndo from '@/assets/icons/app/undo.svg?url'
@@ -103,6 +108,11 @@ const urls: Record<string, string> = {
   'gui/workflow': iconWorkflow,
   'gui/setting': iconSetting,
   'gui/cancel': iconCancel,
+  'gui/cut': iconCut,
+  'gui/copy': iconCopy,
+  'gui/paste': iconPaste,
+  'gui/delete': iconDelete,
+  'gui/select-all': iconSelectAll,
   'gui/chart': iconChart
 }
 

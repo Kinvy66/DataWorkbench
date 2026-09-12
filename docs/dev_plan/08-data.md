@@ -37,6 +37,8 @@ Series 一期当单列表处理或禁止单独导入，降低分支。
 
 列宽由 AG Grid 拖拽（像素，不拉伸铺满），不回写 Python。切换数据集时网格重建，列宽重置。
 
+主页剪贴板在焦点落在表格时：点击单元格选一格，Shift+点击扩成矩形；复制为 TSV（可贴到 Excel）；粘贴从选区左上角写入 `data.patchCells`；删除把选中格写成空（数值列变 NA）；全选整张表。一次最多 **10000** 个单元格（`CLIPBOARD_MAX_CELLS`），超出提示缩小选区，禁止把虚表整表灌进剪贴板。AG Grid Community 没有 range 模块，选区由前端自己画，不要引入 `ag-grid-enterprise`。
+
 ## 与工作流衔接
 
 - **data_source 节点**：参数 `dataset_name` 或 `dataset_id`，`execute` 时从 DataManager 取 df 的**副本**写入 `_output_data`。不是上游那个读文件的 Data Source。

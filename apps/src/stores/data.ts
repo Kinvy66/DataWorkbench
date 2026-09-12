@@ -47,7 +47,8 @@ export const useDataStore = defineStore('data', {
     thresholdFilterDialogOpen: false,
     filterByColumnDialogOpen: false,
     describeDialogOpen: false,
-    pivotTableDialogOpen: false
+    pivotTableDialogOpen: false,
+    cellRange: null as { r0: number; c0: number; r1: number; c1: number } | null
   }),
   getters: {
     current(state): DatasetListItem | null {
@@ -68,6 +69,7 @@ export const useDataStore = defineStore('data', {
     },
     async select(id: string | null): Promise<void> {
       this.currentId = id
+      this.cellRange = null
       if (!id) {
         this.schema = null
         return

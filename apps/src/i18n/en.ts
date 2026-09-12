@@ -50,6 +50,16 @@ export default {
     undoTip: 'Undo the last workflow edit',
     redo: 'Redo',
     redoTip: 'Redo the last undone workflow edit',
+    cut: 'Cut',
+    cutTip: 'Cut the selection (table cells or workflow nodes)',
+    copy: 'Copy',
+    copyTip: 'Copy the selection; copies the figure when a chart is focused',
+    paste: 'Paste',
+    pasteTip: 'Paste into the focused table or workflow canvas',
+    delete: 'Delete',
+    deleteTip: 'Delete the selection (table cells become empty)',
+    selectAll: 'Select All',
+    selectAllTip: 'Select the whole table or all workflow nodes',
     data: 'Data',
     dataOperate: 'Data Operation',
     dataExportGroup: 'Export',
@@ -519,6 +529,16 @@ export default {
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'
   },
+  edit: {
+    noCells: 'Select a table cell first.',
+    noSelection: 'Select a workflow node first.',
+    clipboardEmpty: 'The clipboard is empty.',
+    pasteEmpty: 'Nothing to paste inside the table.',
+    tooManyCells: 'That selection is too large to copy or edit at once. Select fewer cells.',
+    pasted: 'Pasted {count} cells.',
+    chartCopied: 'Chart copied to the clipboard.',
+    notOnFigure: 'Cut, paste, and delete apply to the table or workflow, not the chart.'
+  },
   settings: {
     title: 'Settings',
     language: 'Language',
@@ -537,13 +557,17 @@ export default {
   help: {
     title: 'Help',
     guide: 'User guide',
-    guideHint: 'Open the wiki on GitHub (how to use windows, data, charts, and projects).',
+    guideHint: 'Open the bundled manual in a window (windows, data, charts, and projects).',
     tutorial: 'Tutorial',
     tutorialHint: 'A short walk-through from import to export.',
     faq: 'FAQ',
     faqHint: 'Common errors and what the log messages mean.',
-    shortcuts: 'Shortcuts: Ctrl+N new, Ctrl+O open, Ctrl+S save, Ctrl+Shift+S save as, Ctrl+Z / Ctrl+Y undo and redo the workflow canvas.',
+    shortcuts: 'Shortcuts: Ctrl+N new, Ctrl+O open, Ctrl+S save, Ctrl+Shift+S save as, Ctrl+Z / Ctrl+Y undo and redo the workflow canvas, Ctrl+C / Ctrl+V / Ctrl+X / Ctrl+A / Delete copy paste cut select-all and delete in the focused table or workflow.',
     urlBlocked: 'That help link is not allowed.',
+    pageNotFound: 'That help page is not in the bundled manual.',
+    windowTitle: 'Help',
+    contents: 'Contents',
+    missingPage: 'That help page is not in the bundled manual.',
     close: 'Close'
   }
 }

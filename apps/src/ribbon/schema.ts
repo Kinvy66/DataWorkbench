@@ -35,6 +35,16 @@ export function useRibbonSchema() {
     const hasDataset = Boolean(data.currentId)
     const hasChart = Boolean(chart.currentId)
     const hasFigure = chart.hasExportableFigure
+    const tableFocus = workflow.centerTab === 'table' && hasDataset
+    const tableHasRange = tableFocus && Boolean(data.cellRange)
+    const workflowFocus = workflow.centerTab === 'workflow'
+    const figureFocus = workflow.centerTab === 'figure'
+    const canCopy =
+      tableHasRange || (workflowFocus && workflow.canCopyGraph) || (figureFocus && hasFigure)
+    const canCut = tableHasRange || (workflowFocus && workflow.canCopyGraph)
+    const canPaste = tableHasRange || (workflowFocus && workflow.canPasteGraph)
+    const canDelete = canCut
+    const canSelectAll = tableFocus || (workflowFocus && workflow.canSelectAllGraph)
     return [
       {
         id: 'home',
@@ -99,6 +109,51 @@ export function useRibbonSchema() {
                     size: 'large',
                     disabled: !workflow.canRedo,
                     icon: ribbonIcon('app/redo')
+                  },
+                  {
+                    id: 'edit.cut',
+                    type: 'button',
+                    label: t('ribbon.cut'),
+                    tooltip: t('ribbon.cutTip'),
+                    size: 'small',
+                    disabled: !canCut,
+                    icon: ribbonIcon('gui/cut')
+                  },
+                  {
+                    id: 'edit.copy',
+                    type: 'button',
+                    label: t('ribbon.copy'),
+                    tooltip: t('ribbon.copyTip'),
+                    size: 'small',
+                    disabled: !canCopy,
+                    icon: ribbonIcon('gui/copy')
+                  },
+                  {
+                    id: 'edit.paste',
+                    type: 'button',
+                    label: t('ribbon.paste'),
+                    tooltip: t('ribbon.pasteTip'),
+                    size: 'small',
+                    disabled: !canPaste,
+                    icon: ribbonIcon('gui/paste')
+                  },
+                  {
+                    id: 'edit.delete',
+                    type: 'button',
+                    label: t('ribbon.delete'),
+                    tooltip: t('ribbon.deleteTip'),
+                    size: 'small',
+                    disabled: !canDelete,
+                    icon: ribbonIcon('gui/delete')
+                  },
+                  {
+                    id: 'edit.selectAll',
+                    type: 'button',
+                    label: t('ribbon.selectAll'),
+                    tooltip: t('ribbon.selectAllTip'),
+                    size: 'small',
+                    disabled: !canSelectAll,
+                    icon: ribbonIcon('gui/select-all')
                   }
                 ]
               }

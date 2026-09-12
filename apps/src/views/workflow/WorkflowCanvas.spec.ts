@@ -13,6 +13,7 @@ describe('WorkflowCanvas toolbar', () => {
     expect(source).toContain('width: 32px')
     expect(source).toContain('height: 32px')
     expect(source).not.toContain('<Controls')
+    expect(source).toContain(':delete-key-code="null"')
     expect(source).toContain('app/zoomIn')
     expect(source).toContain('app/zoomOut')
     expect(source).toContain('app/viewAll')

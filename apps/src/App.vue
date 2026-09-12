@@ -39,15 +39,23 @@ watch(
 
 onMounted(() => {
   const onKey = (event: KeyboardEvent): void => {
-    if (!(event.ctrlKey || event.metaKey)) {
-      return
-    }
     const target = event.target
     if (target instanceof HTMLElement) {
       const tag = target.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) {
         return
       }
+    }
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      if (event.ctrlKey || event.metaKey || event.altKey) {
+        return
+      }
+      event.preventDefault()
+      void commandBus.dispatch('edit.delete')
+      return
+    }
+    if (!(event.ctrlKey || event.metaKey)) {
+      return
     }
     const key = event.key.toLowerCase()
     if (key === 'z' && !event.shiftKey) {
@@ -58,6 +66,26 @@ onMounted(() => {
     if (key === 'y' || (key === 'z' && event.shiftKey)) {
       event.preventDefault()
       void commandBus.dispatch('edit.redo')
+      return
+    }
+    if (key === 'c' && !event.shiftKey) {
+      event.preventDefault()
+      void commandBus.dispatch('edit.copy')
+      return
+    }
+    if (key === 'x' && !event.shiftKey) {
+      event.preventDefault()
+      void commandBus.dispatch('edit.cut')
+      return
+    }
+    if (key === 'v' && !event.shiftKey) {
+      event.preventDefault()
+      void commandBus.dispatch('edit.paste')
+      return
+    }
+    if (key === 'a' && !event.shiftKey) {
+      event.preventDefault()
+      void commandBus.dispatch('edit.selectAll')
       return
     }
     if (key === 's') {

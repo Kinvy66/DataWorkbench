@@ -112,7 +112,7 @@ Python sidecar 的 **stdout 只能打 JSON-RPC 行**。日志、traceback、`pri
 
 `@mlightcad/ribbon` 只展示 tab/group/item。点击 → `commandBus.dispatch(id)`。不要把业务写进 ribbon schema 闭包。插件以后也注册到 command bus。
 
-**对齐上游菜单**：常驻 **Home / Data / View / Figure**（主页 / 数据 / 视图 / 绘图）。Data 标签 = 上游 Data（添加/移除/重命名/导出）。Figure = 上游 Figure（新建折线/散点/柱状/直方/箱线/子图）。View = 显示七个停靠面板 + 复位布局。清洗、过滤、统计 = 上游 DataFrame 上下文「操作」页，仅在焦点落在**表格**时出现。工作流画布焦点时出现 **工作流视图**（缩放/适应）和 **工作流**（运行/停止）两页。标注/导出 = 上游 Chart Operate 上下文，仅在焦点落在**绘图**时出现。`@mlightcad/ribbon` 的 `contextual` / `contextualMode: 'selection'` 实现该动态分类；即使同一窗口有多页也不要设 `contextualTitle`（页名已经够用）。库默认上下文页是圆角描边色块；用 `AppRibbon.vue` 的 CSS 改成顶栏色条（对齐 SARibbon），不要改回 pill。Ribbon 按钮只放**已实现**且上游同一 panel 已有的 action。Replace Values / Threshold Filter 上游无按钮，只做节点。不要把每个新 Core 操作塞进 Data。Home 对齐文件/剪贴板/创建（打开/保存/撤销/添加数据）、配置（设置、关于）和帮助菜单；不要补剪切/复制、插件管理、Agent、3D 图、表格样式。
+**对齐上游菜单**：常驻 **Home / Data / View / Figure**（主页 / 数据 / 视图 / 绘图）。Data 标签 = 上游 Data（添加/移除/重命名/导出）。Figure = 上游 Figure（新建折线/散点/柱状/直方/箱线/子图）。View = 显示七个停靠面板 + 复位布局。清洗、过滤、统计 = 上游 DataFrame 上下文「操作」页，仅在焦点落在**表格**时出现。工作流画布焦点时出现 **工作流视图**（缩放/适应）和 **工作流**（运行/停止）两页。标注/导出 = 上游 Chart Operate 上下文，仅在焦点落在**绘图**时出现。`@mlightcad/ribbon` 的 `contextual` / `contextualMode: 'selection'` 实现该动态分类；即使同一窗口有多页也不要设 `contextualTitle`（页名已经够用）。库默认上下文页是圆角描边色块；用 `AppRibbon.vue` 的 CSS 改成顶栏色条（对齐 SARibbon），不要改回 pill。Ribbon 按钮只放**已实现**且上游同一 panel 已有的 action。Replace Values / Threshold Filter 上游无按钮，只做节点。不要把每个新 Core 操作塞进 Data。Home 对齐文件/剪贴板/创建（打开/保存/撤销/添加数据）、配置（设置、关于）和帮助菜单；剪贴板按焦点复制/粘贴/删除/全选。不要补插件管理、Agent、3D 图、表格样式。
 
 ### T6. 改 RPC 三处同步
 
