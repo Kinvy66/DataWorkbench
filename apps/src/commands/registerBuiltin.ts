@@ -10,6 +10,8 @@ import { i18n } from '@/i18n'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
 import { confirmAndQuit, newProject, openProject, saveProject } from '@/project/session'
+import type { DockPanelId } from '@/layout/docking'
+import { workflowCanvasView } from '@/workflow/canvasView'
 
 function t(key: string, values?: Record<string, unknown>): string {
   return String(i18n.global.t(key, values as Record<string, string>))
@@ -512,6 +514,31 @@ export function registerBuiltinCommands(): void {
   commandBus.register('view.resetLayout', () => {
     useProjectStore().resetDocking()
     useLogStore().append('info', t('log.layoutReset'))
+  })
+
+  const showDocks: Array<[string, DockPanelId]> = [
+    ['view.showTable', 'table'],
+    ['view.showWorkflow', 'workflow'],
+    ['view.showFigure', 'figure'],
+    ['view.showDatasets', 'datasets'],
+    ['view.showNodes', 'nodes'],
+    ['view.showProperties', 'properties'],
+    ['view.showLog', 'log']
+  ]
+  for (const [id, dock] of showDocks) {
+    commandBus.register(id, () => {
+      useWorkflowStore().showDock(dock)
+    })
+  }
+
+  commandBus.register('workflow.zoomIn', () => {
+    workflowCanvasView()?.zoomIn()
+  })
+  commandBus.register('workflow.zoomOut', () => {
+    workflowCanvasView()?.zoomOut()
+  })
+  commandBus.register('workflow.fitView', () => {
+    workflowCanvasView()?.fitView()
   })
 
   commandBus.register(

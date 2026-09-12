@@ -232,6 +232,15 @@ watch(
   }
 )
 
+watch(
+  () => workflow.dockFocusNonce,
+  () => {
+    if (workflow.dockFocusId) {
+      activatePanel(workflow.dockFocusId)
+    }
+  }
+)
+
 watch(locale, () => {
   applyTitles()
 })

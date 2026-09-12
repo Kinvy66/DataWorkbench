@@ -14,6 +14,7 @@ import type {
   WorkflowParamSpec
 } from '@dw/rpc-types'
 import { getDesktopBridge } from '@/rpc/bridge'
+import type { DockPanelId } from '@/layout/docking'
 import { touchProject } from './project'
 import {
   HISTORY_LIMIT,
@@ -66,6 +67,8 @@ export const useWorkflowStore = defineStore('workflow', {
     paramValues: {} as Record<string, Record<string, unknown>>,
     centerTab: 'table' as 'table' | 'workflow' | 'figure',
     leftTab: 'datasets' as 'datasets' | 'nodes',
+    dockFocusId: null as DockPanelId | null,
+    dockFocusNonce: 0,
     nextPlace: { x: 80, y: 80 },
     undoStack: [] as HistoryCommand[],
     redoStack: [] as HistoryCommand[],
@@ -104,6 +107,15 @@ export const useWorkflowStore = defineStore('workflow', {
     }
   },
   actions: {
+    showDock(id: DockPanelId): void {
+      if (id === 'table' || id === 'workflow' || id === 'figure') {
+        this.centerTab = id
+      } else if (id === 'datasets' || id === 'nodes') {
+        this.leftTab = id
+      }
+      this.dockFocusId = id
+      this.dockFocusNonce += 1
+    },
     async bootstrap(): Promise<void> {
       const listed = (await rpc().invoke('workflow.listNodeTypes', {})) as WorkflowListNodeTypesResult
       this.types = listed.types

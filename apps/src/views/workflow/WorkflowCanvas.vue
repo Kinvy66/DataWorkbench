@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { markRaw, nextTick, watch } from 'vue'
+import { markRaw, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import type { Connection, EdgeChange, NodeChange } from '@vue-flow/core'
@@ -12,12 +12,20 @@ import WorkflowNode from './WorkflowNode.vue'
 import DwIcon from '@/icons/DwIcon.vue'
 import { useWorkflowStore } from '@/stores/workflow'
 import { translateRpcError } from '@/rpc/rpcError'
+import { bindWorkflowCanvasView } from '@/workflow/canvasView'
 
 const FLOW_ID = 'dw-flow'
 const { t, te } = useI18n()
 const store = useWorkflowStore()
 const { screenToFlowCoordinate, fitView, zoomIn, zoomOut } = useVueFlow({ id: FLOW_ID })
 const nodeTypes = { dw: markRaw(WorkflowNode) }
+
+onMounted(() => {
+  bindWorkflowCanvasView({ zoomIn, zoomOut, fitView })
+})
+onUnmounted(() => {
+  bindWorkflowCanvasView(null)
+})
 
 watch(
   () => store.centerTab,

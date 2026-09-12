@@ -138,10 +138,18 @@ describe('i18n', () => {
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.layout'))).toBe('Layout')
     expect(String(i18n.global.t('ribbon.resetLayout'))).toBe('Reset Layout')
+    expect(String(i18n.global.t('ribbon.view'))).toBe('View')
+    expect(String(i18n.global.t('ribbon.create'))).toBe('Create')
+    expect(String(i18n.global.t('ribbon.workflowView'))).toBe('Workflow View')
+    expect(String(i18n.global.t('ribbon.showTable'))).toBe('Show Table Area')
     expect(String(i18n.global.t('log.layoutReset'))).toBe('Layout restored to default.')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('ribbon.layout'))).toBe('布局')
     expect(String(i18n.global.t('ribbon.resetLayout'))).toBe('复位布局')
+    expect(String(i18n.global.t('ribbon.view'))).toBe('视图')
+    expect(String(i18n.global.t('ribbon.create'))).toBe('创建')
+    expect(String(i18n.global.t('ribbon.workflowView'))).toBe('工作流视图')
+    expect(String(i18n.global.t('ribbon.showTable'))).toBe('表格区域')
     expect(String(i18n.global.t('log.layoutReset'))).toBe('已恢复默认布局。')
   })
 })
