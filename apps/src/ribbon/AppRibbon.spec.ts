@@ -36,8 +36,9 @@ describe('AppRibbon chrome layout', () => {
   it('restyles contextual tabs as a color bar instead of the library pill', () => {
     const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
     expect(source).toContain('ml-ribbon-contextual-tabs__block')
-    expect(source).toContain('inset 0 3px 0 var(--ctx-color)')
-    expect(source).toContain('border: none')
+    expect(source).toContain('border-top: 3px solid var(--ctx-color)')
+    expect(source).not.toContain('inset 0 3px 0 var(--ctx-color)')
+    expect(source).toContain('font-weight: 600')
   })
 
   it('selects the contextual ribbon tab when the focused workspace window changes', () => {

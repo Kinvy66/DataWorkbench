@@ -135,7 +135,9 @@ function toggleLocale(): void {
 }
 /*
  * mlRibbon paints each contextual tab as a rounded bordered pill. Restyle toward
- * SARibbon / Office: a color bar on top and a light wash, same tab chrome as Home.
+ * SARibbon: a top color bar on the group (border, not inset — a filled active
+ * tab would cover inset shadow and leave only a bottom bar). Selected page uses
+ * a solid fill + weight, not a different highlight edge from its sibling.
  */
 .ribbon-shell :deep(.ml-ribbon-contextual-tabs) {
   align-items: stretch;
@@ -147,18 +149,24 @@ function toggleLocale(): void {
 }
 .ribbon-shell :deep(.ml-ribbon-contextual-tabs__block) {
   border: none;
+  border-top: 3px solid var(--ctx-color);
   border-radius: 0;
   padding: 0;
-  background: color-mix(in oklab, var(--ctx-color) 16%, transparent);
-  box-shadow: inset 0 3px 0 var(--ctx-color);
+  background: color-mix(in oklab, var(--ctx-color) 12%, transparent);
+}
+.ribbon-shell :deep(.ml-ribbon-contextual-tabs__block + .ml-ribbon-contextual-tabs__block) {
+  box-shadow: inset 1px 0 0 color-mix(in oklab, var(--ctx-color) 28%, transparent);
 }
 .ribbon-shell :deep(.ml-ribbon-contextual-tabs__block .ml-ribbon-tab) {
   border-bottom-color: transparent;
+  color: var(--ml-rb-muted);
+  font-weight: 400;
 }
 .ribbon-shell :deep(.ml-ribbon-contextual-tabs__block .ml-ribbon-tab.is-active) {
-  background: color-mix(in oklab, var(--ctx-color) 28%, #fff);
-  color: color-mix(in oklab, var(--ctx-color) 50%, #111);
-  border-bottom-color: var(--ctx-color);
+  background: var(--ml-rb-surface, #fff);
+  color: var(--ml-rb-tab-text, #303133);
+  font-weight: 600;
+  border-bottom-color: transparent;
 }
 .ribbon-extra {
   display: flex;
