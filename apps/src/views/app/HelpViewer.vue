@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getDesktopBridge } from '@/rpc/bridge'
 import { translateRpcError } from '@/rpc/rpcError'
@@ -14,11 +14,19 @@ const title = ref('')
 const html = ref('')
 const loading = ref(false)
 const error = ref('')
+const helpMain = ref<HTMLElement | null>(null)
 const offs: Array<() => void> = []
 
 function initialPage(): WikiPageId {
   const fromQuery = new URLSearchParams(window.location.search).get('page')
   return normalizeWikiPageId(fromQuery) ?? 'README.md'
+}
+
+function scrollContentToTop(): void {
+  const el = helpMain.value
+  if (el) {
+    el.scrollTop = 0
+  }
 }
 
 async function loadPage(page: string): Promise<void> {
@@ -31,6 +39,7 @@ async function loadPage(page: string): Promise<void> {
   loading.value = true
   error.value = ''
   currentId.value = id
+  scrollContentToTop()
   try {
     const result = (await getDesktopBridge().rpc.invoke('help.read', { page: id })) as HelpReadResult
     currentId.value = normalizeWikiPageId(result.id) ?? id
@@ -41,6 +50,8 @@ async function loadPage(page: string): Promise<void> {
     error.value = translateRpcError(err, t, te)
   } finally {
     loading.value = false
+    await nextTick()
+    scrollContentToTop()
   }
 }
 
@@ -118,7 +129,7 @@ const windowTitle = computed(() => title.value || t('help.windowTitle'))
           {{ page.title }}
         </button>
       </nav>
-      <main class="help-main">
+      <main ref="helpMain" class="help-main">
         <p v-if="error" class="help-error">{{ error }}</p>
         <article
           v-else

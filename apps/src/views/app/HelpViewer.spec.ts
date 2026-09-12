@@ -11,6 +11,7 @@ describe('HelpViewer', () => {
     expect(source).toContain("invoke('help.read'")
     expect(source).toContain("invoke('help.list'")
     expect(source).toContain('v-html')
+    expect(source).toContain('scrollContentToTop')
     expect(source).not.toContain('github.com')
   })
 })
