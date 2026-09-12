@@ -1,0 +1,39 @@
+# QA 训练包（教师）
+
+本目录**不要**打进安装包。`electron-builder` 只打包 `docs/wiki` 与截图。
+
+## 发给学员什么
+
+只发安装包，例如：
+
+`apps/dist/DataWorkbench-Setup-1.0.0-QALab.exe`
+
+不要发：
+
+- 本目录（尤其 `answer-key.md`）
+- 源代码、Git 仓库、`pnpm` 指令
+- 「一共有几个 bug」或具体按钮清单
+
+口头或邮件只需：
+
+1. 安装后打开软件。
+2. **主页 → 帮助** 看手册。
+3. 先做「十五分钟跟做」，再勾「测试练习清单」。
+4. 手册是正确答案；和手册不符就按「怎样写缺陷单」交作业。
+5. 建议至少找出 5 处不符；把主流程做完，不要在中途停住。
+
+示例 CSV 会在学员第一次启动时复制到 `文档\DataWorkbench\wiki-demo.csv`。
+
+## 打安装包
+
+在 `qa-lab` 分支、仓库根目录：
+
+```powershell
+pnpm pack:win
+```
+
+产物不要当作正式 1.0.0 发布到 GitHub Releases。
+
+## 标准答案
+
+见 [answer-key.md](./answer-key.md)。阅卷时认「能说清期望/实际/步骤」即可，不必要求学员使用内部编号 B1–B10。

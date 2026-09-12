@@ -562,6 +562,7 @@ export default {
     body: '面向实验数据的桌面分析台：工作流、表格与可导出图表。',
     copyright: 'Copyright © 2026 DataWorkbench contributors',
     license: '本软件源码为 MIT。拷贝的图标与 vendor 的 Python 仍为 LGPL-3.0。详见 NOTICE。',
+    training: '这是一份练习用安装包。请按帮助里的手册对照实际结果。',
     close: '关闭'
   },
   help: {
@@ -572,6 +573,10 @@ export default {
     tutorialHint: '从导入到导出的短流程。',
     faq: '常见问题',
     faqHint: '常见报错以及日志含义。',
+    howToTest: '怎样测软件',
+    howToTestHint: '期望与实际、不要只信弹窗、怎样记录问题。',
+    bugReport: '怎样写缺陷单',
+    bugReportHint: '标题、步骤、期望、实际、截图。',
     shortcuts: '快捷键：Ctrl+N 新建，Ctrl+O 打开，Ctrl+S 保存，Ctrl+Shift+S 另存为，Ctrl+Z / Ctrl+Y 撤销/重做工作流画布，Ctrl+C / Ctrl+V / Ctrl+X / Ctrl+A / Delete 按焦点复制粘贴剪切全选删除。',
     urlBlocked: '该帮助链接不被允许。',
     pageNotFound: '安装包中没有这一页帮助。',

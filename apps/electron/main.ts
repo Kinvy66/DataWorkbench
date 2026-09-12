@@ -35,11 +35,13 @@ import {
   notifyWikiCaptureReady,
   wikiCaptureConfig
 } from './wiki-capture'
+import { applyQaLabEnv } from './qa-lab'
 
 registerHelpScheme()
 
 const wikiCapture = wikiCaptureConfig()
 applyWikiCaptureAppPaths(wikiCapture)
+applyQaLabEnv({ skip: Boolean(wikiCapture) })
 
 const sidecar = new SidecarBridge({ resourcesPath: process.resourcesPath })
 let mainWindow: BrowserWindow | null = null
@@ -63,6 +65,32 @@ function fileLog(kind: AppLogKind, text: string): void {
     appLog?.write(kind, text)
   } catch {
     // Logging must never break RPC or window startup.
+  }
+}
+
+function ensureSampleCsv(): void {
+  try {
+    const destDir = path.join(app.getPath('documents'), 'DataWorkbench')
+    const dest = path.join(destDir, 'wiki-demo.csv')
+    if (fs.existsSync(dest)) {
+      fileLog('main', `Sample CSV already at ${dest}`)
+      return
+    }
+    const sources = [
+      path.join(bundledDocsRoot(), 'wiki', 'samples', 'wiki-demo.csv'),
+      path.join(process.cwd(), 'docs', 'wiki', 'samples', 'wiki-demo.csv'),
+      path.join(process.cwd(), '..', 'docs', 'wiki', 'samples', 'wiki-demo.csv')
+    ]
+    const src = sources.find((item) => fs.existsSync(item))
+    if (!src) {
+      fileLog('main', 'Sample CSV source missing')
+      return
+    }
+    fs.mkdirSync(destDir, { recursive: true })
+    fs.copyFileSync(src, dest)
+    fileLog('main', `Copied sample CSV to ${dest}`)
+  } catch (err) {
+    fileLog('main', `Sample CSV copy failed: ${String(err)}`)
   }
 }
 
@@ -296,6 +324,7 @@ app.whenReady().then(() => {
   }
   appLog = new AppFileLog({ userDataDir: app.getPath('userData') })
   fileLog('main', 'App ready')
+  ensureSampleCsv()
   installHelpProtocol(() => bundledDocsRoot())
   installApplicationMenu()
   sidecar.onLog((entry) => {

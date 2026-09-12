@@ -70,5 +70,6 @@ contextBridge.exposeInMainWorld('dw', {
     fail(message: string): Promise<unknown> {
       return ipcRenderer.invoke('wiki:fail', message)
     }
-  }
+  },
+  qaLab: process.env.DW_QA_LAB === '1'
 })

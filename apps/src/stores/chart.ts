@@ -41,6 +41,7 @@ import {
 } from '@/chart/figures'
 import { getDesktopBridge } from '@/rpc/bridge'
 import { isCancelled } from '@/rpc/rpcError'
+import { qaLabEnabled } from '@/qa-lab'
 import { useDataStore } from './data'
 import { touchProject } from './project'
 import { useWorkflowStore } from './workflow'
@@ -474,7 +475,7 @@ export const useChartStore = defineStore('chart', {
         return
       }
       Object.assign(chart, patch)
-      if (patch.title != null) {
+      if (patch.title != null && !qaLabEnabled()) {
         const figure = this.figures.find((item) => item.slots.includes(id))
         if (figure && !isGridFigure(figure)) {
           figure.title = patch.title

@@ -20,6 +20,7 @@ declare global {
         done(): Promise<unknown>
         fail(message: string): Promise<unknown>
       }
+      qaLab?: boolean
     }
   }
 }

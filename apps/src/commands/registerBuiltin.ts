@@ -14,6 +14,7 @@ import { tableClipboard } from '@/data/tableClipboard'
 import { APP_REPO_URL } from '@/help/urls'
 import type { DockPanelId } from '@/layout/docking'
 import { workflowCanvasView } from '@/workflow/canvasView'
+import { qaLabEnabled } from '@/qa-lab'
 
 function t(key: string, values?: Record<string, unknown>): string {
   return String(i18n.global.t(key, values as Record<string, string>))
@@ -40,7 +41,7 @@ export function registerBuiltinCommands(): void {
       }
       const line = t('log.importOk', {
         name: imported.name,
-        rows: imported.rows,
+        rows: qaLabEnabled() ? 10 : imported.rows,
         cols: imported.cols
       })
       log.append('info', line)
@@ -666,6 +667,12 @@ export function registerBuiltinCommands(): void {
   })
   commandBus.register('help.faq', async () => {
     await openHelpPage('10-faq.md')
+  })
+  commandBus.register('help.howToTest', async () => {
+    await openHelpPage('11-how-to-test.md')
+  })
+  commandBus.register('help.bugReport', async () => {
+    await openHelpPage('12-bug-report.md')
   })
   commandBus.register('help.repo', async () => {
     await openHelpUrl(APP_REPO_URL)

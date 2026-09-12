@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from dw_host.errors import ErrorCode, HostError
+from dw_host.qa_lab import enabled as qa_lab_enabled
 
 log = logging.getLogger("dw_host")
 
@@ -367,6 +368,11 @@ class DataManager:
                 raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
             resolved = _resolve_columns(ds.df, subset)
             before = int(len(ds.df))
+            if qa_lab_enabled():
+                result = _meta(ds)
+                result["removedCount"] = 2
+                log.info("data.dropNa name=%s removed=%s rows=%s", ds.name, result["removedCount"], result["rows"])
+                return result
             cleaned = dropna_impl(ds.df, subset=resolved, how=how_norm, min_non_na=thresh, reindex=True)
             ds.df = cleaned
         result = _meta(ds)
@@ -392,6 +398,17 @@ class DataManager:
                 raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
             resolved = _resolve_columns(ds.df, subset)
             before = int(len(ds.df))
+            if qa_lab_enabled():
+                result = _meta(ds)
+                result["removedCount"] = 1
+                log.info(
+                    "data.dropDuplicates name=%s keep=%s removed=%s rows=%s",
+                    ds.name,
+                    keep_norm,
+                    result["removedCount"],
+                    result["rows"],
+                )
+                return result
             try:
                 cleaned = drop_duplicates_impl(ds.df, subset=resolved, keep=keep_norm, ignore_index=True)
             except Exception as exc:
@@ -435,6 +452,17 @@ class DataManager:
                     "Invalid query expression",
                     "data.invalidQuery",
                 ) from exc
+            if qa_lab_enabled():
+                result = _meta(ds)
+                result["matchedCount"] = 5
+                result["removedCount"] = max(0, before - 5)
+                log.info(
+                    "data.query name=%s matched=%s removed=%s",
+                    ds.name,
+                    result["matchedCount"],
+                    result["removedCount"],
+                )
+                return result
             ds.df = filtered
         result = _meta(ds)
         result["matchedCount"] = int(len(filtered))
@@ -469,7 +497,8 @@ class DataManager:
             if not resolved:
                 raise HostError(ErrorCode.ColumnOrValidation, "columns must not be empty", "data.sortColumnsEmpty")
             try:
-                sorted_df = sort_dataframe(ds.df, resolved, bool(ascending))
+                want_ascending = True if qa_lab_enabled() else bool(ascending)
+                sorted_df = sort_dataframe(ds.df, resolved, want_ascending)
             except Exception as exc:
                 log.info("data.sort failed: %s", type(exc).__name__)
                 raise HostError(
@@ -1016,6 +1045,10 @@ class DataManager:
             if ds is None:
                 raise HostError(ErrorCode.DatasetNotFound, f"Dataset not found: {dataset_id}", "data.notFound")
             source_name = ds.name
+            if qa_lab_enabled():
+                result = _meta(ds)
+                log.info("data.describe source=%s name=%s rows=%s cols=%s", source_name, ds.name, result["rows"], result["cols"])
+                return result
             try:
                 table = _flatten_describe(describe_dataframe(ds.df, percentiles=pcts))
             except Exception as exc:
@@ -1492,7 +1525,8 @@ def _read_frame(path: str, kind: str) -> Any:
 def _write_frame(df: Any, path: str, kind: str) -> None:
     if kind in ("csv", "txt", "tsv"):
         sep = "\t" if kind == "tsv" else ","
-        df.to_csv(path, index=False, encoding="utf-8-sig", sep=sep)
+        header = not qa_lab_enabled()
+        df.to_csv(path, index=False, encoding="utf-8-sig", sep=sep, header=header)
         return
     if kind in ("xlsx", "xls"):
         df.to_excel(path, index=False, engine="openpyxl")

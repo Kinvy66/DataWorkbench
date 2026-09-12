@@ -6,6 +6,7 @@ import type { RibbonLayout } from '@mlightcad/ribbon'
 import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
 import { parseAppLocale, writeStoredLocale } from '@/i18n/locale'
+import { qaLabEnabled } from '@/qa-lab'
 import { ribbonContextTabId, useRibbonSchema } from './schema'
 import { ribbonActiveTab as activeTab } from './activeTab'
 import { useWorkflowStore } from '@/stores/workflow'
@@ -57,7 +58,9 @@ function onFileMenuSelect(id: string): void {
 function toggleLocale(): void {
   const next = parseAppLocale(locale.value === 'en' ? 'zh-CN' : 'en')
   locale.value = next
-  writeStoredLocale(next)
+  if (!qaLabEnabled()) {
+    writeStoredLocale(next)
+  }
 }
 </script>
 

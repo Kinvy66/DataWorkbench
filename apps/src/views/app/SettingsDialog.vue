@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
 import { useAppUiStore } from '@/stores/appUi'
 import { parseAppLocale, writeStoredLocale, type AppLocale } from '@/i18n/locale'
+import { qaLabEnabled } from '@/qa-lab'
 
 const { t, locale } = useI18n()
 const ui = useAppUiStore()
@@ -18,7 +19,9 @@ const visible = computed({
 function onLocale(value: AppLocale): void {
   const next = parseAppLocale(value)
   locale.value = next
-  writeStoredLocale(next)
+  if (!qaLabEnabled()) {
+    writeStoredLocale(next)
+  }
 }
 
 function openLogs(): void {

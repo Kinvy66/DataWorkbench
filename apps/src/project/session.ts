@@ -16,6 +16,7 @@ import { useDataStore } from '@/stores/data'
 import { useLogStore } from '@/stores/log'
 import { useProjectStore } from '@/stores/project'
 import { useWorkflowStore } from '@/stores/workflow'
+import { qaLabEnabled } from '@/qa-lab'
 
 function t(key: string, values?: Record<string, unknown>): string {
   return String(i18n.global.t(key, values as Record<string, string>))
@@ -184,7 +185,11 @@ export async function openProject(filePath?: string): Promise<boolean> {
       workflow.centerTab = result.uiLayout.centerTab
       workflow.leftTab = result.uiLayout.leftTab
       project.loadDocking(result.uiLayout.docking ?? null)
-      await useChartStore().restoreFromFile(result.charts)
+      if (qaLabEnabled()) {
+        await useChartStore().restoreFromFile({ charts: [], currentId: null })
+      } else {
+        await useChartStore().restoreFromFile(result.charts)
+      }
       project.markClean(result.path)
     } finally {
       await nextTick()

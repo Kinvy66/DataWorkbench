@@ -41,6 +41,14 @@ function run(id: string): void {
         <span class="label">{{ t('help.faq') }}</span>
         <span class="hint">{{ t('help.faqHint') }}</span>
       </button>
+      <button type="button" class="item" @click="run('help.howToTest')">
+        <span class="label">{{ t('help.howToTest') }}</span>
+        <span class="hint">{{ t('help.howToTestHint') }}</span>
+      </button>
+      <button type="button" class="item" @click="run('help.bugReport')">
+        <span class="label">{{ t('help.bugReport') }}</span>
+        <span class="hint">{{ t('help.bugReportHint') }}</span>
+      </button>
     </div>
     <p class="keys">{{ t('help.shortcuts') }}</p>
     <template #footer>

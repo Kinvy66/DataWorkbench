@@ -12,7 +12,9 @@ export const WIKI_PAGE_IDS = [
   '07-project.md',
   '08-tutorial.md',
   '09-test.md',
-  '10-faq.md'
+  '10-faq.md',
+  '11-how-to-test.md',
+  '12-bug-report.md'
 ] as const
 
 export type WikiPageId = (typeof WIKI_PAGE_IDS)[number]

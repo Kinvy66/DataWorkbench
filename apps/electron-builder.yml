@@ -39,6 +39,8 @@ extraResources:
     to: docs/wiki
   - from: ../docs/assets/wiki
     to: docs/assets/wiki
+  - from: resources/qa-lab.flag
+    to: qa-lab.flag
 asar: true
 npmRebuild: false
 compression: maximum
@@ -79,4 +81,4 @@ nsis:
     - en_US
   displayLanguageSelector: false
   license: ../LICENSE
-  artifactName: ${productName}-Setup-${version}.${ext}
+  artifactName: ${productName}-Setup-${version}-QALab.${ext}

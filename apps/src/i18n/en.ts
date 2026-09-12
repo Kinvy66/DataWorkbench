@@ -564,6 +564,7 @@ export default {
     body: 'A desktop workbench for experimental data: workflow, tables, and exportable charts.',
     copyright: 'Copyright © 2026 DataWorkbench contributors',
     license: 'Application source is MIT. Copied icons and vendored Python remain LGPL-3.0. See NOTICE.',
+    training: 'This is a practice build. Compare the in-app manual with what the software actually does.',
     close: 'Close'
   },
   help: {
@@ -574,6 +575,10 @@ export default {
     tutorialHint: 'A short walk-through from import to export.',
     faq: 'FAQ',
     faqHint: 'Common errors and what the log messages mean.',
+    howToTest: 'How to test',
+    howToTestHint: 'Expected vs actual, do not trust toasts alone, how to record a problem.',
+    bugReport: 'How to write a bug report',
+    bugReportHint: 'Title, steps, expected, actual, screenshot.',
     shortcuts: 'Shortcuts: Ctrl+N new, Ctrl+O open, Ctrl+S save, Ctrl+Shift+S save as, Ctrl+Z / Ctrl+Y undo and redo the workflow canvas, Ctrl+C / Ctrl+V / Ctrl+X / Ctrl+A / Delete copy paste cut select-all and delete in the focused table or workflow.',
     urlBlocked: 'That help link is not allowed.',
     pageNotFound: 'That help page is not in the bundled manual.',

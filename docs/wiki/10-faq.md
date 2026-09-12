@@ -2,39 +2,33 @@
 
 先看窗口**底部日志最后几行**，再对照本页。
 
+本课学员：你用的是安装包。下面带「开发模式 / pnpm」的条目可以跳过。
+
 ## 启动
+
+### 软件窗口没有出现
+
+确认双击的是安装程序装出来的 **DataWorkbench** 桌面图标，不是随便一个网页。装完可从开始菜单再开一次。仍不行：把 **主页 → 设置 → 打开日志文件夹** 里的 `main.log` 发给发放安装包的人。
 
 ### 浏览器里打开了 localhost，提示无法连接桌面程序
 
-软件必须在 **Electron 窗口**里用。`pnpm dev` 会自己弹出窗口。关掉浏览器标签，回到那个桌面窗口。
+软件必须在自己的桌面窗口里用。关掉浏览器标签，回到 DataWorkbench 窗口。
 
 ### 窗口出来了，状态栏一直「启动中」
 
-后台计算引擎没起来。检查：
-
-1. **安装包 / 便携目录**：应已内嵌 Python。用 **主页 → 设置 → 打开日志文件夹**，把 `main.log` / `sidecar.log` 发给开发者。
-2. **开发模式**：本机是否 **Python 3.11 或 3.12**（`py -3.12 --version`），以及是否安装了计算依赖：`py -3.12 -m pip install -r python/requirements.txt`。
-3. 可用 `$env:DW_PYTHON = "C:\路径\python.exe"` 覆盖解释器后再启动。
+后台计算引擎没起来。安装包应已内嵌 Python。用 **主页 → 设置 → 打开日志文件夹**，把 `main.log` 发给发放人。
 
 ### 想换成英文界面
 
 **主页 → 设置** 选 English，或点功能区右上角 **EN**。语言记在本机，下次打开还在。
 
-### `pnpm dev` 停在「Already up to date」，没有弹出窗口
-
-pnpm 在跑 `electron-vite` 之前会先补完依赖。Electron 33 的 npm 包常缺 `checksums.json`，自带 `postinstall` 失败后，命令就停在「installing dependencies」，看起来像启动失败。仓库已改成用 `scripts/ensure-electron.mjs` 下载二进制。开发者再执行一次 `pnpm dev`；仍失败按根目录 [README.md](../../README.md) 里 Electron 补救步骤处理。普通用户请改用安装包 `DataWorkbench-Setup-*.exe`。
-
-### `spawn electron.exe ENOENT`（只有开发模式）
-
-Electron 二进制没下下来。处理方式同上。
-
-### 安装时提示「不能打开要写入的文件」（uninstallerIcon.ico / Program Files）
+### 安装时提示「不能打开要写入的文件」
 
 默认目录是 `C:\Program Files\DataWorkbench`，写入需要管理员权限。点 **中止**，不要点忽略。
 
-- 用新安装包：双击后应先弹出 Windows 帐户控制，点「是」再继续。
-- 若 UAC 被取消或被策略拦截：右键安装包 **以管理员身份运行**。
-- 也可以点「上一步」，把目录改成例如 `%LOCALAPPDATA%\Programs\DataWorkbench`。
+- 双击后应先弹出 Windows 帐户控制，点「是」再继续。
+- 若没有弹出：右键安装包 **以管理员身份运行**。
+- 也可以点「上一步」，把目录改成自己的用户文件夹。
 
 ## 数据
 
@@ -144,11 +138,11 @@ Ctrl+Z 只撤销**工作流画布**（节点、连线），不撤销单元格。
 
 ## 还是不行
 
-把这些一并记下：
+把这些一并记下，发给发放安装包的人：
 
-1. 用的是安装包、`win-unpacked` 里的 exe，还是 `pnpm dev`。
-2. 安装包用户可跳过 Python 版本；开发模式记下 `py -3.12 --version`。
-3. 日志最后 20 行（可复制）。
-4. 你点了哪个标签的哪个按钮。
+1. 安装包文件名（例如是否带 `QALab`）。
+2. 窗口底部日志最后 20 行（可复制），或 **设置 → 打开日志文件夹** 里的 `main.log`。
+3. 你点了哪个标签的哪个按钮。
+4. 期望是什么、实际看见了什么。
 
-开发约定与架构不在本手册，见 [docs/dev_plan](../dev_plan/README.md)。
+测试方法见 [11](./11-how-to-test.md)，记录格式见 [12](./12-bug-report.md)。

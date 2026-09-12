@@ -6,7 +6,7 @@
 
 ![操作标签：清洗、过滤、统计三组按钮](../assets/wiki/04-operate-tab.png)
 
-下面用白话说明。示例表是 `docs/wiki/samples/wiki-demo.csv`。
+下面用白话说明。示例表是 `文档\DataWorkbench\wiki-demo.csv`。
 
 ## 数据清洗
 
