@@ -2,6 +2,19 @@ export default {
   app: {
     title: 'DataWorkbench'
   },
+  status: {
+    starting: '启动中…',
+    ready: '就绪',
+    restarting: '正在恢复…',
+    stopped: '已停止',
+    failed: '启动失败'
+  },
+  startup: {
+    starting: '正在启动 DataWorkbench…',
+    restarting: '正在恢复计算引擎…',
+    failed: '计算引擎未能启动。请重启软件。',
+    stopped: '计算引擎不可用。请重启软件。'
+  },
   window: {
     controls: '窗口',
     minimize: '最小化',
@@ -31,9 +44,6 @@ export default {
     showLogTip: '显示日志窗口',
     workflowView: '工作流视图',
     workflowViewPanel: '视图',
-    sidecar: 'Sidecar',
-    ping: 'Ping',
-    pingTip: '调用 Python sidecar 的 host.hello',
     config: '配置',
     settings: '设置',
     settingsTip: '应用程序设置',
@@ -177,13 +187,14 @@ export default {
     shape: '{rows} × {cols}',
     column: '列',
     dtype: '类型',
-    log: '日志'
+    log: '日志',
+    logEmpty: '导入、保存和工作流运行的消息会显示在这里。'
   },
   rpc: {
     invalidParams: '参数无效。',
-    bridgeMissing: '桌面桥接未加载。请用 pnpm dev 重启应用，不要在浏览器里打开 Vite 地址。',
-    sidecarNotRunning: 'Python sidecar 尚未运行。请等 host.ready 后再试。',
-    sidecarExited: 'Python sidecar 已退出。请等它重启后再试，或重启应用。'
+    bridgeMissing: '无法连接桌面程序。请从 DataWorkbench 快捷方式启动，不要用浏览器打开此页面。',
+    sidecarNotRunning: '计算引擎尚未就绪，请稍后再试。',
+    sidecarExited: '计算引擎已停止。请稍候重试，或重启软件。'
   },
   project: {
     untitled: '未命名',
@@ -199,7 +210,7 @@ export default {
     remove: '移除数据集',
     removeConfirm: '从内存中移除“{name}”？不会删除源文件。',
     renamePrompt: '新的数据集名称',
-    pandasRequired: 'Python sidecar 未安装 pandas。',
+    pandasRequired: '数据分析组件未就绪。',
     fileMissing: '找不到所选文件。',
     unsupportedFormat: '不支持此文件格式。',
     notFound: '找不到该数据集。',
@@ -486,10 +497,9 @@ export default {
     notFound: '找不到该工作流。'
   },
   log: {
-    ready: 'Sidecar 已就绪（pid {pid}，pandas {pandas}）。',
-    pingOk: 'host.hello 成功，Python {version}，pandas {pandas}。',
-    pingFail: 'host.hello 失败：{error}',
-    pollution: 'Sidecar 标准输出被污染：{raw}',
+    ready: '计算引擎已就绪。',
+    engineStartFailed: '计算引擎未能启动。',
+    pollution: '计算引擎出现通信异常。',
     importOk: '已导入 {name}（{rows} × {cols}）。',
     exportOk: '数据集已导出。',
     renameOk: '数据集已重命名为 {name}。',
@@ -518,9 +528,9 @@ export default {
     projectOpened: '工程已打开。',
     projectNew: '已新建工程。',
     layoutReset: '已恢复默认布局。',
-    sidecarCrashed: 'Python sidecar 已崩溃（code {code}，signal {signal}）。正在自动重启一次…',
-    sidecarRestarted: 'Sidecar 已重启。内存中的数据已丢失，请打开已保存的工程恢复。',
-    sidecarDead: 'Python sidecar 已停止且无法再重启。请重启应用。',
+    sidecarCrashed: '计算引擎意外停止，正在自动重启一次…',
+    sidecarRestarted: '计算引擎已重启。未保存的数据已丢失，请打开已保存的工程。',
+    sidecarDead: '计算引擎已停止且无法再重启。请重启软件。',
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'
@@ -541,12 +551,16 @@ export default {
     languageZh: '简体中文',
     languageEn: 'English',
     languageHint: '保存在本机。也可以点功能区右上角的 EN / 中文。',
+    logs: '诊断日志',
+    openLogs: '打开日志文件夹',
+    logsHint: '遇到问题时，把该文件夹里最新的文件发给开发者。',
     close: '关闭'
   },
   about: {
     title: '关于',
     version: '版本 {version}',
-    body: '桌面数据分析台：工作流、pandas 表格、可导出图表。计算在 Python sidecar 中运行。',
+    body: '面向实验数据的桌面分析台：工作流、表格与可导出图表。',
+    copyright: 'Copyright © 2026 DataWorkbench contributors',
     license: '本软件源码为 MIT。拷贝的图标与 vendor 的 Python 仍为 LGPL-3.0。详见 NOTICE。',
     close: '关闭'
   },

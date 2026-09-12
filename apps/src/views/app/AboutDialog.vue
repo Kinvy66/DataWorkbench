@@ -26,15 +26,16 @@ function openRepo(): void {
   <el-dialog
     v-model="visible"
     :title="t('about.title')"
-    width="520px"
+    width="480px"
     append-to-body
     destroy-on-close
   >
     <div class="about">
-      <DwIcon name="app/icon" :size="48" />
+      <DwIcon name="app/icon" :size="56" />
       <h3>{{ t('app.title') }}</h3>
       <p class="version">{{ t('about.version', { version: APP_VERSION }) }}</p>
       <p>{{ t('about.body') }}</p>
+      <p class="muted">{{ t('about.copyright') }}</p>
       <p class="muted">{{ t('about.license') }}</p>
       <el-button type="primary" link @click="openRepo">{{ APP_REPO_URL }}</el-button>
     </div>
@@ -54,7 +55,8 @@ function openRepo(): void {
 }
 .about h3 {
   margin: 8px 0 0;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 600;
   color: #303133;
 }
 .version,
@@ -69,5 +71,6 @@ function openRepo(): void {
   color: #606266;
   font-size: 13px;
   line-height: 1.6;
+  max-width: 400px;
 }
 </style>

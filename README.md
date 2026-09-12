@@ -52,7 +52,7 @@ Electron + Vue 3 + Python 的桌面数据分析工作台：用有向图把重复
 
 ## 当前状态
 
-**P0–P5 可验收能力已齐**：`pnpm install` 后 `pnpm dev` 可打开窗口。Home → Ping；Data → 添加数据 / 移除 / 重命名 / 导出；点表格后 Operate → 数据清洗 / 数据过滤 / 统计（对齐上游 DataFrame 上下文，清洗按钮不在 Data 标签）；常驻 **Figure → 折线 / 散点 / 柱状 / 直方**（Python `chart.buildSeries` 降采样或分箱，缩放后按视口再取样）；点绘图后 Chart Operate 标注 / 导出 PNG/SVG/PDF。**File → 新建 / 打开 / 保存 / 另存为**（`.dwproj` ZIP）。sidecar 意外退出会提示并**自动重启一次**（内存数据丢失，请打开已保存工程）。便携目录 / 安装包：`pnpm pack:win`（NSIS 向导 + 内嵌 CPython）。Replace Values 与 Threshold Filter 只在节点箱。
+**P0–P5 可验收能力已齐**：`pnpm install` 后 `pnpm dev` 可打开窗口。Data → 添加数据 / 移除 / 重命名 / 导出；点表格后 Operate → 数据清洗 / 数据过滤 / 统计（对齐上游 DataFrame 上下文，清洗按钮不在 Data 标签）；常驻 **Figure → 折线 / 散点 / 柱状 / 直方**（Python `chart.buildSeries` 降采样或分箱，缩放后按视口再取样）；点绘图后 Chart Operate 标注 / 导出 PNG/SVG/PDF。**File → 新建 / 打开 / 保存 / 另存为**（`.dwproj` ZIP；安装后可双击打开）。计算引擎意外退出会提示并**自动重启一次**（未保存数据丢失，请打开已保存工程）。便携目录 / 安装包：`pnpm pack:win`（NSIS 向导 + 内嵌 CPython）。Replace Values 与 Threshold Filter 只在节点箱。
 
 阶段验收见 [docs/dev_plan/05-roadmap.md](docs/dev_plan/05-roadmap.md)。
 

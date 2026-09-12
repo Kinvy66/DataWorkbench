@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { useDataStore } from '@/stores/data'
 import { translateRpcError } from '@/rpc/rpcError'
+import { commandBus } from '@/commands/commandBus'
 import DwIcon from '@/icons/DwIcon.vue'
 
 const { t, te } = useI18n()
@@ -56,6 +57,9 @@ function shape(rows: number, cols: number): string {
     <div v-if="items.length === 0" class="empty">
       <DwIcon name="gui/data" :size="48" />
       <p class="muted">{{ t('layout.datasetsEmpty') }}</p>
+      <el-button type="primary" size="small" @click="commandBus.dispatch('data.import')">
+        {{ t('ribbon.dataImport') }}
+      </el-button>
     </div>
     <ul v-else class="items">
       <li
@@ -100,7 +104,7 @@ function shape(rows: number, cols: number): string {
   opacity: 0.85;
 }
 .muted {
-  margin: 8px 0 0;
+  margin: 8px 0 12px;
   color: #909399;
   font-size: 13px;
 }

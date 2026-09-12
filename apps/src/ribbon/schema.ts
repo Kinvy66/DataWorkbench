@@ -179,25 +179,6 @@ export function useRibbonSchema() {
             ]
           },
           {
-            id: 'sidecar',
-            title: t('ribbon.sidecar'),
-            collections: [
-              {
-                id: 'sidecar-actions',
-                items: [
-                  {
-                    id: 'host.ping',
-                    type: 'button',
-                    label: t('ribbon.ping'),
-                    tooltip: t('ribbon.pingTip'),
-                    size: 'large',
-                    icon: ribbonIcon('app/plugin')
-                  }
-                ]
-              }
-            ]
-          },
-          {
             id: 'home-config',
             title: t('ribbon.config'),
             collections: [

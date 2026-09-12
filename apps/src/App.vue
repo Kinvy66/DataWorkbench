@@ -6,10 +6,12 @@ import enLocale from 'element-plus/es/locale/lang/en'
 import { useI18n } from 'vue-i18n'
 import AppRibbon from '@/ribbon/AppRibbon.vue'
 import WorkbenchLayout from '@/layout/WorkbenchLayout.vue'
+import StatusBar from '@/layout/StatusBar.vue'
 import { commandBus } from '@/commands/commandBus'
 import {
   confirmAndQuit,
   freezeAfterSidecarDeath,
+  openProject,
   recoverAfterSidecarRestart,
   syncDocumentTitle
 } from '@/project/session'
@@ -17,9 +19,11 @@ import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
 import { useProjectStore } from '@/stores/project'
 import { useWorkflowStore } from '@/stores/workflow'
+import { useAppUiStore } from '@/stores/appUi'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
-import type { HostCrashedParams, HostReadyParams, WorkflowFinishedParams, WorkflowNodeStateParams } from '@dw/rpc-types'
+import DwIcon from '@/icons/DwIcon.vue'
+import type { HostCrashedParams, WorkflowFinishedParams, WorkflowNodeStateParams } from '@dw/rpc-types'
 
 const { t, locale, te } = useI18n()
 const epLocale = computed(() => (locale.value === 'zh-CN' ? zhCn : enLocale))
@@ -27,7 +31,22 @@ const log = useLogStore()
 const data = useDataStore()
 const workflow = useWorkflowStore()
 const project = useProjectStore()
+const ui = useAppUiStore()
 const offs: Array<() => void> = []
+let pendingOpenPath: string | null = null
+
+const startupCopy = computed(() => {
+  if (ui.engineStatus === 'restarting') {
+    return t('startup.restarting')
+  }
+  if (ui.engineStatus === 'failed') {
+    return t('startup.failed')
+  }
+  if (ui.engineStatus === 'stopped') {
+    return t('startup.stopped')
+  }
+  return t('startup.starting')
+})
 
 watch(
   () => [project.path, project.dirty, locale.value] as const,
@@ -36,6 +55,15 @@ watch(
   },
   { immediate: true }
 )
+
+function tryOpenQueued(): void {
+  if (!pendingOpenPath || !ui.engineReady) {
+    return
+  }
+  const filePath = pendingOpenPath
+  pendingOpenPath = null
+  void openProject(filePath)
+}
 
 onMounted(() => {
   const onKey = (event: KeyboardEvent): void => {
@@ -110,6 +138,7 @@ onMounted(() => {
   try {
     rpc = getDesktopBridge().rpc
   } catch (err) {
+    ui.setEngineStatus('failed')
     log.append('error', translateRpcError(err, t, te))
     return
   }
@@ -118,40 +147,53 @@ onMounted(() => {
       void confirmAndQuit()
     })
   )
+  offs.push(
+    rpc.on('app.openFile', (params) => {
+      const p = params as { path?: string }
+      if (typeof p.path === 'string' && p.path.trim()) {
+        pendingOpenPath = p.path.trim()
+        tryOpenQueued()
+      }
+    })
+  )
   let sidecarGeneration = 0
   offs.push(
     rpc.on('host.crashed', (params) => {
       const p = params as HostCrashedParams
       void freezeAfterSidecarDeath()
       if (p.willRestart) {
-        log.append(
-          'warning',
-          t('log.sidecarCrashed', { code: p.code ?? '?', signal: p.signal ?? '-' })
-        )
+        ui.setEngineStatus('restarting')
+        log.append('warning', t('log.sidecarCrashed'))
         return
       }
+      ui.setEngineStatus('stopped')
       const line = t('log.sidecarDead')
       log.append('error', line)
       ElMessage.error(line)
     })
   )
   offs.push(
-    rpc.on('host.ready', (params) => {
-      const p = params as HostReadyParams
-      log.append(
-        'info',
-        t('log.ready', {
-          pid: p.pid ?? '?',
-          pandas: p.pandasAvailable ? 'yes' : 'no'
-        })
-      )
+    rpc.on('host.startFailed', () => {
+      ui.setEngineStatus('failed')
+      const line = t('log.engineStartFailed')
+      log.append('error', line)
+      ElMessage.error(line)
+    })
+  )
+  offs.push(
+    rpc.on('host.ready', () => {
+      log.append('info', t('log.ready'))
+      ui.setEngineStatus('ready')
       sidecarGeneration += 1
       if (sidecarGeneration === 1) {
         void data.refreshList().catch(() => {})
         void workflow.bootstrap().catch(() => {})
+        tryOpenQueued()
         return
       }
-      void recoverAfterSidecarRestart()
+      void recoverAfterSidecarRestart().then(() => {
+        tryOpenQueued()
+      })
     })
   )
   offs.push(
@@ -182,9 +224,8 @@ onMounted(() => {
     })
   )
   offs.push(
-    rpc.on('log.protocolPollution', (params) => {
-      const p = params as { raw?: string }
-      log.append('warning', t('log.pollution', { raw: p.raw ?? '' }))
+    rpc.on('log.protocolPollution', () => {
+      log.append('warning', t('log.pollution'))
     })
   )
   void rpc.invoke('app.rendererReady').catch(() => {
@@ -207,7 +248,41 @@ onUnmounted(() => {
   <el-config-provider :locale="epLocale">
     <div class="app-root">
       <AppRibbon />
-      <WorkbenchLayout />
+      <div class="app-body">
+        <WorkbenchLayout />
+        <StatusBar />
+        <div v-if="!ui.engineReady" class="startup-mask" role="status">
+          <DwIcon name="app/icon" :size="40" />
+          <p>{{ startupCopy }}</p>
+        </div>
+      </div>
     </div>
   </el-config-provider>
 </template>
+
+<style scoped>
+.app-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.startup-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: color-mix(in srgb, #f0f2f5 88%, transparent);
+  color: #303133;
+  font-size: 14px;
+}
+.startup-mask p {
+  margin: 0;
+  color: #606266;
+}
+</style>

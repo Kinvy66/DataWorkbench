@@ -1,6 +1,6 @@
 /** JSON-RPC 2.0 method names and payload shapes shared by Electron and docs. */
 
-export const APP_VERSION = '0.1.0'
+export const APP_VERSION = '1.0.0'
 
 export const JsonRpcErrorCode = {
   ParseError: -32700,
@@ -89,6 +89,7 @@ export const RpcMethod = {
   HelpRead: 'help.read',
   AppClipboardWrite: 'app.clipboardWrite',
   AppClipboardRead: 'app.clipboardRead',
+  AppOpenLogs: 'app.openLogs',
   ProjectSave: 'project.save',
   ProjectOpen: 'project.open',
   ProjectPackLogic: 'project.packLogic',
@@ -151,6 +152,10 @@ export interface HostCrashedParams {
   code: number | null
   signal: string | null
   willRestart: boolean
+}
+
+export interface AppOpenFileParams {
+  path: string
 }
 
 export interface ColumnSchema {

@@ -16,4 +16,12 @@ describe('app UI dialogs', () => {
     ui.openHelp()
     expect(ui.helpOpen).toBe(true)
   })
+
+  it('starts the calculation engine as starting until host.ready', () => {
+    const ui = useAppUiStore()
+    expect(ui.engineStatus).toBe('starting')
+    expect(ui.engineReady).toBe(false)
+    ui.setEngineStatus('ready')
+    expect(ui.engineReady).toBe(true)
+  })
 })

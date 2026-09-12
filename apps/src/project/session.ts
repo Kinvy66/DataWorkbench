@@ -152,7 +152,7 @@ export async function saveProject(saveAs: boolean): Promise<boolean> {
   }
 }
 
-export async function openProject(): Promise<boolean> {
+export async function openProject(filePath?: string): Promise<boolean> {
   const project = useProjectStore()
   const workflow = useWorkflowStore()
   if (workflow.running) {
@@ -163,7 +163,10 @@ export async function openProject(): Promise<boolean> {
     return false
   }
   try {
-    const result = (await rpc().invoke('project.open', {})) as ProjectOpenResult
+    const result = (await rpc().invoke(
+      'project.open',
+      filePath ? { path: filePath } : {}
+    )) as ProjectOpenResult
     if (isCancelled(result) || !result.path || !result.workflowId || !result.uiLayout || !result.charts) {
       return false
     }

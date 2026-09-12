@@ -2,6 +2,19 @@ export default {
   app: {
     title: 'DataWorkbench'
   },
+  status: {
+    starting: 'Starting…',
+    ready: 'Ready',
+    restarting: 'Restarting…',
+    stopped: 'Stopped',
+    failed: 'Failed'
+  },
+  startup: {
+    starting: 'Starting DataWorkbench…',
+    restarting: 'Restarting the calculation engine…',
+    failed: 'The calculation engine failed to start. Restart the application.',
+    stopped: 'The calculation engine is unavailable. Restart the application.'
+  },
   window: {
     controls: 'Window',
     minimize: 'Minimize',
@@ -31,12 +44,9 @@ export default {
     showLogTip: 'Show the message log',
     workflowView: 'Workflow View',
     workflowViewPanel: 'View',
-    sidecar: 'Sidecar',
-    ping: 'Ping',
-    pingTip: 'Call host.hello on the Python sidecar',
     config: 'Config',
-    settings: 'Setting',
-    settingsTip: 'Setting for the application',
+    settings: 'Settings',
+    settingsTip: 'Application settings',
     about: 'About',
     aboutTip: 'About the application',
     help: 'Help',
@@ -177,14 +187,15 @@ export default {
     shape: '{rows} × {cols}',
     column: 'Column',
     dtype: 'Type',
-    log: 'Log'
+    log: 'Log',
+    logEmpty: 'Import, save, and workflow messages appear here.'
   },
   rpc: {
     invalidParams: 'Invalid parameters.',
     bridgeMissing:
-      'The desktop bridge failed to load. Restart the app with pnpm dev; do not open the Vite URL in a browser.',
-    sidecarNotRunning: 'The Python sidecar is not running yet. Wait for host.ready and try again.',
-    sidecarExited: 'The Python sidecar stopped. Retry after it restarts, or restart the app.'
+      'The desktop app failed to start. Launch DataWorkbench from its shortcut; do not open this page in a browser.',
+    sidecarNotRunning: 'The calculation engine is not ready yet. Please wait a moment and try again.',
+    sidecarExited: 'The calculation engine stopped. Retry after it recovers, or restart the application.'
   },
   project: {
     untitled: 'Untitled',
@@ -200,7 +211,7 @@ export default {
     remove: 'Remove dataset',
     removeConfirm: 'Remove “{name}” from memory? This does not delete the file.',
     renamePrompt: 'New dataset name',
-    pandasRequired: 'pandas is not installed in the Python sidecar.',
+    pandasRequired: 'The data analysis library is not available.',
     fileMissing: 'The selected file was not found.',
     unsupportedFormat: 'This file format is not supported.',
     notFound: 'Dataset not found.',
@@ -488,10 +499,9 @@ export default {
     notFound: 'Workflow not found.'
   },
   log: {
-    ready: 'Sidecar ready (pid {pid}, pandas {pandas}).',
-    pingOk: 'host.hello ok, Python {version}, pandas {pandas}.',
-    pingFail: 'host.hello failed: {error}',
-    pollution: 'Protocol pollution on sidecar stdout: {raw}',
+    ready: 'Calculation engine is ready.',
+    engineStartFailed: 'The calculation engine failed to start.',
+    pollution: 'The calculation engine sent unexpected output.',
     importOk: 'Imported {name} ({rows} × {cols}).',
     exportOk: 'Dataset exported.',
     renameOk: 'Dataset renamed to {name}.',
@@ -520,9 +530,9 @@ export default {
     projectOpened: 'Project opened.',
     projectNew: 'New project.',
     layoutReset: 'Layout restored to default.',
-    sidecarCrashed: 'Python sidecar crashed (code {code}, signal {signal}). Restarting once…',
-    sidecarRestarted: 'Sidecar restarted. In-memory data was lost. Open a saved project to restore.',
-    sidecarDead: 'Python sidecar stopped and could not be restarted. Restart the application.',
+    sidecarCrashed: 'The calculation engine stopped unexpectedly. Restarting once…',
+    sidecarRestarted: 'The calculation engine restarted. Unsaved data was lost. Open a saved project to restore.',
+    sidecarDead: 'The calculation engine stopped and could not be restarted. Restart the application.',
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'
@@ -543,12 +553,16 @@ export default {
     languageZh: '简体中文',
     languageEn: 'English',
     languageHint: 'Saved on this computer. You can also use the EN / 中文 button on the ribbon.',
+    logs: 'Diagnostic logs',
+    openLogs: 'Open log folder',
+    logsHint: 'If something goes wrong, send the latest files from this folder.',
     close: 'Close'
   },
   about: {
     title: 'About',
     version: 'Version {version}',
-    body: 'Desktop data workbench: workflow, pandas tables, and exportable charts. Computation runs in a Python sidecar.',
+    body: 'A desktop workbench for experimental data: workflow, tables, and exportable charts.',
+    copyright: 'Copyright © 2026 DataWorkbench contributors',
     license: 'Application source is MIT. Copied icons and vendored Python remain LGPL-3.0. See NOTICE.',
     close: 'Close'
   },

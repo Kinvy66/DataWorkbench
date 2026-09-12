@@ -1,6 +1,6 @@
 {
   "name": "@dw/app",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "DataWorkbench desktop app (Electron + Vue)",
   "author": "DataWorkbench contributors",
   "private": true,

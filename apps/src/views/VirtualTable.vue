@@ -42,6 +42,7 @@ import {
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
 import DwIcon from '@/icons/DwIcon.vue'
+import { commandBus } from '@/commands/commandBus'
 
 registerAppGridModules()
 
@@ -406,6 +407,9 @@ onUnmounted(() => {
   <div v-if="!store.currentId || !store.schema" class="empty">
     <DwIcon name="gui/data-table" :size="48" />
     <p class="muted">{{ t('layout.tableEmpty') }}</p>
+    <el-button type="primary" size="small" @click="commandBus.dispatch('data.import')">
+      {{ t('ribbon.dataImport') }}
+    </el-button>
   </div>
   <div v-else ref="gridHost" class="table-shell">
     <AgGridVue
@@ -444,7 +448,7 @@ onUnmounted(() => {
   opacity: 0.85;
 }
 .muted {
-  margin: 8px 0 0;
+  margin: 8px 0 12px;
   color: #909399;
   font-size: 13px;
 }

@@ -1,5 +1,4 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { APP_VERSION } from '@dw/rpc-types'
 import { commandBus } from './commandBus'
 import { useLogStore } from '@/stores/log'
 import { useDataStore } from '@/stores/data'
@@ -31,25 +30,6 @@ function reportError(err: unknown): void {
 }
 
 export function registerBuiltinCommands(): void {
-  commandBus.register('host.ping', async () => {
-    const log = useLogStore()
-    try {
-      const result = (await getDesktopBridge().rpc.invoke('host.hello', {
-        appVersion: APP_VERSION,
-        workspaceRoot: ''
-      })) as { pythonVersion?: string; pandasAvailable?: boolean }
-      log.append(
-        'info',
-        t('log.pingOk', {
-          version: result.pythonVersion ?? '?',
-          pandas: result.pandasAvailable ? 'yes' : 'no'
-        })
-      )
-    } catch (err) {
-      reportError(err)
-    }
-  })
-
   commandBus.register('data.import', async () => {
     const data = useDataStore()
     const log = useLogStore()
@@ -653,6 +633,13 @@ export function registerBuiltinCommands(): void {
   })
   commandBus.register('app.help', () => {
     useAppUiStore().openHelp()
+  })
+  commandBus.register('app.openLogs', async () => {
+    try {
+      await getDesktopBridge().rpc.invoke('app.openLogs', {})
+    } catch (err) {
+      reportError(err)
+    }
   })
 
   async function openHelpUrl(url: string): Promise<void> {

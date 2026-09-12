@@ -33,6 +33,8 @@
 | `host.hello` | Main → Py | 交换版本与工作区路径 |
 | `host.shutdown` | Main → Py | 优雅退出；超时 `kill` |
 | `host.crashed` | Main → Renderer 通知 | sidecar **意外**退出后由主进程发出（不是 Python 协议；故意 `host.shutdown` 不发）。params：`{code, signal, willRestart}`。`willRestart=true` 时再拉起一次；第二次意外退出为 `false` |
+| `host.startFailed` | Main → Renderer 通知 | sidecar 在超时内未就绪。无 params。界面显示启动失败，细节只写 `userData/logs` |
+| `app.openFile` | Main → Renderer 通知 | 资源管理器双击 `.dwproj` 或第二实例传入路径。params：`{path}`。渲染进程走已有 `project.open`（带 path），不要自己读盘 |
 
 `host.hello` params：`{appVersion, workspaceRoot}`。result：`{ok: true, pythonVersion, appVersion, workspaceRoot, pandasAvailable}`。
 
@@ -119,6 +121,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `help.read` | **仅 Electron 主进程**。`{page}` → `{id,title,markdown}`。只允许白名单 `.md`。图片改写为 `dwhelp://bundle/...`，由主进程协议从 `docs/assets/wiki` 读盘。缺页 **3001** `help.pageNotFound`。 |
 | `app.clipboardWrite` | **仅 Electron 主进程**。`{text?}` 或 `{pngDataUrl?}` → `{ok:true}`。表格复制写 TSV 文本；绘图复制写 PNG。渲染进程禁止自己碰系统剪贴板。 |
 | `app.clipboardRead` | **仅 Electron 主进程**。`{}` → `{text}`。表格粘贴读 TSV。 |
+| `app.openLogs` | **仅 Electron 主进程**。`{}` → `{ok:true}`。用资源管理器打开 `userData/logs`。渲染进程禁止自己 `shell.openPath`。 |
 
 - `maxPoints` 默认 5000，钳制到 2…20000。生产降采样只在 Python（LTTB），前端禁止对百万点 `JSON.parse`。直方分箱同样只在 Python，不要把原始列拉到渲染进程再 `histogram`。箱宽/统计量/累计由 `binWidth`/`histStat`/`histCumulative` 下发，缺省行为与一期相同（50 箱、count）。箱线（`kind:"box"`）同样只在 Python 算 Tukey 统计，离群点每列最多 200 个（`CHART_BOX_OUTLIERS_MAX`）。
 - 非数值 y（或既非数值也非日期的 x）：error **1002**，`i18nKey=chart.nonNumeric`。缺列：1002 `chart.columnNotFound`。缺数据集：1001 `data.notFound`。
@@ -132,7 +135,7 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | 方法 | 说明 |
 |------|------|
 | `project.save` | **仅 Electron 主进程**。无路径则 Save 对话框；`workflow.dumpLogic` → sidecar `project.packLogic` 写 parquet → 主进程打 ZIP，`*.tmp` 再 rename。`{ path?, workflowId, uiLayout, charts }` → `{ ok: true, path }` 或 `{ cancelled: true }` |
-| `project.open` | **仅 Electron 主进程**。对话框；解压；校验 magic/format；sidecar `project.unpackLogic` **先解析再整体替换**。返回 `{ path, workflowId, uiLayout, charts }` |
+| `project.open` | **仅 Electron 主进程**。无 `path` 则对话框；有 `path` 则直接打开（文件关联）。解压；校验 magic/format；sidecar `project.unpackLogic` **先解析再整体替换**。返回 `{ path, workflowId, uiLayout, charts }` |
 | `project.packLogic` | sidecar：把当前 DataManager 写成 `datas/<id>.parquet` + `data-manager.json`（主进程调用，渲染进程不可达） |
 | `project.unpackLogic` | sidecar：读 parquet + `workflow-logic.json` 进内存，成功后再 `replace_all` / 替换 sessions |
 | `project.clearLogic` | sidecar：清空数据集并丢弃全部 workflow session（File → New） |

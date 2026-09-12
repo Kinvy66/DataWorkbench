@@ -6,6 +6,7 @@ import { isGridFigure } from '@/chart/figures'
 import { useChartStore, type ChartSpec } from '@/stores/chart'
 import { useDataStore } from '@/stores/data'
 import DwIcon from '@/icons/DwIcon.vue'
+import { commandBus } from '@/commands/commandBus'
 import ChartView from './ChartView.vue'
 
 type ChartViewExpose = {
@@ -137,6 +138,13 @@ onUnmounted(() => {
   <div v-if="!chart.figures.length" class="empty">
     <DwIcon name="gui/chart" :size="48" />
     <p class="muted">{{ t('layout.figureEmpty') }}</p>
+    <el-button
+      type="primary"
+      size="small"
+      @click="commandBus.dispatch(data.currentId ? 'chart.newLine' : 'data.import')"
+    >
+      {{ data.currentId ? t('ribbon.chartLine') : t('ribbon.dataImport') }}
+    </el-button>
   </div>
   <div v-else class="workspace">
     <el-tabs v-model="activeTab" type="card" closable class="chart-tabs" @tab-remove="onTabRemove">
@@ -193,7 +201,7 @@ onUnmounted(() => {
   opacity: 0.85;
 }
 .muted {
-  margin: 8px 12px 0;
+  margin: 8px 12px 12px;
   color: #909399;
   font-size: 13px;
 }

@@ -112,7 +112,7 @@ describe('i18n', () => {
     expect(String(i18n.global.t('ribbon.chartLine'))).toBe('Line')
     expect(String(i18n.global.t('ribbon.chartHist'))).toBe('Histogram')
     expect(String(i18n.global.t('ribbon.chartBox'))).toBe('Box')
-    expect(String(i18n.global.t('ribbon.settings'))).toBe('Setting')
+    expect(String(i18n.global.t('ribbon.settings'))).toBe('Settings')
     expect(String(i18n.global.t('ribbon.about'))).toBe('About')
     expect(String(i18n.global.t('ribbon.helpMenu'))).toBe('Help')
     expect(String(i18n.global.t('ribbon.chartSubplots'))).toBe('Subplots')
@@ -141,12 +141,14 @@ describe('i18n', () => {
     expect(String(i18n.global.t('project.invalid'))).toBe('这不是 DataWorkbench 工程文件。')
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('log.projectSaved'))).toBe('Project saved.')
-    expect(String(i18n.global.t('log.sidecarRestarted'))).toContain('In-memory data was lost')
-    expect(String(i18n.global.t('rpc.sidecarExited'))).toContain('sidecar stopped')
+    expect(String(i18n.global.t('log.sidecarRestarted'))).toContain('Unsaved data was lost')
+    expect(String(i18n.global.t('rpc.sidecarExited'))).toContain('calculation engine stopped')
     i18n.global.locale.value = 'zh-CN'
     expect(String(i18n.global.t('log.projectSaved'))).toBe('工程已保存。')
-    expect(String(i18n.global.t('log.sidecarDead'))).toContain('重启应用')
-    expect(String(i18n.global.t('log.sidecarCrashed', { code: 1, signal: '-' }))).toContain('自动重启')
+    expect(String(i18n.global.t('log.sidecarDead'))).toContain('重启软件')
+    expect(String(i18n.global.t('log.sidecarCrashed'))).toContain('自动重启')
+    expect(String(i18n.global.t('log.ready'))).toBe('计算引擎已就绪。')
+    expect(String(i18n.global.t('status.ready'))).toBe('就绪')
     i18n.global.locale.value = 'en'
     expect(String(i18n.global.t('ribbon.layout'))).toBe('Layout')
     expect(String(i18n.global.t('ribbon.resetLayout'))).toBe('Reset Layout')

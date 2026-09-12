@@ -53,6 +53,7 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'create'")
     expect(source).toContain("id: 'home-config'")
     expect(source).toContain("id: 'app.settings'")
+    expect(source).not.toContain("id: 'host.ping'")
     expect(source).toContain("id: 'app.about'")
     expect(source).toContain("id: 'home-help'")
     expect(source).toContain("id: 'app.help'")

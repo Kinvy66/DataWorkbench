@@ -22,6 +22,7 @@ import { closeHelpWindow, openHelpWindow } from './help-window'
 import { parseClipboardWriteParams } from './clipboard-params'
 import { readAppClipboardText, writeAppClipboard } from './app-clipboard'
 import { SidecarBridge } from './sidecar'
+import { findProjectPathFromArgv, shouldShowSidecarLogToUi } from './open-path'
 import {
   applyWindowChromeAction,
   framelessWindowOptions,
@@ -205,8 +206,8 @@ function createWindow(): void {
       )
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : String(err)
-        forward('log.line', { level: 'error', message: `Sidecar start failed: ${message}` })
         fileLog('main', `Sidecar start failed: ${message}`)
+        forward('host.startFailed', {})
       })
   })
 
@@ -233,6 +234,31 @@ function flushRendererEvents(): void {
   rendererEvents.flush(sendToRenderer)
 }
 
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  app.quit()
+}
+
+app.on('second-instance', (_event, argv) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore()
+    }
+    revealWindow(mainWindow, 'second-instance')
+  }
+  const filePath = findProjectPathFromArgv(argv)
+  if (filePath) {
+    forward('app.openFile', { path: filePath })
+  }
+})
+
+app.on('open-file', (event, filePath) => {
+  event.preventDefault()
+  if (filePath.toLowerCase().endsWith('.dwproj')) {
+    forward('app.openFile', { path: filePath })
+  }
+})
+
 function targetWindow(sender: Electron.WebContents): BrowserWindow | null {
   const fromSender = BrowserWindow.fromWebContents(sender)
   if (fromSender && !fromSender.isDestroyed()) {
@@ -256,6 +282,9 @@ function onWindowChrome(sender: Electron.WebContents, action: unknown) {
 }
 
 app.whenReady().then(() => {
+  if (!gotLock) {
+    return
+  }
   appLog = new AppFileLog({ userDataDir: app.getPath('userData') })
   fileLog('main', 'App ready')
   installHelpProtocol(() => bundledDocsRoot())
@@ -264,7 +293,9 @@ app.whenReady().then(() => {
     const level = entry.stream === 'protocol' ? 'warning' : 'info'
     console.error(`[sidecar ${entry.stream}] ${entry.text}`)
     fileLog('sidecar', `${entry.stream} ${entry.text}`)
-    forward('log.line', { level, message: entry.text })
+    if (shouldShowSidecarLogToUi(entry.stream, entry.text)) {
+      forward('log.line', { level, message: entry.text })
+    }
   })
   sidecar.onNotify((method, params) => {
     if (method === 'host.crashed') {
@@ -275,6 +306,10 @@ app.whenReady().then(() => {
   sidecar.start()
   fileLog('main', 'Sidecar spawn requested')
   createWindow()
+  const launchFile = findProjectPathFromArgv(process.argv)
+  if (launchFile) {
+    forward('app.openFile', { path: launchFile })
+  }
 })
 
 ipcMain.on('dw:window', (event, action: unknown) => {
@@ -350,6 +385,12 @@ async function handleRendererRpc(
   }
   if (method === 'app.clipboardRead') {
     return { text: readAppClipboardText() }
+  }
+  if (method === 'app.openLogs') {
+    const logsDir = path.join(app.getPath('userData'), 'logs')
+    fs.mkdirSync(logsDir, { recursive: true })
+    await shell.openPath(logsDir)
+    return { ok: true }
   }
   const win = targetWindow(event.sender)
   if (method === 'app.setDocument') {

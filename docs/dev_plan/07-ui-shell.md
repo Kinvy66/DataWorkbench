@@ -4,7 +4,7 @@
 
 ## 窗口结构
 
-窗口为 **无系统标题栏**（对齐上游 `SARibbonMainWindow`）：`titleBarStyle: 'hidden'`，**禁止**保留默认应用菜单（`File / Edit / View / Window / Help` 会叠在 Ribbon 上面）。Mac 仅保留系统 App/Edit/Window 菜单。标题栏可用区域最左侧固定显示软件 logo，其后才是 File 和 Ribbon 标签；拖动区域是标签行空白处。Windows / Linux 的最小化 / 最大化 / 关闭必须用 Electron **`titleBarOverlay`（系统按钮）**，不要用网页按钮盖在右上角——Win11 把该区域留给系统命中（Snap），HTML 点击到不了。标题行内容放在 `env(titlebar-area-*)` 安全区内。mlRibbon 自带的**切换布局**（classic/simplified）和 **Key Tips** 开关关掉（`hide-layout-switcher` / `hide-key-tips-toggle`）：前者和「最小化功能区」重复，后者当前无可用快捷键提示。只留最小化箭头。语言按钮 EN / 中文叠在同一格子里，宽度不随文案变。
+窗口为 **无系统标题栏**（对齐上游 `SARibbonMainWindow`）：`titleBarStyle: 'hidden'`，**禁止**保留默认应用菜单（`File / Edit / View / Window / Help` 会叠在 Ribbon 上面）。Mac 仅保留系统 App/Edit/Window 菜单。标题栏可用区域最左侧固定显示软件 logo，其后才是 File 和 Ribbon 标签；拖动区域是标签行空白处。Windows / Linux 的最小化 / 最大化 / 关闭必须用 Electron **`titleBarOverlay`（系统按钮）**，不要用网页按钮盖在右上角——Win11 把该区域留给系统命中（Snap），HTML 点击到不了。标题行内容放在 `env(titlebar-area-*)` 安全区内。mlRibbon 自带的**切换布局**（classic/simplified）和 **Key Tips** 开关关掉（`hide-layout-switcher` / `hide-key-tips-toggle`）：前者和「最小化功能区」重复，后者当前无可用快捷键提示。只留最小化箭头。语言按钮 EN / 中文叠在同一格子里，宽度不随文案变。窗口底部固定 **状态栏**（计算引擎就绪 / 工程名 / 版本）；`host.ready` 前用遮罩挡住工作区。不要在主页放 Ping。
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
@@ -30,7 +30,6 @@
 | Home | File | `file.open` `file.save` `file.saveAs` | 对齐上游主页文件面板 |
 | Home | Clipboard | `edit.undo` `edit.redo` `edit.cut` `edit.copy` `edit.paste` `edit.delete` `edit.selectAll` | 按焦点：表格单元格 TSV / 工作流节点 / 绘图复制 PNG |
 | Home | Create | `data.import` | 对齐上游创建；不上空 Figure / 新建工作流 |
-| Home | Sidecar | `host.ping` | 本产品诊断，上游无 |
 | Home | Config | `app.settings` `app.about` | 对齐上游主页配置（不上插件管理） |
 | Home | Help | `app.help`（菜单内 `help.guide` `help.tutorial` `help.faq`） | 用户手册 / 教程 / FAQ 在非模态窗口渲染安装包内 `docs/wiki` |
 | Data | Data Operation | `data.import` `data.remove` `data.rename` | P1（对齐上游 Data：添加/移除/重命名） |

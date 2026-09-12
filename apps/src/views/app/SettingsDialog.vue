@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { commandBus } from '@/commands/commandBus'
 import { useAppUiStore } from '@/stores/appUi'
 import { parseAppLocale, writeStoredLocale, type AppLocale } from '@/i18n/locale'
 
@@ -19,6 +20,10 @@ function onLocale(value: AppLocale): void {
   locale.value = next
   writeStoredLocale(next)
 }
+
+function openLogs(): void {
+  void commandBus.dispatch('app.openLogs')
+}
 </script>
 
 <template>
@@ -36,6 +41,10 @@ function onLocale(value: AppLocale): void {
           <el-option :label="t('settings.languageEn')" value="en" />
         </el-select>
         <p class="hint">{{ t('settings.languageHint') }}</p>
+      </el-form-item>
+      <el-form-item :label="t('settings.logs')">
+        <el-button @click="openLogs">{{ t('settings.openLogs') }}</el-button>
+        <p class="hint">{{ t('settings.logsHint') }}</p>
       </el-form-item>
     </el-form>
     <template #footer>

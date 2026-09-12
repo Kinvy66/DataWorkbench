@@ -47,6 +47,12 @@ electronDownload:
 win:
   icon: resources/icon.ico
   requestedExecutionLevel: asInvoker
+  fileAssociations:
+    - ext: dwproj
+      name: DataWorkbench Project
+      description: DataWorkbench Project
+      mimeType: application/x-dwproj
+      role: Editor
   target:
     - target: nsis
       arch:
