@@ -34,6 +34,14 @@ export default {
     sidecar: 'Sidecar',
     ping: 'Ping',
     pingTip: '调用 Python sidecar 的 host.hello',
+    config: '配置',
+    settings: '设置',
+    settingsTip: '应用程序设置',
+    about: '关于',
+    aboutTip: '关于本软件',
+    help: '帮助',
+    helpMenu: '帮助',
+    helpTip: '打开帮助菜单',
     layout: '布局',
     resetLayout: '复位布局',
     resetLayoutTip: '恢复默认面板停靠',
@@ -508,5 +516,32 @@ export default {
     workflowFinished: '工作流已完成。',
     workflowStopped: '工作流已停止。',
     workflowFailed: '工作流失败：{error}'
+  },
+  settings: {
+    title: '设置',
+    language: '界面语言',
+    languageZh: '简体中文',
+    languageEn: 'English',
+    languageHint: '保存在本机。也可以点功能区右上角的 EN / 中文。',
+    close: '关闭'
+  },
+  about: {
+    title: '关于',
+    version: '版本 {version}',
+    body: '桌面数据分析台：工作流、pandas 表格、可导出图表。计算在 Python sidecar 中运行。',
+    license: '本软件源码为 MIT。拷贝的图标与 vendor 的 Python 仍为 LGPL-3.0。详见 NOTICE。',
+    close: '关闭'
+  },
+  help: {
+    title: '帮助',
+    guide: '用户手册',
+    guideHint: '在 GitHub 打开 wiki（窗口、数据、图表、工程）。',
+    tutorial: '入门教程',
+    tutorialHint: '从导入到导出的短流程。',
+    faq: '常见问题',
+    faqHint: '常见报错以及日志含义。',
+    shortcuts: '快捷键：Ctrl+N 新建，Ctrl+O 打开，Ctrl+S 保存，Ctrl+Shift+S 另存为，Ctrl+Z / Ctrl+Y 撤销/重做工作流画布。',
+    urlBlocked: '该帮助链接不被允许。',
+    close: '关闭'
   }
 }

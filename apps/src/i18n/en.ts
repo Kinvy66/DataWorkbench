@@ -34,6 +34,14 @@ export default {
     sidecar: 'Sidecar',
     ping: 'Ping',
     pingTip: 'Call host.hello on the Python sidecar',
+    config: 'Config',
+    settings: 'Setting',
+    settingsTip: 'Setting for the application',
+    about: 'About',
+    aboutTip: 'About the application',
+    help: 'Help',
+    helpMenu: 'Help',
+    helpTip: 'Open the help menu',
     layout: 'Layout',
     resetLayout: 'Reset Layout',
     resetLayoutTip: 'Restore the default panel docking',
@@ -510,5 +518,32 @@ export default {
     workflowFinished: 'Workflow finished.',
     workflowStopped: 'Workflow stopped.',
     workflowFailed: 'Workflow failed: {error}'
+  },
+  settings: {
+    title: 'Settings',
+    language: 'Language',
+    languageZh: '简体中文',
+    languageEn: 'English',
+    languageHint: 'Saved on this computer. You can also use the EN / 中文 button on the ribbon.',
+    close: 'Close'
+  },
+  about: {
+    title: 'About',
+    version: 'Version {version}',
+    body: 'Desktop data workbench: workflow, pandas tables, and exportable charts. Computation runs in a Python sidecar.',
+    license: 'Application source is MIT. Copied icons and vendored Python remain LGPL-3.0. See NOTICE.',
+    close: 'Close'
+  },
+  help: {
+    title: 'Help',
+    guide: 'User guide',
+    guideHint: 'Open the wiki on GitHub (how to use windows, data, charts, and projects).',
+    tutorial: 'Tutorial',
+    tutorialHint: 'A short walk-through from import to export.',
+    faq: 'FAQ',
+    faqHint: 'Common errors and what the log messages mean.',
+    shortcuts: 'Shortcuts: Ctrl+N new, Ctrl+O open, Ctrl+S save, Ctrl+Shift+S save as, Ctrl+Z / Ctrl+Y undo and redo the workflow canvas.',
+    urlBlocked: 'That help link is not allowed.',
+    close: 'Close'
   }
 }

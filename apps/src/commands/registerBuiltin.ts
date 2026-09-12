@@ -10,6 +10,13 @@ import { i18n } from '@/i18n'
 import { translateRpcError } from '@/rpc/rpcError'
 import { getDesktopBridge } from '@/rpc/bridge'
 import { confirmAndQuit, newProject, openProject, saveProject } from '@/project/session'
+import { useAppUiStore } from '@/stores/appUi'
+import {
+  APP_HELP_FAQ_URL,
+  APP_HELP_GUIDE_URL,
+  APP_HELP_TUTORIAL_URL,
+  APP_REPO_URL
+} from '@/help/urls'
 import type { DockPanelId } from '@/layout/docking'
 import { workflowCanvasView } from '@/workflow/canvasView'
 
@@ -509,6 +516,37 @@ export function registerBuiltinCommands(): void {
   })
   commandBus.register('file.saveAs', async () => {
     await saveProject(true)
+  })
+
+  commandBus.register('app.settings', () => {
+    useAppUiStore().openSettings()
+  })
+  commandBus.register('app.about', () => {
+    useAppUiStore().openAbout()
+  })
+  commandBus.register('app.help', () => {
+    useAppUiStore().openHelp()
+  })
+
+  async function openHelpUrl(url: string): Promise<void> {
+    try {
+      await getDesktopBridge().rpc.invoke('app.openUrl', { url })
+    } catch (err) {
+      reportError(err)
+    }
+  }
+
+  commandBus.register('help.guide', async () => {
+    await openHelpUrl(APP_HELP_GUIDE_URL)
+  })
+  commandBus.register('help.tutorial', async () => {
+    await openHelpUrl(APP_HELP_TUTORIAL_URL)
+  })
+  commandBus.register('help.faq', async () => {
+    await openHelpUrl(APP_HELP_FAQ_URL)
+  })
+  commandBus.register('help.repo', async () => {
+    await openHelpUrl(APP_REPO_URL)
   })
 
   commandBus.register('view.resetLayout', () => {

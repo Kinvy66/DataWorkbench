@@ -29,6 +29,9 @@ import iconData from '@/assets/icons/gui/data.svg?url'
 import iconDataTable from '@/assets/icons/gui/data-table.svg?url'
 import iconWorkflow from '@/assets/icons/gui/workflow.svg?url'
 import iconSetting from '@/assets/icons/gui/setting.svg?url'
+import iconAppSetting from '@/assets/icons/app/setting.svg?url'
+import iconAbout from '@/assets/icons/app/about.svg?url'
+import iconShowInformation from '@/assets/icons/app/showInfomation.svg?url'
 import iconCancel from '@/assets/icons/gui/cancel.svg?url'
 import iconRun from '@/assets/icons/app/run.svg?url'
 import iconStop from '@/assets/icons/app/stop.svg?url'
@@ -92,6 +95,9 @@ const urls: Record<string, string> = {
   'app/chart-picker-xy': iconChartPickerXy,
   'app/chart-selector-rect': iconChartSelectorRect,
   'app/showChart': iconShowChart,
+  'app/setting': iconAppSetting,
+  'app/about': iconAbout,
+  'app/showInfomation': iconShowInformation,
   'gui/data': iconData,
   'gui/data-table': iconDataTable,
   'gui/workflow': iconWorkflow,

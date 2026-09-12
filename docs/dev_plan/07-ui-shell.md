@@ -22,7 +22,7 @@
 
 ## Ribbon 信息架构（一期）
 
-常驻标签顺序对齐上游：主页 / 数据 / 视图 / 绘图。上下文标签按焦点窗口出现在绘图之后（表格 → 操作；工作流 → 工作流视图 + 工作流运行；绘图 → 图表）。只放已实现的命令，不要为对齐而造空按钮（无剪切/复制、无插件管理、无 Agent、无 3D/等高线、无表格样式页）。
+常驻标签顺序对齐上游：主页 / 数据 / 视图 / 绘图。上下文标签按焦点窗口出现在绘图之后（表格 → 操作；工作流 → 工作流视图 + 工作流运行；绘图 → 图表）。只放已实现的命令，不要为对齐而造空按钮（无剪切/复制、无插件管理、无 Agent、无 3D/等高线、无表格样式页）。主页配置含设置与关于；帮助菜单打开 wiki。
 
 | Tab | 分组 | 命令 id | 阶段 |
 |-----|------|---------|------|
@@ -31,6 +31,8 @@
 | Home | Clipboard | `edit.undo` `edit.redo` | P2 起；不上剪切/复制（未按焦点路由） |
 | Home | Create | `data.import` | 对齐上游创建；不上空 Figure / 新建工作流 |
 | Home | Sidecar | `host.ping` | 本产品诊断，上游无 |
+| Home | Config | `app.settings` `app.about` | 对齐上游主页配置（不上插件管理） |
+| Home | Help | `app.help`（菜单内 `help.guide` `help.tutorial` `help.faq`） | 用户手册 / 教程 / FAQ 在浏览器打开 GitHub wiki |
 | Data | Data Operation | `data.import` `data.remove` `data.rename` | P1（对齐上游 Data：添加/移除/重命名） |
 | Data | Export | `data.export` | P1 |
 | View | Display | `view.showWorkflow` `view.showNodes` `view.showFigure` `view.showTable` `view.showDatasets` `view.showProperties` `view.showLog` | 对齐上游视图显示；无设置窗/侧栏开关/Agent |
@@ -46,7 +48,7 @@
 
 所有 label 走 i18n key，例如 `ribbon.dataImport`。英文源对齐上游：「Add Data」。默认界面语言 `zh-CN`。
 
-**Ribbon 对齐铁律**：常驻 **Home / Data / View / Figure**（主页 / 数据 / 视图 / 绘图）。上游 `DAAppRibbonArea` 的 Data 标签只有数据进出；Figure 标签常驻（新建图）；View 负责显示停靠面板与复位布局。清洗/过滤/统计在 DataAnalysis 插件挂到 DataFrame **上下文**「操作」页。复刻版用 mlRibbon `contextual` 标签：焦点在表格 → Operate；焦点在工作流 → Workflow View + Workflow Run；焦点在绘图 → Chart Operate（标注/导出）。工作流上下文有两页时仍不要设 `contextualTitle`（页名已经够用）。库默认把每个上下文页画成圆角描边色块（像独立按钮）；`AppRibbon.vue` 用 CSS 改成上游 SARibbon 的顶栏色条 + 浅底，不要改回 pill。**不要把每个 Core / 工作流节点都做成 Data 标签大按钮。** 上游 Ribbon 没有的 action（Replace Values、Threshold Filter）只做节点 + RPC，功能区不放按钮。Home 对齐上游文件/剪贴板/创建（仅已实现的打开/保存/撤销/添加数据）；不要补剪切/复制、设置、插件管理、About。
+**Ribbon 对齐铁律**：常驻 **Home / Data / View / Figure**（主页 / 数据 / 视图 / 绘图）。上游 `DAAppRibbonArea` 的 Data 标签只有数据进出；Figure 标签常驻（新建图）；View 负责显示停靠面板与复位布局。清洗/过滤/统计在 DataAnalysis 插件挂到 DataFrame **上下文**「操作」页。复刻版用 mlRibbon `contextual` 标签：焦点在表格 → Operate；焦点在工作流 → Workflow View + Workflow Run；焦点在绘图 → Chart Operate（标注/导出）。工作流上下文有两页时仍不要设 `contextualTitle`（页名已经够用）。库默认把每个上下文页画成圆角描边色块（像独立按钮）；`AppRibbon.vue` 用 CSS 改成上游 SARibbon 的顶栏色条 + 浅底，不要改回 pill。**不要把每个 Core / 工作流节点都做成 Data 标签大按钮。** 上游 Ribbon 没有的 action（Replace Values、Threshold Filter）只做节点 + RPC，功能区不放按钮。Home 对齐上游文件/剪贴板/创建（仅已实现的打开/保存/撤销/添加数据）以及配置（设置、关于）和帮助菜单；不要补剪切/复制、插件管理。
 
 File tab 使用 ML Ribbon 的 backstage/file menu（若库支持）；否则用 Element Plus 对话框模拟打开/保存（走 Electron `dialog.showOpenDialog`）。
 

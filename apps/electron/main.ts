@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { APP_VERSION, type ProjectSaveParams, type ProjectUnpackLogicResult } from '@dw/rpc-types'
@@ -15,6 +15,7 @@ import { openProjectArchive, ProjectFileError, saveProjectArchive, withProjectEx
 import { AppFileLog, type AppLogKind } from './app-log'
 import { RendererEventGate } from './renderer-events'
 import { RpcError } from './rpc-error'
+import { isAllowedHelpUrl } from './open-url'
 import { SidecarBridge } from './sidecar'
 import {
   applyWindowChromeAction,
@@ -286,6 +287,14 @@ async function handleRendererRpc(
   }
   if (method === 'app.rendererReady') {
     flushRendererEvents()
+    return { ok: true }
+  }
+  if (method === 'app.openUrl') {
+    const url = typeof (params as { url?: unknown } | null)?.url === 'string' ? (params as { url: string }).url : ''
+    if (!isAllowedHelpUrl(url)) {
+      throw new RpcError(-32602, 'URL is not allowed', 'help.urlBlocked')
+    }
+    await shell.openExternal(url)
     return { ok: true }
   }
   const win = targetWindow(event.sender)

@@ -83,6 +83,7 @@ export const RpcMethod = {
   ChartListTypes: 'chart.listTypes',
   ChartBuildSeries: 'chart.buildSeries',
   ChartSaveExport: 'chart.saveExport',
+  AppOpenUrl: 'app.openUrl',
   ProjectSave: 'project.save',
   ProjectOpen: 'project.open',
   ProjectPackLogic: 'project.packLogic',
@@ -741,6 +742,15 @@ export interface ChartSaveExportParams {
 export interface ChartSaveExportResult {
   ok?: true
   cancelled?: true
+}
+
+/** Main-process only. Renderer must not open URLs itself. */
+export interface AppOpenUrlParams {
+  url: string
+}
+
+export interface AppOpenUrlResult {
+  ok: true
 }
 
 export interface ProjectManifest {

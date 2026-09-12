@@ -44,6 +44,9 @@ import ChartWorkspace from '@/views/chart/ChartWorkspace.vue'
 import ChartProperties from '@/views/chart/ChartProperties.vue'
 import ChartBindDialog from '@/views/chart/ChartBindDialog.vue'
 import ChartSubplotDialog from '@/views/chart/ChartSubplotDialog.vue'
+import SettingsDialog from '@/views/app/SettingsDialog.vue'
+import AboutDialog from '@/views/app/AboutDialog.vue'
+import HelpDialog from '@/views/app/HelpDialog.vue'
 
 const { t, locale } = useI18n()
 const workflow = useWorkflowStore()
@@ -302,6 +305,9 @@ watch(locale, () => {
     <SortDialog />
     <ChartBindDialog />
     <ChartSubplotDialog />
+    <SettingsDialog />
+    <AboutDialog />
+    <HelpDialog />
   </div>
 </template>
 

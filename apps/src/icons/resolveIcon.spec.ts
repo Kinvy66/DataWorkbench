@@ -48,6 +48,9 @@ describe('resolveIconUrl', () => {
     expect(resolveIconUrl('app/chart-text-marker')).toMatch(/chart-text-marker\.svg/)
     expect(resolveIconUrl('app/chart-corss-marker')).toMatch(/chart-corss-marker\.svg/)
     expect(resolveIconUrl('app/showChart')).toMatch(/showChart\.svg/)
+    expect(resolveIconUrl('app/setting')).toMatch(/setting\.svg/)
+    expect(resolveIconUrl('app/about')).toMatch(/about\.svg/)
+    expect(resolveIconUrl('app/showInfomation')).toMatch(/showInfomation\.svg/)
     expect(resolveIconUrl('gui/chart')).toMatch(/chart\.svg/)
   })
 

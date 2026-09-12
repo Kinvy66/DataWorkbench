@@ -141,6 +141,52 @@ export function useRibbonSchema() {
                 ]
               }
             ]
+          },
+          {
+            id: 'home-config',
+            title: t('ribbon.config'),
+            collections: [
+              {
+                id: 'home-config-actions',
+                items: [
+                  {
+                    id: 'app.settings',
+                    type: 'button',
+                    label: t('ribbon.settings'),
+                    tooltip: t('ribbon.settingsTip'),
+                    size: 'large',
+                    icon: ribbonIcon('app/setting')
+                  },
+                  {
+                    id: 'app.about',
+                    type: 'button',
+                    label: t('ribbon.about'),
+                    tooltip: t('ribbon.aboutTip'),
+                    size: 'large',
+                    icon: ribbonIcon('app/about')
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'home-help',
+            title: t('ribbon.help'),
+            collections: [
+              {
+                id: 'home-help-actions',
+                items: [
+                  {
+                    id: 'app.help',
+                    type: 'button',
+                    label: t('ribbon.helpMenu'),
+                    tooltip: t('ribbon.helpTip'),
+                    size: 'large',
+                    icon: ribbonIcon('app/showInfomation')
+                  }
+                ]
+              }
+            ]
           }
         ]
       },

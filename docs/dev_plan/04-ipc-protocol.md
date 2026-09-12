@@ -109,6 +109,12 @@ pandas 未安装时仍发 `host.ready`，`pandasAvailable` 为 `false`（P0 不�
 | `chart.buildSeries` | `{dataId, x?, y[], kind?, maxPoints?, bins?, binWidth?, histStat?, histCumulative?, xMin?, xMax?}` → `{x, ys, pointCount, sourceCount, downsampled, xKind, maxPoints, boxes?}`。`kind:"hist"` 时 `x` 可省略，`y` 为要分箱的数值列；Python 返回箱中心 + 计数。默认 50 箱（钳制 5…200）。`binWidth>0` 时按箱宽分箱（箱数仍封顶 200）。`histStat`：`count`（默认）/`density`/`probability`/`percent`；`histCumulative` 对箱值做累加。`kind:"box"` 时同样省略 `x`；Python 按 Tukey（1.5×IQR）返回 `boxes`（四分位、须、封顶 200 个离群点/列），`ys` 仅为刻度范围，渲染进程不得用原始列再算箱线。 |
 | `chart.saveExport` | **仅 Electron 主进程**（不转发 sidecar）。`{format:'png'\|'svg'\|'pdf', content, suggestedName?, path?}` → `{ok:true}` 或 `{cancelled:true}`。PNG 的 `content` 为 `data:image/png;base64,...`；SVG 与 PDF 的 `content` 均为 UTF-8 SVG 标记（PDF 由主进程 hidden `BrowserWindow` `printToPDF` 转换后再写盘）。无 `path` 时弹出另存对话框。写失败 **3001** `data.ioError`。 |
 
+## app 域（仅主进程）
+
+| 方法 | 说明 |
+|------|------|
+| `app.openUrl` | **仅 Electron 主进程**（不转发 sidecar）。`{url}` → `{ok:true}`。用 `shell.openExternal` 打开帮助链接。只允许 `https://github.com/Kinvy66/DataWorkbench` 及其子路径；其它 URL **−32602** `help.urlBlocked`。渲染进程禁止自己开浏览器。 |
+
 - `maxPoints` 默认 5000，钳制到 2…20000。生产降采样只在 Python（LTTB），前端禁止对百万点 `JSON.parse`。直方分箱同样只在 Python，不要把原始列拉到渲染进程再 `histogram`。箱宽/统计量/累计由 `binWidth`/`histStat`/`histCumulative` 下发，缺省行为与一期相同（50 箱、count）。箱线（`kind:"box"`）同样只在 Python 算 Tukey 统计，离群点每列最多 200 个（`CHART_BOX_OUTLIERS_MAX`）。
 - 非数值 y（或既非数值也非日期的 x）：error **1002**，`i18nKey=chart.nonNumeric`。缺列：1002 `chart.columnNotFound`。缺数据集：1001 `data.notFound`。
 - 非有限 x 的行丢弃；y 的 NaN 变成 JSON `null`（uPlot 断线）。datetime x 为 epoch **毫秒**，`xKind:"time"`；uPlot 时间轴自行 ÷1000。
@@ -155,7 +161,7 @@ window.dw.rpc.invoke(method: string, params?: unknown): Promise<unknown>
 window.dw.rpc.on(method: string, cb: (params: unknown) => void): () => void
 ```
 
-渲染进程不得使用 `ipcRenderer` 其它频道。超时：普通 RPC 30s；`workflow.execute` 不超时（用 stop）；`data.import` / `chart.buildSeries` / `project.*` 120s。`chart.saveExport`、`project.save`、`project.open` 由主进程处理，不把 ZIP 丢给 sidecar。
+渲染进程不得使用 `ipcRenderer` 其它频道。超时：普通 RPC 30s；`workflow.execute` 不超时（用 stop）；`data.import` / `chart.buildSeries` / `project.*` 120s。`chart.saveExport`、`project.save`、`project.open`、`app.openUrl` 由主进程处理，不把 ZIP 丢给 sidecar。
 
 ## 调试
 

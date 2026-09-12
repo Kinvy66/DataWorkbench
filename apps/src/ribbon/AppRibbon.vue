@@ -5,6 +5,7 @@ import '@mlightcad/ribbon/style.css'
 import type { RibbonLayout } from '@mlightcad/ribbon'
 import { useI18n } from 'vue-i18n'
 import { commandBus } from '@/commands/commandBus'
+import { parseAppLocale, writeStoredLocale } from '@/i18n/locale'
 import { ribbonContextTabId, useRibbonSchema } from './schema'
 import { useWorkflowStore } from '@/stores/workflow'
 import DwIcon from '@/icons/DwIcon.vue'
@@ -55,7 +56,9 @@ function onFileMenuSelect(id: string): void {
 }
 
 function toggleLocale(): void {
-  locale.value = locale.value === 'en' ? 'zh-CN' : 'en'
+  const next = parseAppLocale(locale.value === 'en' ? 'zh-CN' : 'en')
+  locale.value = next
+  writeStoredLocale(next)
 }
 </script>
 

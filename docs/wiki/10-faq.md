@@ -16,6 +16,10 @@
 2. **开发模式**：本机是否 **Python 3.11 或 3.12**（`py -3.12 --version`），以及是否安装了 sidecar 依赖：`py -3.12 -m pip install -r python/requirements.txt`。
 3. 可用 `$env:DW_PYTHON = "C:\路径\python.exe"` 覆盖解释器后再启动。
 
+### 想换成英文界面
+
+**主页 → 设置** 选 English，或点功能区右上角 **EN**。语言记在本机，下次打开还在。
+
 ### Ping 失败
 
 Sidecar 没就绪时 Ping 会失败。等就绪日志出现再点。失败文案是「host.hello 失败：…」，把后面原因发给开发者。
