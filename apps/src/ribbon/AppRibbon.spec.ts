@@ -27,10 +27,19 @@ describe('AppRibbon chrome layout', () => {
     expect(source).not.toMatch(/#tabs-extra>[\s\S]*?<DwIcon name="app\/icon"/)
   })
 
-  it('toggles the UI locale from the ribbon extra slot', () => {
+  it('toggles the UI locale from the ribbon extra slot without changing button size', () => {
     const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
     expect(source).toContain('toggleLocale')
     expect(source).toContain('locale-btn')
+    expect(source).toContain('locale-btn__label')
+    expect(source).toContain('grid-area: 1 / 1')
+  })
+
+  it('hides layout switcher and key tips, keeps minimize', () => {
+    const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
+    expect(source).toContain('hide-layout-switcher')
+    expect(source).toContain('hide-key-tips-toggle')
+    expect(source).not.toContain('hide-minimize-button')
   })
 
   it('restyles contextual tabs as a color bar instead of the library pill', () => {

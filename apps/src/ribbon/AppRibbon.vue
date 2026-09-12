@@ -43,9 +43,7 @@ watch(
 
 const ribbonTexts = computed(() => ({
   fileMenuLabel: t('ribbon.file'),
-  layoutSwitcherTooltip: t('ribbon.layoutSwitcher'),
-  minimizeTooltip: t('ribbon.minimizeRibbon'),
-  keyTipsToggleText: t('ribbon.keyTips')
+  minimizeTooltip: t('ribbon.minimizeRibbon')
 }))
 
 function onItemClick(payload: { itemId: string }): void {
@@ -76,13 +74,16 @@ function toggleLocale(): void {
       :file-menu-items="fileMenuItems"
       :texts="ribbonTexts"
       :show-open-backstage="false"
+      hide-layout-switcher
+      hide-key-tips-toggle
       @item-click="onItemClick"
       @file-menu-select="onFileMenuSelect"
     >
       <template #tabs-extra>
         <div class="ribbon-extra">
           <button class="locale-btn" type="button" @click="toggleLocale">
-            {{ locale === 'en' ? '中文' : 'EN' }}
+            <span class="locale-btn__label" :class="{ 'is-on': locale !== 'en' }">EN</span>
+            <span class="locale-btn__label" :class="{ 'is-on': locale === 'en' }">中文</span>
           </button>
         </div>
       </template>
@@ -179,13 +180,25 @@ function toggleLocale(): void {
   -webkit-app-region: no-drag;
 }
 .locale-btn {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
   border: 1px solid #dcdfe6;
   background: #fff;
   color: #303133;
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 12px;
+  line-height: 1.2;
   cursor: pointer;
+}
+.locale-btn__label {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  white-space: nowrap;
+}
+.locale-btn__label.is-on {
+  visibility: visible;
 }
 .locale-btn:hover {
   border-color: var(--dw-accent, #5280c1);

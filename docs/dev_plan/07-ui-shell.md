@@ -4,7 +4,7 @@
 
 ## 窗口结构
 
-窗口为 **无系统标题栏**（对齐上游 `SARibbonMainWindow`）：`titleBarStyle: 'hidden'`，**禁止**保留默认应用菜单（`File / Edit / View / Window / Help` 会叠在 Ribbon 上面）。Mac 仅保留系统 App/Edit/Window 菜单。标题栏可用区域最左侧固定显示软件 logo，其后才是 File 和 Ribbon 标签；拖动区域是标签行空白处。Windows / Linux 的最小化 / 最大化 / 关闭必须用 Electron **`titleBarOverlay`（系统按钮）**，不要用网页按钮盖在右上角——Win11 把该区域留给系统命中（Snap），HTML 点击到不了。标题行内容放在 `env(titlebar-area-*)` 安全区内。
+窗口为 **无系统标题栏**（对齐上游 `SARibbonMainWindow`）：`titleBarStyle: 'hidden'`，**禁止**保留默认应用菜单（`File / Edit / View / Window / Help` 会叠在 Ribbon 上面）。Mac 仅保留系统 App/Edit/Window 菜单。标题栏可用区域最左侧固定显示软件 logo，其后才是 File 和 Ribbon 标签；拖动区域是标签行空白处。Windows / Linux 的最小化 / 最大化 / 关闭必须用 Electron **`titleBarOverlay`（系统按钮）**，不要用网页按钮盖在右上角——Win11 把该区域留给系统命中（Snap），HTML 点击到不了。标题行内容放在 `env(titlebar-area-*)` 安全区内。mlRibbon 自带的**切换布局**（classic/simplified）和 **Key Tips** 开关关掉（`hide-layout-switcher` / `hide-key-tips-toggle`）：前者和「最小化功能区」重复，后者当前无可用快捷键提示。只留最小化箭头。语言按钮 EN / 中文叠在同一格子里，宽度不随文案变。
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
