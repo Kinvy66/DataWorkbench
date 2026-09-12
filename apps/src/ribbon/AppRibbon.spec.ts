@@ -41,11 +41,12 @@ describe('AppRibbon chrome layout', () => {
     expect(source).toContain('font-weight: 600')
   })
 
-  it('selects the contextual ribbon tab when the focused workspace window changes', () => {
+  it('starts on Home and only follows workspace focus after it changes', () => {
     const source = readFileSync(resolve(here, 'AppRibbon.vue'), 'utf8')
+    expect(source).toContain("activeTab = ref('home')")
     expect(source).toContain('ribbonContextTabId')
     expect(source).toContain('centerTab')
-    expect(source).toContain('{ immediate: true }')
+    expect(source).not.toContain('{ immediate: true }')
   })
 
   it('paints Qt File-menu icons onto the teleported dropdown', () => {

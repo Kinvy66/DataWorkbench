@@ -20,9 +20,10 @@ const minimized = ref(false)
 watch(
   () => workflow.centerTab,
   (tab) => {
+    // Startup stays on Home. Jump to Operate / Workflow / Chart only after
+    // the user focuses a workspace window (centerTab actually changes).
     activeTab.value = ribbonContextTabId(tab)
-  },
-  { immediate: true }
+  }
 )
 
 watch(
