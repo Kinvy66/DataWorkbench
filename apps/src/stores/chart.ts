@@ -5,6 +5,7 @@ import {
   CHART_HIST_BINS_MAX,
   CHART_HIST_BINS_MIN,
   CHART_MAX_POINTS_DEFAULT,
+  chartKindOmitsX,
   type ChartBuildSeriesParams,
   type ChartBuildSeriesResult,
   type ChartHistStat,
@@ -122,13 +123,12 @@ function seriesParams(
   chart: Pick<ChartSpec, 'type' | 'dataId' | 'x' | 'y' | 'bins' | 'binWidth' | 'histStat' | 'histCumulative'>,
   range?: ViewportWindow
 ): ChartBuildSeriesParams {
-  const isHist = chart.type === 'hist'
-  const params: ChartBuildSeriesParams = isHist
+  const omitX = chartKindOmitsX(chart.type)
+  const params: ChartBuildSeriesParams = omitX
     ? {
         dataId: chart.dataId,
         y: chart.y,
-        kind: 'hist',
-        bins: clampHistBins(chart.bins)
+        kind: chart.type
       }
     : {
         dataId: chart.dataId,
@@ -136,7 +136,8 @@ function seriesParams(
         y: chart.y,
         maxPoints: CHART_MAX_POINTS_DEFAULT
       }
-  if (isHist) {
+  if (chart.type === 'hist') {
+    params.bins = clampHistBins(chart.bins)
     if (chart.binWidth != null && chart.binWidth > 0) {
       params.binWidth = chart.binWidth
     }
@@ -147,7 +148,7 @@ function seriesParams(
       params.histCumulative = true
     }
   }
-  if (range) {
+  if (range && chart.type !== 'box') {
     params.xMin = range.xMin
     params.xMax = range.xMax
   }
@@ -228,7 +229,8 @@ function svgOptionsFromChart(chart: ChartSpec): SvgExportOptions | null {
     data: {
       x: chart.data.x.map((value) => (value == null ? Number.NaN : value)),
       ys: chart.data.ys,
-      xKind: chart.data.xKind
+      xKind: chart.data.xKind,
+      boxes: chart.data.boxes
     },
     annotations: chart.annotations
   }
@@ -633,7 +635,9 @@ export const useChartStore = defineStore('chart', {
       const data = useDataStore()
       const workflow = useWorkflowStore()
       const isHist = options.type === 'hist'
-      const xName = isHist ? (options.y[0] ?? '') : (options.x ?? '')
+      const isBox = options.type === 'box'
+      const omitX = chartKindOmitsX(options.type)
+      const xName = isHist ? (options.y[0] ?? '') : omitX ? '' : (options.x ?? '')
       const bins = isHist ? clampHistBins(options.bins) : undefined
       const result = (await rpc().invoke(
         'chart.buildSeries',
@@ -655,7 +659,7 @@ export const useChartStore = defineStore('chart', {
         y: options.y,
         title: options.title?.trim() || `${datasetName} — ${options.type}`,
         xLabel: xName,
-        yLabel: options.yLabel ?? (isHist ? 'Count' : options.y.join(', ')),
+        yLabel: options.yLabel ?? (isHist ? 'Count' : isBox ? 'Value' : options.y.join(', ')),
         grid: true,
         legend: true,
         series: options.y.map((key, index) => ({

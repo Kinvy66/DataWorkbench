@@ -3,7 +3,7 @@ export type ViewportWindow = {
   xMax: number
 }
 
-export type ViewportKind = 'line' | 'scatter' | 'bar' | 'hist'
+export type ViewportKind = 'line' | 'scatter' | 'bar' | 'hist' | 'box'
 
 export function dataXFromScale(
   min: number,
@@ -55,6 +55,9 @@ export function planViewportRequest(input: {
 }): ViewportWindow | null {
   const windowed = input.currentWindow != null
   const isHist = input.kind === 'hist'
+  if (input.kind === 'box') {
+    return null
+  }
   if (!isHist && !windowed && !input.downsampled && input.sourceCount <= input.maxPoints) {
     return null
   }

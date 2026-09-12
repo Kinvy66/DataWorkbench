@@ -6,7 +6,7 @@
 
 **特性**
 
-- ✅ 类型：折线、散点、柱状、直方图
+- ✅ 类型：折线、散点、柱状、直方图、箱线图
 - ✅ 绑定：当前 dataset 的 x 列 + 1..N 条 y 列
 - ✅ 样式：标题、轴标签、线色、线宽、网格开关、图例开关
 - ✅ 交互：缩放、平移（uPlot 内置）、复位
@@ -17,7 +17,7 @@
 
 - 子图格子自由拖拽改布局（Qwt overlay）—— 固定 RxC 网格即可
 - 数据探针十字线（可做简易悬停 tooltip，非探针体系）
-- 3D、热力、箱线、谱图
+- 3D、热力、谱图
 - 与 Qwt 工程 `charts.xml` 互导
 - Agent 自动绑图
 
@@ -57,6 +57,7 @@ sequenceDiagram
 - NaN：**丢掉非有限 x 的行**；y 的 NaN 序列化为 JSON `null`，uPlot 断线。不要改成插值填缝。
 - datetime x：转 epoch ms，uPlot 用 time 轴
 - **直方**（`kind:"hist"`）：对 `y` 列在 sidecar `numpy.histogram`，回传箱中心与箱值。默认 50 箱（钳制 5…200）。`binWidth>0` 优先于箱数（箱数仍封顶 200）。`histStat`：`count`（默认）/`density`/`probability`/`percent`；`histCumulative` 对箱值累加。分箱只在 Python，不要把原始列拉到渲染进程再分箱。
+- **箱线**（`kind:"box"`）：对 `y` 列在 sidecar 算 Tukey 箱（须 = 1.5×IQR，对齐 Qwt 默认）。回传 `boxes`（`q1`/`median`/`q3`/`whiskerLow`/`whiskerHigh`/`outliers`）。离群点每列最多 200 个。uPlot 无原生箱线，用 `hooks.draw` + SVG 路径绘制。不要把原始列拉到渲染进程再算四分位。缩放不重请求。
 
 ## 样式对象（存入工程 `charts.json`）
 
@@ -83,11 +84,12 @@ sequenceDiagram
 
 ## 二期（单独排期，不阻塞 MVP）
 
-1. ~~直方更专业的 bin 参数~~ **已落地**：`bins` / `binWidth` / `histStat` / `histCumulative`；绑定对话框只暴露箱数，其余在属性面板。不 bump `PROJECT_FORMAT`。箱线仍未做。  
-2. ~~多 subplot~~ **已落地**：`chart.newSubplots` 建 RxC 空网格（≤3×3）；选中格子后 New Line/Scatter/Bar/Hist 填入该格；导出整张 Figure。不是拖格子改布局。  
+1. ~~直方更专业的 bin 参数~~ **已落地**：`bins` / `binWidth` / `histStat` / `histCumulative`；绑定对话框只暴露箱数，其余在属性面板。不 bump `PROJECT_FORMAT`。  
+2. ~~多 subplot~~ **已落地**：`chart.newSubplots` 建 RxC 空网格（≤3×3）；选中格子后 New Line/Scatter/Bar/Hist/Box 填入该格；导出整张 Figure。不是拖格子改布局。  
 3. ~~标注层（SVG overlay）~~ **已落地**：`chart.annotate*` 点击放置；坐标写入 `charts.json`；SVG/PDF/PNG 导出带标注  
 4. ~~导出 PDF~~ **已落地**：Ribbon `chart.exportPdf`；渲染进程仍发 SVG markup，主进程 `printToPDF`  
-5. ~~颜色循环与色盲安全色板~~ **已落地**：默认 `icon`（图标语义色）；属性可选 `okabeIto`（与上游 Qwt `QwtColorCycle::OkabeIto` 同 hex）。切换色板按系列下标重着色。`charts.json` 仅在非默认时写 `palette`，不 bump `PROJECT_FORMAT`。箱线仍未做。  
+5. ~~颜色循环与色盲安全色板~~ **已落地**：默认 `icon`（图标语义色）；属性可选 `okabeIto`（与上游 Qwt `QwtColorCycle::OkabeIto` 同 hex）。切换色板按系列下标重着色。`charts.json` 仅在非默认时写 `palette`，不 bump `PROJECT_FORMAT`。  
+6. ~~箱线图~~ **已落地**：`kind:"box"`，Python Tukey 统计 + uPlot/SVG 自定义绘制；绑定对话框与直方一样只选数值列。不 bump `PROJECT_FORMAT`。  
 
 ## 验收对照
 
@@ -100,4 +102,5 @@ sequenceDiagram
 | 标注 | 点「文本」后在图上点击，属性可改字；保存工程再打开仍在 |
 | 子图 | 建 1×2，两个格子各绑一条折线；导出 SVG 里能搜到两个标题 |
 | 直方分箱 | 绑定 50 箱后在属性改箱宽/密度，图更新；旧工程无这些字段仍按 50 箱 count |
+| 箱线 | 选数值列出 Tukey 箱；SVG 含箱子与离群点；缩放不重拉原始列 |
 | 色板 | 属性选图标色或色盲安全；多 Y 列颜色不同；旧工程无 `palette` 仍按已存 series.color |

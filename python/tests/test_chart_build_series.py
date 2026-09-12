@@ -6,9 +6,12 @@ import pandas as pd
 from dw_host.chart_series import (
     DEFAULT_MAX_POINTS,
     HIST_BINS_DEFAULT,
+    BOX_OUTLIERS_MAX,
+    build_boxplot,
     build_histogram,
     build_series,
     lttb_indices,
+    tukey_box,
 )
 from dw_host.data_manager import DataManager
 from dw_host.errors import ErrorCode, HostError
@@ -196,3 +199,51 @@ def test_hist_edges_bin_width() -> None:
     assert len(edges) == 5
     assert edges[0] == 0.0
     assert edges[-1] == 10.0
+
+
+def test_tukey_box_flags_far_outlier() -> None:
+    sample = tukey_box(np.array([1.0, 2.0, 3.0, 4.0, 5.0, 100.0], dtype=float))
+    assert sample["median"] == 3.5
+    assert 100.0 in sample["outliers"]
+    assert sample["whiskerHigh"] < 100.0
+    assert sample["n"] == 6
+
+
+def test_build_boxplot_returns_one_box_per_column() -> None:
+    df = pd.DataFrame({"score": [1.0, 2.0, 3.0, 4.0, 5.0, 100.0], "age": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0]})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("people", df)
+    result = build_boxplot(manager, data_id, ["score", "age"])
+    assert result["downsampled"] is False
+    assert result["pointCount"] == 2
+    assert result["sourceCount"] == 12
+    assert result["x"] == [0.0, 1.0]
+    assert len(result["ys"]) == 2
+    assert len(result["boxes"]) == 2
+    assert result["boxes"][0]["key"] == "score"
+    assert 100.0 in result["boxes"][0]["outliers"]
+    assert result["boxes"][1]["outliers"] == []
+    assert result["boxes"][1]["median"] == 35.0
+
+
+def test_build_boxplot_caps_outliers() -> None:
+    values = np.concatenate([np.arange(1000, dtype=float), np.full(250, 1_000_000.0)])
+    df = pd.DataFrame({"v": values})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("tail", df)
+    result = build_boxplot(manager, data_id, ["v"])
+    assert len(result["boxes"][0]["outliers"]) == BOX_OUTLIERS_MAX
+    assert result["boxes"][0]["n"] == 1250
+    assert result["boxes"][0]["whiskerHigh"] < 1_000_000.0
+
+
+def test_build_boxplot_rejects_non_numeric() -> None:
+    df = pd.DataFrame({"age": [10, 30, 18], "name": ["a", "b", "c"]})
+    manager = DataManager()
+    data_id = manager.publish_dataframe("people", df)
+    try:
+        build_boxplot(manager, data_id, ["name"])
+        raise AssertionError("expected HostError")
+    except HostError as exc:
+        assert exc.code == ErrorCode.ColumnOrValidation
+        assert exc.i18n_key == "chart.nonNumeric"

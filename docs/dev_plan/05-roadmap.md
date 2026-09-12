@@ -147,7 +147,7 @@ gantt
 
 范围见 [10-chart.md](./10-chart.md)。
 
-**已落地（含视口窗口）**：`chart.listTypes` / `chart.buildSeries`（Python LTTB，默认 5000 点；`kind:"hist"` 在 sidecar 分箱）；Ribbon Chart 标签 New Line / Scatter / Bar / Histogram；中区 Figure tab；属性面板改标题/颜色/线宽/网格/图例。缩放/平移停止 150ms 后带 `xMin`/`xMax` 再取样（小数据不重复请求；复位拉回全列）。PNG 从 uPlot 画布抓取；SVG 由采样点生成矢量，另存对话框在主进程（`chart.saveExport`）。**PDF 已落地**（同一套 SVG markup，主进程 `printToPDF`）。
+**已落地（含视口窗口）**：`chart.listTypes` / `chart.buildSeries`（Python LTTB，默认 5000 点；`kind:"hist"` 在 sidecar 分箱；`kind:"box"` 在 sidecar 算 Tukey 箱）；Ribbon Chart 标签 New Line / Scatter / Bar / Histogram / Box；中区 Figure tab；属性面板改标题/颜色/线宽/网格/图例。缩放/平移停止 150ms 后带 `xMin`/`xMax` 再取样（小数据不重复请求；复位拉回全列；箱线不重算）。PNG 从 uPlot 画布抓取；SVG 由采样点生成矢量，另存对话框在主进程（`chart.saveExport`）。**PDF 已落地**（同一套 SVG markup，主进程 `printToPDF`）。
 
 **验收**
 
@@ -169,7 +169,7 @@ gantt
 
 **验收**：关闭软件重开工程，工作流与至少一份导入数据还在（数据可 pickle 进 `datas/`，不追求惰性数据库）（**已落地**：ZIP 往返测试 + File 打开；文件日志 `userData/logs/main.log` 与 `sidecar.log`）。
 
-P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**、**图表标注层**、**子图网格**、**直方专业分箱**、**Golden Layout 自由停靠**、**AG Grid Community 虚表**、**图表色板**（图标色循环 + Okabe–Ito）。图表区内嵌套停靠、Agent、Home 对齐 Qt **不要开工**。
+P5 阶段完成。NSIS 向导与嵌入式 CPython 已补。打包后由 `scripts/smoke-pack-win.ps1` 验证内嵌解释器可 `host.hello`（见 [12-quality.md](./12-quality.md) 发布检查单）。二期已落地：**图表导出 PDF**、**图表标注层**、**子图网格**、**直方专业分箱**、**箱线图**、**Golden Layout 自由停靠**、**AG Grid Community 虚表**、**图表色板**（图标色循环 + Okabe–Ito）。图表区内嵌套停靠、Agent、3D **不要开工**。
 
 ## 并行规则
 

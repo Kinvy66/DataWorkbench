@@ -9,13 +9,14 @@ from dw_host.errors import ErrorCode, HostError
 
 DEFAULT_MAX_POINTS = 5000
 
-CHART_KINDS = ("line", "scatter", "bar", "hist")
+CHART_KINDS = ("line", "scatter", "bar", "hist", "box")
 
 CHART_TYPES = (
     {"id": "line", "name": "Line"},
     {"id": "scatter", "name": "Scatter"},
     {"id": "bar", "name": "Bar"},
     {"id": "hist", "name": "Histogram"},
+    {"id": "box", "name": "Box"},
 )
 
 
@@ -45,7 +46,7 @@ class BuildSeriesParams(BaseModel):
         if value in (None, ""):
             return None
         if not isinstance(value, str) or value not in CHART_KINDS:
-            raise ValueError("kind must be line, scatter, bar, or hist")
+            raise ValueError("kind must be line, scatter, bar, hist, or box")
         return value
 
 
@@ -63,7 +64,7 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
             "data.pandasRequired",
         )
     if method == "chart.buildSeries":
-        from dw_host.chart_series import build_histogram, build_series
+        from dw_host.chart_series import build_boxplot, build_histogram, build_series
 
         parsed = BuildSeriesParams.model_validate(params)
         if parsed.kind == "hist":
@@ -78,6 +79,8 @@ def dispatch(method: str, params: dict[str, Any], manager: DataManager, pandas_o
                 hist_stat=parsed.histStat,
                 hist_cumulative=parsed.histCumulative,
             )
+        if parsed.kind == "box":
+            return build_boxplot(manager, parsed.dataId, parsed.y)
         if not parsed.x:
             raise HostError(ErrorCode.InvalidParams, "x is required", "rpc.invalidParams")
         return build_series(

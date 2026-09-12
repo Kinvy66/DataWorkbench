@@ -569,6 +569,13 @@ export function registerBuiltinCommands(): void {
     },
     () => useDataStore().hasSelection
   )
+  commandBus.register(
+    'chart.newBox',
+    async () => {
+      useChartStore().openBindDialog('box')
+    },
+    () => useDataStore().hasSelection
+  )
   commandBus.register('chart.newSubplots', () => {
     useChartStore().openSubplotDialog()
   })

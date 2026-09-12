@@ -114,6 +114,58 @@ describe('useChartStore', () => {
     expect(created.data?.pointCount).toBe(2)
   })
 
+  it('builds a box plot without sending x or maxPoints', async () => {
+    invoke.mockResolvedValue({
+      x: [0, 1],
+      ys: [[1, 2], [9, 8]],
+      boxes: [
+        {
+          key: 'score',
+          n: 10,
+          q1: 2,
+          median: 5,
+          q3: 8,
+          whiskerLow: 1,
+          whiskerHigh: 9,
+          outliers: []
+        },
+        {
+          key: 'age',
+          n: 10,
+          q1: 3,
+          median: 4,
+          q3: 6,
+          whiskerLow: 2,
+          whiskerHigh: 8,
+          outliers: []
+        }
+      ],
+      pointCount: 2,
+      sourceCount: 20,
+      downsampled: false,
+      xKind: 'number',
+      maxPoints: 2
+    })
+    const data = useDataStore()
+    data.datasets = [{ id: 'ds-1', name: 'wave', rows: 10, cols: 2 }]
+    const chart = useChartStore()
+    const created = await chart.createFromBind({
+      type: 'box',
+      dataId: 'ds-1',
+      y: ['score', 'age'],
+      yLabel: 'Value'
+    })
+    expect(invoke).toHaveBeenCalledWith('chart.buildSeries', {
+      dataId: 'ds-1',
+      y: ['score', 'age'],
+      kind: 'box'
+    })
+    expect(created.type).toBe('box')
+    expect(created.xLabel).toBe('')
+    expect(created.yLabel).toBe('Value')
+    expect(created.data?.boxes?.[0]?.median).toBe(5)
+  })
+
   it('drops charts whose dataset is gone', () => {
     const chart = useChartStore()
     chart.charts = [

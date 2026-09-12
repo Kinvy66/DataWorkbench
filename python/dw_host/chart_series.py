@@ -16,6 +16,8 @@ HIST_BINS_DEFAULT = 50
 HIST_BINS_MIN = 5
 HIST_BINS_MAX = 200
 HIST_STATS = ("count", "density", "probability", "percent")
+BOX_OUTLIERS_MAX = 200
+TUKEY_WHISKER = 1.5
 
 
 def clamp_max_points(value: int) -> int:
@@ -275,4 +277,102 @@ def build_histogram(
         "downsampled": False,
         "xKind": "number",
         "maxPoints": n_bins,
+    }
+
+
+def _cap_outliers(values: np.ndarray, cap: int) -> np.ndarray:
+    n = int(values.size)
+    if n <= cap:
+        return values
+    idx = np.rint(np.linspace(0, n - 1, cap)).astype(np.int64)
+    return values[idx]
+
+
+def tukey_box(values: np.ndarray, outlier_cap: int = BOX_OUTLIERS_MAX) -> dict[str, Any]:
+    """Tukey box (1.5 IQR), matching QwtBoxStatisticsCalculator::Tukey."""
+    finite = np.sort(values[np.isfinite(values)].astype(np.float64, copy=False))
+    n = int(finite.size)
+    q1 = float(np.percentile(finite, 25))
+    median = float(np.percentile(finite, 50))
+    q3 = float(np.percentile(finite, 75))
+    iqr = q3 - q1
+    lo_fence = q1 - TUKEY_WHISKER * iqr
+    hi_fence = q3 + TUKEY_WHISKER * iqr
+    inside = finite[(finite >= lo_fence) & (finite <= hi_fence)]
+    if inside.size:
+        whisker_low = float(inside[0])
+        whisker_high = float(inside[-1])
+    else:
+        whisker_low = q1
+        whisker_high = q3
+    outliers = finite[(finite < lo_fence) | (finite > hi_fence)]
+    capped = _cap_outliers(outliers, outlier_cap)
+    return {
+        "n": n,
+        "q1": q1,
+        "median": median,
+        "q3": q3,
+        "whiskerLow": whisker_low,
+        "whiskerHigh": whisker_high,
+        "outliers": [float(v) for v in capped.tolist()],
+    }
+
+
+def _box_extent(sample: dict[str, Any]) -> tuple[float, float]:
+    lows = [float(sample["whiskerLow"]), float(sample["q1"]), float(sample["median"])]
+    highs = [float(sample["whiskerHigh"]), float(sample["q3"]), float(sample["median"])]
+    for raw in sample.get("outliers") or []:
+        number = float(raw)
+        if math.isfinite(number):
+            lows.append(number)
+            highs.append(number)
+    return min(lows), max(highs)
+
+
+def build_boxplot(
+    manager: DataManager,
+    data_id: str,
+    y_names: list[str],
+    outlier_cap: int = BOX_OUTLIERS_MAX,
+) -> dict[str, Any]:
+    """Tukey box stats in Python. Renderer only gets quartiles / whiskers / capped outliers."""
+    ds = manager.get(data_id)
+    df = ds.df
+    seen = _unique_names(y_names)
+    if not seen:
+        raise HostError(
+            ErrorCode.ColumnOrValidation,
+            "At least one y column is required",
+            "chart.columnNotFound",
+        )
+    boxes: list[dict[str, Any]] = []
+    mins: list[float] = []
+    maxs: list[float] = []
+    source_count = 0
+    for name in seen:
+        finite = _as_y_array(_column(df, name), name)
+        finite = finite[np.isfinite(finite)]
+        if finite.size < 1:
+            raise HostError(
+                ErrorCode.ColumnOrValidation,
+                "Not enough numeric points to plot",
+                "chart.emptySeries",
+            )
+        sample = tukey_box(finite, outlier_cap)
+        sample["key"] = name
+        lo, hi = _box_extent(sample)
+        boxes.append(sample)
+        mins.append(lo)
+        maxs.append(hi)
+        source_count += int(sample["n"])
+    n_boxes = len(boxes)
+    return {
+        "x": [float(i) for i in range(n_boxes)],
+        "ys": [mins, maxs],
+        "boxes": boxes,
+        "pointCount": n_boxes,
+        "sourceCount": source_count,
+        "downsampled": False,
+        "xKind": "number",
+        "maxPoints": n_boxes,
     }

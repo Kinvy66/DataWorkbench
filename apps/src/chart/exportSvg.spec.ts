@@ -90,6 +90,36 @@ describe('seriesToSvg', () => {
     expect(svg).not.toContain('<path')
     expect(svg).not.toContain('<circle')
   })
+
+  it('draws box plots from Tukey stats, not as bars', () => {
+    const svg = seriesToSvg({
+      kind: 'box',
+      legend: true,
+      grid: false,
+      styles: [{ label: 'score', color: '#5280C1', width: 1.5 }],
+      data: {
+        x: [0],
+        ys: [[1], [9]],
+        xKind: 'number',
+        boxes: [
+          {
+            key: 'score',
+            n: 6,
+            q1: 2,
+            median: 5,
+            q3: 7,
+            whiskerLow: 1,
+            whiskerHigh: 8,
+            outliers: [12]
+          }
+        ]
+      }
+    })
+    expect(svg).toContain('score')
+    expect(svg).toContain('#5280C1')
+    expect(svg).toContain('<circle')
+    expect(svg).toMatch(/fill-opacity="0\.18"/)
+  })
 })
 
 describe('figureToSvg', () => {

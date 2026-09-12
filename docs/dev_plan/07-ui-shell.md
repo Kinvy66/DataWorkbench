@@ -35,7 +35,7 @@
 | Data | Export | `data.export` | P1 |
 | View | Display | `view.showWorkflow` `view.showNodes` `view.showFigure` `view.showTable` `view.showDatasets` `view.showProperties` `view.showLog` | 对齐上游视图显示；无设置窗/侧栏开关/Agent |
 | View | Layout | `view.resetLayout` | 二期停靠 |
-| Figure（常驻） | New | `chart.newLine` `chart.newScatter` `chart.newBar` `chart.newHist` `chart.newSubplots` | P4 + 二期子图；对齐上游 Figure |
+| Figure（常驻） | New | `chart.newLine` `chart.newScatter` `chart.newBar` `chart.newHist` `chart.newBox` `chart.newSubplots` | P4 + 二期子图/箱线；对齐上游 Figure |
 | Operate（上下文 DataFrame，焦点在表格） | Data Cleaning | `data.dropNa` `data.dropDuplicates` `data.fillNa` `data.interpolate` `data.removeOutliersIqr` `data.removeOutliersZscore` `data.transformSkewed` | P3 |
 | Operate | Data Filtering | `data.eval` `data.query` `data.search` `data.filterByColumn` `data.sort` | P3 |
 | Operate | Statistics | `data.describe` `data.pivotTable` | P3 |

@@ -72,6 +72,7 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'chart.newScatter'")
     expect(source).toContain("id: 'chart.newBar'")
     expect(source).toContain("id: 'chart.newHist'")
+    expect(source).toContain("id: 'chart.newBox'")
     expect(source).toContain("id: 'chart.newSubplots'")
     expect(source).toContain("id: 'chart.exportPng'")
     expect(source).toContain("id: 'chart.exportSvg'")
@@ -94,6 +95,7 @@ describe('ribbon schema', () => {
     const commands = readFileSync(resolve(here, '../commands/registerBuiltin.ts'), 'utf8')
     expect(commands).toContain("'view.showTable'")
     expect(commands).toContain("'workflow.fitView'")
+    expect(commands).toContain("'chart.newBox'")
     expect(commands).toContain('showDock')
   })
 

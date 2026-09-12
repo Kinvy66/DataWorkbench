@@ -1,9 +1,11 @@
 import uPlot from 'uplot'
 import type { AlignedData, Options } from 'uplot'
+import { boxYExtent, drawBoxPlots } from './boxPlot'
+import type { ChartBoxSample } from './boxPlot'
 import { dataXFromScale, rangesNearlyEqual } from './viewport'
 import type { ViewportWindow } from './viewport'
 
-export type PlotKind = 'line' | 'scatter' | 'bar' | 'hist'
+export type PlotKind = 'line' | 'scatter' | 'bar' | 'hist' | 'box'
 
 export type SeriesStyle = {
   label: string
@@ -15,6 +17,7 @@ export type PlotSeriesData = {
   x: number[]
   ys: Array<Array<number | null>>
   xKind: 'number' | 'time'
+  boxes?: ChartBoxSample[]
 }
 
 export type PlotRenderOptions = {
@@ -32,13 +35,61 @@ export type PlotRenderOptions = {
   onFrame?: () => void
 }
 
-function alignedFrom(data: PlotSeriesData): AlignedData {
-  const xs =
-    data.xKind === 'time' ? data.x.map((value) => value / 1000) : data.x
+function finiteOutliers(sample: ChartBoxSample): number[] {
+  return sample.outliers.filter((value) => Number.isFinite(value))
+}
+
+function alignedBox(boxes: ChartBoxSample[], styleCount: number): AlignedData {
+  const n = boxes.length
+  const width = Math.max(n, 1)
+  const xs = n ? boxes.map((_, index) => index) : [0]
+  const mins = n
+    ? boxes.map((sample) => Math.min(sample.whiskerLow, sample.q1, ...finiteOutliers(sample)))
+    : [0]
+  const maxs = n
+    ? boxes.map((sample) => Math.max(sample.whiskerHigh, sample.q3, ...finiteOutliers(sample)))
+    : [1]
+  const rows: Array<Array<number | null>> = []
+  const count = Math.max(styleCount, 1)
+  for (let i = 0; i < count; i++) {
+    const row: Array<number | null> = Array.from({ length: width }, () => null)
+    if (boxes[i]) {
+      row[i] = boxes[i].median
+    }
+    rows.push(row)
+  }
+  return [xs, mins, maxs, ...rows]
+}
+
+function alignedFrom(data: PlotSeriesData, kind: PlotKind, styleCount = 0): AlignedData {
+  if (kind === 'box') {
+    return alignedBox(data.boxes ?? [], styleCount)
+  }
+  const xs = data.xKind === 'time' ? data.x.map((value) => value / 1000) : data.x
   return [xs, ...data.ys]
 }
 
 function seriesOpts(kind: PlotKind, styles: SeriesStyle[]): Options['series'] {
+  if (kind === 'box') {
+    const series: Options['series'] = [
+      {},
+      { show: false },
+      { show: false }
+    ]
+    for (const style of styles) {
+      series.push({
+        label: style.label,
+        stroke: style.color,
+        width: style.width,
+        paths: () => null,
+        points: { show: false }
+      })
+    }
+    if (styles.length === 0) {
+      series.push({ show: false, paths: () => null })
+    }
+    return series
+  }
   const series: Options['series'] = [{}]
   for (const style of styles) {
     if (kind === 'scatter') {
@@ -83,6 +134,9 @@ export class UPlotChart {
   private plot: uPlot | null = null
   private aligned: AlignedData | null = null
   private xKind: PlotSeriesData['xKind'] = 'number'
+  private kind: PlotKind = 'line'
+  private styles: SeriesStyle[] = []
+  private boxes: ChartBoxSample[] = []
   private onXRange: ((range: ViewportWindow) => void) | undefined
   private onFrame: (() => void) | undefined
   private lastEmitted: ViewportWindow | null = null
@@ -94,12 +148,18 @@ export class UPlotChart {
   render(opts: PlotRenderOptions): void {
     this.destroy()
     this.xKind = opts.data.xKind
-    this.onXRange = opts.onXRange
+    this.kind = opts.kind
+    this.styles = opts.styles
+    this.boxes = opts.data.boxes ?? []
+    this.onXRange = opts.kind === 'box' ? undefined : opts.onXRange
     this.onFrame = opts.onFrame
     this.quietXScale(3, 200)
     const width = Math.max(40, Math.floor(opts.width))
     const height = Math.max(40, Math.floor(opts.height))
-    this.aligned = alignedFrom(opts.data)
+    this.aligned = alignedFrom(opts.data, opts.kind, opts.styles.length)
+    const isBox = opts.kind === 'box'
+    const boxCount = this.boxes.length
+    const yExtent = isBox ? boxYExtent(this.boxes) : null
     const options: Options = {
       title: opts.title || undefined,
       width,
@@ -107,13 +167,22 @@ export class UPlotChart {
       legend: { show: opts.legend },
       cursor: { drag: { x: true, y: true } },
       scales: {
-        x: { time: opts.data.xKind === 'time' }
+        x: isBox
+          ? { time: false, range: () => [-0.5, Math.max(boxCount - 0.5, 0.5)] }
+          : { time: opts.data.xKind === 'time' }
       },
       axes: [
         {
           label: opts.xLabel || undefined,
           stroke: '#727272',
-          grid: { show: opts.grid, stroke: '#ebeef5' }
+          grid: { show: opts.grid, stroke: '#ebeef5' },
+          ...(isBox
+            ? {
+                splits: () => this.boxes.map((_, index) => index),
+                values: (_u: uPlot, splits: number[]) =>
+                  splits.map((index) => this.boxes[index]?.key ?? '')
+              }
+            : {})
         },
         {
           label: opts.yLabel || undefined,
@@ -123,6 +192,17 @@ export class UPlotChart {
       ],
       series: seriesOpts(opts.kind, opts.styles),
       hooks: {
+        draw: isBox
+          ? [
+              (u) => {
+                const ctx = u.ctx
+                drawBoxPlots(ctx, this.boxes, this.styles, {
+                  x: (value) => u.valToPos(value, 'x', true),
+                  y: (value) => u.valToPos(value, 'y', true)
+                })
+              }
+            ]
+          : [],
         setScale: [
           (u, key) => {
             this.emitXRange(u, key)
@@ -136,6 +216,13 @@ export class UPlotChart {
         ]
       }
     }
+    if (yExtent && Number.isFinite(yExtent.yMin)) {
+      const pad = Math.max((yExtent.yMax - yExtent.yMin) * 0.08, 1e-9)
+      options.scales = {
+        ...options.scales,
+        y: { range: () => [yExtent.yMin - pad, yExtent.yMax + pad] }
+      }
+    }
     this.plot = new uPlot(options, this.aligned, this.el)
     this.onFrame?.()
   }
@@ -145,7 +232,8 @@ export class UPlotChart {
       return
     }
     this.xKind = data.xKind
-    this.aligned = alignedFrom(data)
+    this.boxes = data.boxes ?? this.boxes
+    this.aligned = alignedFrom(data, this.kind, this.styles.length)
     this.quietXScale(1, 80)
     this.plot.setData(this.aligned, resetScales)
     this.onFrame?.()
@@ -257,6 +345,9 @@ export class UPlotChart {
     this.plot?.destroy()
     this.plot = null
     this.aligned = null
+    this.kind = 'line'
+    this.styles = []
+    this.boxes = []
     this.onXRange = undefined
     this.onFrame = undefined
     this.lastEmitted = null

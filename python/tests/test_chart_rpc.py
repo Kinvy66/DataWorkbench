@@ -20,7 +20,7 @@ def test_chart_list_types_and_build_series(tmp_path: Path) -> None:
         send(proc, {"jsonrpc": "2.0", "id": 1, "method": "chart.listTypes", "params": {}})
         types = read_rpc(proc)
         ids = [item["id"] for item in types["result"]["types"]]
-        assert ids == ["line", "scatter", "bar", "hist"]
+        assert ids == ["line", "scatter", "bar", "hist", "box"]
 
         send(
             proc,
@@ -113,6 +113,24 @@ def test_chart_list_types_and_build_series(tmp_path: Path) -> None:
         hist_prob = read_rpc(proc)
         prob_result = hist_prob["result"]
         assert abs(prob_result["ys"][0][-1] - 1.0) < 1e-9
+
+        send(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "method": "chart.buildSeries",
+                "params": {"dataId": dataset_id, "y": ["ch1"], "kind": "box"},
+            },
+        )
+        box = read_rpc(proc)
+        box_result = box["result"]
+        assert box_result["pointCount"] == 1
+        assert box_result["sourceCount"] == 6000
+        assert box_result["boxes"][0]["key"] == "ch1"
+        assert box_result["boxes"][0]["n"] == 6000
+        assert "q1" in box_result["boxes"][0]
+        assert "median" in box_result["boxes"][0]
 
         send(
             proc,

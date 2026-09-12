@@ -41,6 +41,7 @@ import iconChartCurve from '@/assets/icons/app/chart-type/chart-curve.svg?url'
 import iconChartScatter from '@/assets/icons/app/chart-type/chart-scatter.svg?url'
 import iconChartBar from '@/assets/icons/app/chart-type/chart-bar.svg?url'
 import iconChartHistogram from '@/assets/icons/app/chart-type/chart-histogram.svg?url'
+import iconChartBoxplot from '@/assets/icons/app/chart-type/stats-boxplot.svg?url'
 import iconChartTextMarker from '@/assets/icons/app/chart-text-marker.svg?url'
 import iconChartCrossMarker from '@/assets/icons/app/chart-corss-marker.svg?url'
 import iconChartPickerXy from '@/assets/icons/app/chart-picker-xy.svg?url'
@@ -85,6 +86,7 @@ const urls: Record<string, string> = {
   'app/chart-type/chart-scatter': iconChartScatter,
   'app/chart-type/chart-bar': iconChartBar,
   'app/chart-type/chart-histogram': iconChartHistogram,
+  'app/chart-type/stats-boxplot': iconChartBoxplot,
   'app/chart-text-marker': iconChartTextMarker,
   'app/chart-corss-marker': iconChartCrossMarker,
   'app/chart-picker-xy': iconChartPickerXy,

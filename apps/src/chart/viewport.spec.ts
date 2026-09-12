@@ -96,6 +96,20 @@ describe('viewport helpers', () => {
       })
     ).toEqual({ xMin: 0.2, xMax: 0.4 })
   })
+
+  it('does not refetch box plots on zoom', () => {
+    expect(
+      planViewportRequest({
+        range: { xMin: -0.2, xMax: 0.4 },
+        currentWindow: null,
+        dataExtent: { xMin: -0.5, xMax: 1.5 },
+        downsampled: false,
+        sourceCount: 1000,
+        maxPoints: 2,
+        kind: 'box'
+      })
+    ).toBeNull()
+  })
 })
 
 describe('debounce', () => {

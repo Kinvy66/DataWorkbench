@@ -14,6 +14,8 @@ export type { SeriesPaletteId } from './colors'
 export { lttbIndices } from './downsample'
 export { UPlotChart } from './UPlotChart'
 export type { OverlayRect, PlotKind, PlotRenderOptions, PlotSeriesData, SeriesStyle } from './UPlotChart'
+export { boxMax, boxMin, boxPlotSvgMarkup, boxYExtent, drawBoxPlots } from './boxPlot'
+export type { BoxScale, ChartBoxSample } from './boxPlot'
 export {
   dataExtent,
   dataXFromScale,

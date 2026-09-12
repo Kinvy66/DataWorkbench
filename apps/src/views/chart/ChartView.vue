@@ -107,7 +107,8 @@ function plotData() {
   return {
     x: series.x.map((value) => (value == null ? Number.NaN : value)),
     ys: series.ys,
-    xKind: series.xKind
+    xKind: series.xKind,
+    boxes: series.boxes
   }
 }
 
@@ -146,6 +147,9 @@ function render(): void {
     width,
     height,
     onXRange: (range) => {
+      if (props.chart.type === 'box') {
+        return
+      }
       scheduleWindow(range)
     },
     onFrame: () => {

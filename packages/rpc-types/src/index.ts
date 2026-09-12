@@ -23,6 +23,7 @@ export const CHART_MAX_POINTS_MAX = 20000
 export const CHART_HIST_BINS_DEFAULT = 50
 export const CHART_HIST_BINS_MIN = 5
 export const CHART_HIST_BINS_MAX = 200
+export const CHART_BOX_OUTLIERS_MAX = 200
 export type ChartHistStat = 'count' | 'density' | 'probability' | 'percent'
 export const CHART_VIEWPORT_DEBOUNCE_MS = 150
 export const CHART_SUBPLOT_MAX_DIM = 3
@@ -675,8 +676,23 @@ export interface WorkflowFinishedParams {
   cancelled?: boolean
 }
 
-export type ChartTypeId = 'line' | 'scatter' | 'bar' | 'hist'
+export type ChartTypeId = 'line' | 'scatter' | 'bar' | 'hist' | 'box'
 export type ChartXKind = 'number' | 'time'
+
+export function chartKindOmitsX(kind: ChartTypeId | undefined): boolean {
+  return kind === 'hist' || kind === 'box'
+}
+
+export interface ChartBoxSample {
+  key: string
+  n: number
+  q1: number
+  median: number
+  q3: number
+  whiskerLow: number
+  whiskerHigh: number
+  outliers: number[]
+}
 
 export interface ChartTypeItem {
   id: ChartTypeId
@@ -709,6 +725,8 @@ export interface ChartBuildSeriesResult {
   downsampled: boolean
   xKind: ChartXKind
   maxPoints: number
+  /** Tukey box stats when kind is box. Renderer must not recompute from raw points. */
+  boxes?: ChartBoxSample[]
 }
 
 export type ChartExportFormat = 'png' | 'svg' | 'pdf'

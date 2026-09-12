@@ -112,7 +112,7 @@ Python sidecar 的 **stdout 只能打 JSON-RPC 行**。日志、traceback、`pri
 
 `@mlightcad/ribbon` 只展示 tab/group/item。点击 → `commandBus.dispatch(id)`。不要把业务写进 ribbon schema 闭包。插件以后也注册到 command bus。
 
-**对齐上游菜单**：常驻 **Home / Data / View / Figure**（主页 / 数据 / 视图 / 绘图）。Data 标签 = 上游 Data（添加/移除/重命名/导出）。Figure = 上游 Figure（新建折线/散点/柱状/直方/子图）。View = 显示七个停靠面板 + 复位布局。清洗、过滤、统计 = 上游 DataFrame 上下文「操作」页，仅在焦点落在**表格**时出现。工作流画布焦点时出现 **工作流视图**（缩放/适应）和 **工作流**（运行/停止）两页。标注/导出 = 上游 Chart Operate 上下文，仅在焦点落在**绘图**时出现。`@mlightcad/ribbon` 的 `contextual` / `contextualMode: 'selection'` 实现该动态分类；即使同一窗口有多页也不要设 `contextualTitle`（页名已经够用）。库默认上下文页是圆角描边色块；用 `AppRibbon.vue` 的 CSS 改成顶栏色条（对齐 SARibbon），不要改回 pill。Ribbon 按钮只放**已实现**且上游同一 panel 已有的 action。Replace Values / Threshold Filter 上游无按钮，只做节点。不要把每个新 Core 操作塞进 Data。Home 对齐文件/剪贴板/创建（打开/保存/撤销/添加数据）；不要补剪切/复制、设置、插件管理、Agent、3D 图、表格样式。
+**对齐上游菜单**：常驻 **Home / Data / View / Figure**（主页 / 数据 / 视图 / 绘图）。Data 标签 = 上游 Data（添加/移除/重命名/导出）。Figure = 上游 Figure（新建折线/散点/柱状/直方/箱线/子图）。View = 显示七个停靠面板 + 复位布局。清洗、过滤、统计 = 上游 DataFrame 上下文「操作」页，仅在焦点落在**表格**时出现。工作流画布焦点时出现 **工作流视图**（缩放/适应）和 **工作流**（运行/停止）两页。标注/导出 = 上游 Chart Operate 上下文，仅在焦点落在**绘图**时出现。`@mlightcad/ribbon` 的 `contextual` / `contextualMode: 'selection'` 实现该动态分类；即使同一窗口有多页也不要设 `contextualTitle`（页名已经够用）。库默认上下文页是圆角描边色块；用 `AppRibbon.vue` 的 CSS 改成顶栏色条（对齐 SARibbon），不要改回 pill。Ribbon 按钮只放**已实现**且上游同一 panel 已有的 action。Replace Values / Threshold Filter 上游无按钮，只做节点。不要把每个新 Core 操作塞进 Data。Home 对齐文件/剪贴板/创建（打开/保存/撤销/添加数据）；不要补剪切/复制、设置、插件管理、Agent、3D 图、表格样式。
 
 ### T6. 改 RPC 三处同步
 
@@ -224,9 +224,10 @@ sidecar 诊断日志保持英文。用户可见 `ElMessage` 必须 i18n。
 ### 图表（P4 一期完成）
 
 - 一期：line / scatter / bar / hist + 属性面板 + PNG/SVG + 视口窗口二次取样
+- **箱线已落地**：`kind:"box"`，Python Tukey（1.5×IQR）只回传统计量；uPlot `hooks.draw` + SVG 自定义绘制。绑定只选数值列。缩放不重请求。不要把原始列拉到前端再算四分位。
 - **PDF 已落地**：渲染进程发与 SVG 相同的矢量 markup；主进程 hidden BrowserWindow `printToPDF`（CJK 字体）。不要把图片经 Python sidecar，也不要用 Helvetica-only 的 svg→pdf 库
 - **标注已落地**：Ribbon Text / Point / Arrow / Region，点击图上放置（箭头/区域点两次）；数据坐标写入 `charts.json`；SVG overlay 跟随缩放。属性面板改文字/颜色/删除。不要做成 Qwt 式画布拖一切。
-- **子图已落地**：Ribbon Subplots 建 ≤3×3 空网格；选中格子后 New Line/Scatter/Bar/Hist 填入该格（1×1 的 New Line 仍是新 tab）。导出整张 Figure。不要做拖格子改布局。
+- **子图已落地**：Ribbon Subplots 建 ≤3×3 空网格；选中格子后 New Line/Scatter/Bar/Hist/Box 填入该格（1×1 的 New Line 仍是新 tab）。导出整张 Figure。不要做拖格子改布局。
 - PNG 从当前 uPlot 画布抓取并叠标注；SVG 由采样点生成矢量（Inkscape 可打开）；保存走主进程 `chart.saveExport`
 - 直方：`kind:"hist"`，Python `numpy.histogram` 分箱后只回传箱中心与箱值；不要把原始百万点拉到前端再分箱。可用 `bins` / `binWidth` / `histStat` / `histCumulative`（属性面板；绑定对话框只暴露箱数）
 - 生产降采样以 Python `chart.buildSeries` 为准（LTTB，默认 5000）；不要对百万点 `JSON.parse`

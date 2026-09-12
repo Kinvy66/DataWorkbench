@@ -347,6 +347,15 @@ export function useRibbonSchema() {
                     icon: ribbonIcon('app/chart-type/chart-histogram')
                   },
                   {
+                    id: 'chart.newBox',
+                    type: 'button',
+                    label: t('ribbon.chartBox'),
+                    tooltip: t('ribbon.chartBoxTip'),
+                    size: 'large',
+                    disabled: !hasDataset,
+                    icon: ribbonIcon('app/chart-type/stats-boxplot')
+                  },
+                  {
                     id: 'chart.newSubplots',
                     type: 'button',
                     label: t('ribbon.chartSubplots'),

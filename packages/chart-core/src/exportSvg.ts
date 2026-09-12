@@ -1,5 +1,6 @@
 import type { PlotKind, PlotSeriesData, SeriesStyle } from './UPlotChart'
 import { annotationSvgMarkup, type ChartAnnotation } from './annotations'
+import { boxPlotSvgMarkup, boxYExtent } from './boxPlot'
 import { SVG_TEXT_FONT, xmlEscape } from './svgText'
 
 export { SVG_TEXT_FONT, xmlEscape } from './svgText'
@@ -35,7 +36,13 @@ function formatTick(value: number, kind: PlotSeriesData['xKind']): string {
   return String(Number(value.toPrecision(6)))
 }
 
-function bounds(data: PlotSeriesData): { xMin: number; xMax: number; yMin: number; yMax: number } {
+function bounds(data: PlotSeriesData, kind?: PlotKind): { xMin: number; xMax: number; yMin: number; yMax: number } {
+  if (kind === 'box' && data.boxes?.length) {
+    const { yMin, yMax } = boxYExtent(data.boxes)
+    const n = data.boxes.length
+    const pad = Math.max((yMax - yMin) * 0.08, 1e-9)
+    return { xMin: -0.5, xMax: Math.max(n - 0.5, 0.5), yMin: yMin - pad, yMax: yMax + pad }
+  }
   let xMin = Infinity
   let xMax = -Infinity
   let yMin = Infinity
@@ -104,10 +111,11 @@ function seriesSvgInner(opts: SvgExportOptions): { width: number; height: number
   const padB = opts.xLabel ? 52 : 36
   const plotW = Math.max(40, width - padL - padR)
   const plotH = Math.max(40, height - padT - padB)
-  const { xMin, xMax, yMin, yMax } = bounds(opts.data)
+  const { xMin, xMax, yMin, yMax } = bounds(opts.data, opts.kind)
   const sx = (x: number) => padL + ((x - xMin) / (xMax - xMin)) * plotW
   const sy = (y: number) => padT + (1 - (y - yMin) / (yMax - yMin)) * plotH
   const xs = opts.data.x
+  const isBox = opts.kind === 'box' && Boolean(opts.data.boxes?.length)
   const parts: string[] = [`<rect width="${width}" height="${height}" fill="#ffffff"/>`]
 
   if (opts.grid) {
@@ -130,15 +138,29 @@ function seriesSvgInner(opts: SvgExportOptions): { width: number; height: number
     `<line x1="${padL}" y1="${padT + plotH}" x2="${padL + plotW}" y2="${padT + plotH}" stroke="#727272"/>`
   )
 
-  for (let i = 0; i <= 4; i++) {
-    const xv = xMin + ((xMax - xMin) * i) / 4
-    const yv = yMin + ((yMax - yMin) * i) / 4
-    parts.push(
-      `<text x="${sx(xv)}" y="${padT + plotH + 16}" text-anchor="middle" font-size="11" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(formatTick(xv, opts.data.xKind))}</text>`
-    )
-    parts.push(
-      `<text x="${padL - 8}" y="${sy(yv) + 4}" text-anchor="end" font-size="11" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(formatTick(yv, 'number'))}</text>`
-    )
+  if (isBox && opts.data.boxes) {
+    opts.data.boxes.forEach((sample, index) => {
+      parts.push(
+        `<text x="${sx(index)}" y="${padT + plotH + 16}" text-anchor="middle" font-size="11" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(sample.key)}</text>`
+      )
+    })
+    for (let i = 0; i <= 4; i++) {
+      const yv = yMin + ((yMax - yMin) * i) / 4
+      parts.push(
+        `<text x="${padL - 8}" y="${sy(yv) + 4}" text-anchor="end" font-size="11" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(formatTick(yv, 'number'))}</text>`
+      )
+    }
+  } else {
+    for (let i = 0; i <= 4; i++) {
+      const xv = xMin + ((xMax - xMin) * i) / 4
+      const yv = yMin + ((yMax - yMin) * i) / 4
+      parts.push(
+        `<text x="${sx(xv)}" y="${padT + plotH + 16}" text-anchor="middle" font-size="11" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(formatTick(xv, opts.data.xKind))}</text>`
+      )
+      parts.push(
+        `<text x="${padL - 8}" y="${sy(yv) + 4}" text-anchor="end" font-size="11" fill="#727272" font-family="${SVG_TEXT_FONT}">${xmlEscape(formatTick(yv, 'number'))}</text>`
+      )
+    }
   }
 
   if (opts.title) {
@@ -157,6 +179,9 @@ function seriesSvgInner(opts: SvgExportOptions): { width: number; height: number
     )
   }
 
+  if (isBox && opts.data.boxes) {
+    parts.push(boxPlotSvgMarkup(opts.data.boxes, opts.styles, { x: sx, y: sy }))
+  } else {
   const nSeries = Math.max(1, opts.data.ys.length)
   const dx = minPositiveDx(xs)
   const span = xMax - xMin
@@ -226,6 +251,7 @@ function seriesSvgInner(opts: SvgExportOptions): { width: number; height: number
       )
     }
   })
+  }
 
   if (opts.legend) {
     let ly = padT + 4
