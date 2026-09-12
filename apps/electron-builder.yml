@@ -35,6 +35,10 @@ extraResources:
     to: icon.ico
   - from: resources/portable-readme.txt
     to: README.txt
+  - from: ../docs/wiki
+    to: docs/wiki
+  - from: ../docs/assets/wiki
+    to: docs/assets/wiki
 asar: true
 npmRebuild: false
 compression: maximum

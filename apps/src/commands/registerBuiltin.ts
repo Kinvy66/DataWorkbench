@@ -12,12 +12,7 @@ import { getDesktopBridge } from '@/rpc/bridge'
 import { confirmAndQuit, newProject, openProject, saveProject } from '@/project/session'
 import { useAppUiStore } from '@/stores/appUi'
 import { tableClipboard } from '@/data/tableClipboard'
-import {
-  APP_HELP_FAQ_URL,
-  APP_HELP_GUIDE_URL,
-  APP_HELP_TUTORIAL_URL,
-  APP_REPO_URL
-} from '@/help/urls'
+import { APP_REPO_URL } from '@/help/urls'
 import type { DockPanelId } from '@/layout/docking'
 import { workflowCanvasView } from '@/workflow/canvasView'
 
@@ -668,14 +663,22 @@ export function registerBuiltinCommands(): void {
     }
   }
 
+  async function openHelpPage(page: string): Promise<void> {
+    try {
+      await getDesktopBridge().rpc.invoke('app.openHelp', { page })
+    } catch (err) {
+      reportError(err)
+    }
+  }
+
   commandBus.register('help.guide', async () => {
-    await openHelpUrl(APP_HELP_GUIDE_URL)
+    await openHelpPage('README.md')
   })
   commandBus.register('help.tutorial', async () => {
-    await openHelpUrl(APP_HELP_TUTORIAL_URL)
+    await openHelpPage('08-tutorial.md')
   })
   commandBus.register('help.faq', async () => {
-    await openHelpUrl(APP_HELP_FAQ_URL)
+    await openHelpPage('10-faq.md')
   })
   commandBus.register('help.repo', async () => {
     await openHelpUrl(APP_REPO_URL)

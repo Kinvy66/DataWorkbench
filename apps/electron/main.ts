@@ -317,6 +317,33 @@ async function handleRendererRpc(
     await shell.openExternal(url)
     return { ok: true }
   }
+  if (method === 'app.openHelp') {
+    const page = normalizeWikiPageId((params as { page?: unknown } | null)?.page) ?? 'README.md'
+    openHelpWindow(
+      {
+        getMainWindow: () => mainWindow,
+        resolvePreload,
+        resolveIcon: resolveWindowIcon
+      },
+      page
+    )
+    return { ok: true }
+  }
+  if (method === 'help.list') {
+    return { pages: listWikiPages(bundledDocsRoot()) }
+  }
+  if (method === 'help.read') {
+    const page = normalizeWikiPageId((params as { page?: unknown } | null)?.page)
+    if (!page) {
+      throw new RpcError(-32602, 'Help page is not allowed', 'help.pageNotFound')
+    }
+    try {
+      return readWikiPage(bundledDocsRoot(), page)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      throw new RpcError(3001, message, 'help.pageNotFound')
+    }
+  }
   if (method === 'app.clipboardWrite') {
     writeAppClipboard(parseClipboardWriteParams(params))
     return { ok: true }
@@ -502,6 +529,7 @@ app.on('before-quit', (event) => {
   event.preventDefault()
   isQuitting = true
   fileLog('main', 'App quitting')
+  closeHelpWindow()
   void sidecar.shutdown().finally(() => {
     app.exit(0)
   })

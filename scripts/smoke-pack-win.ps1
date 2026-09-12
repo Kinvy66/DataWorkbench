@@ -82,6 +82,8 @@ function Invoke-BundledHostRpc {
 }
 
 Assert-Path $UnpackedDir 'win-unpacked'
+Assert-Path (Join-Path $Resources 'docs\wiki\README.md') 'bundled wiki'
+Assert-Path (Join-Path $Resources 'docs\assets\wiki\01-ready.png') 'bundled wiki screenshot'
 Assert-Path $Exe 'DataWorkbench.exe'
 Assert-Path $RuntimeExe 'bundled python.exe'
 Assert-Path (Join-Path $PythonRoot 'dw_host\__main__.py') 'dw_host'

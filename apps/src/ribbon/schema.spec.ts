@@ -111,6 +111,8 @@ describe('ribbon schema', () => {
     expect(commands).toContain("'app.about'")
     expect(commands).toContain("'app.help'")
     expect(commands).toContain("'help.guide'")
+    expect(commands).toContain("'app.openHelp'")
+    expect(commands).not.toContain('APP_HELP_GUIDE_URL')
     expect(commands).toContain("'edit.copy'")
     expect(commands).toContain("'edit.paste'")
     expect(commands).toContain("'edit.delete'")
