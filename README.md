@@ -78,7 +78,7 @@ pnpm dev
 
 Python sidecar 由 Electron 主进程拉起，不要单独在渲染进程 `spawn`。开发态优先使用 `python/.venv`，否则 Windows 上用 `py -3.12`。
 
-若 `pnpm dev` 报 `spawn ...\electron\dist\electron.exe ENOENT`：二进制没下下来（常见于 `checksums.json` 缺失或 GitHub 发布页超时）。仓库 `.npmrc` 已设 `electron_use_remote_checksums` 与 npmmirror。补救：
+若 `pnpm dev` 停在「Already up to date / installing dependencies」，且报 `Cannot find module './checksums.json'`：这是 Electron npm 包缺校验文件，pnpm 重跑 `postinstall` 失败，**还没执行** `electron-vite`。仓库 `.npmrc` 已设远程校验与 npmmirror；`pnpm-workspace.yaml` 关闭 Electron 自带 postinstall，改由 `scripts/ensure-electron.mjs`（`predev` / `postinstall`）带环境变量下载。补救：
 
 ```powershell
 $env:electron_use_remote_checksums = "1"

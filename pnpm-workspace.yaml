@@ -6,7 +6,7 @@ shamefullyHoist: true
 strictPeerDependencies: false
 
 allowBuilds:
-  electron: true
+  electron: false
   electron-winstaller: false
   esbuild: true
   vue-demi: true

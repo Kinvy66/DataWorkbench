@@ -5,6 +5,8 @@
   "description": "Desktop data workbench: Electron + Vue 3 + Python sidecar",
   "scripts": {
     "dev": "pnpm --filter @dw/app dev",
+    "predev": "node scripts/ensure-electron.mjs",
+    "postinstall": "node scripts/ensure-electron.mjs",
     "prepare:python-runtime": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-python-runtime.ps1",
     "pack:portable": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pack-portable.ps1",
     "pack:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pack-win.ps1",
