@@ -81,4 +81,4 @@ nsis:
     - en_US
   displayLanguageSelector: false
   license: ../LICENSE
-  artifactName: ${productName}-Setup-${version}-QALab.${ext}
+  artifactName: ${productName}-Setup-${version}.${ext}

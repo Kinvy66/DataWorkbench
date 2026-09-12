@@ -6,7 +6,7 @@
 
 只发安装包，例如：
 
-`apps/dist/DataWorkbench-Setup-1.0.0-QALab.exe`
+`apps/dist/DataWorkbench-Setup-1.0.0.exe`
 
 不要发：
 
