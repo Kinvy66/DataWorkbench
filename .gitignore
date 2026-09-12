@@ -16,7 +16,6 @@ coverage/
 
 # Build output
 dist/
-dist-build/
 build/Release
 
 # TypeScript cache
@@ -56,7 +55,6 @@ __pycache__/
 # Distribution / packaging
 build/
 dist/
-dist-build/
 *.egg-info/
 *.egg
 
