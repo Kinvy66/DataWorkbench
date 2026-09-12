@@ -96,6 +96,6 @@ Ribbon item `@click` 只 `dispatch(item.id)`。`can()` 根据 Pinia：无数据�
 
 ## 二期
 
-- **Golden Layout 自由停靠与布局持久化（已落地）**：`golden-layout` 2.6，Vue Teleport `v-if` 挂到面板内 `dw-gl-mount`（不要先丢进 `display:none` 暂存，日志会不更新）；七个面板 `datasets` / `nodes` / `table` / `workflow` / `figure` / `properties` / `log`；工程 `ui-layout.docking` 可选，不 bump `PROJECT_FORMAT`。禁止弹出窗口。
+- **Golden Layout 自由停靠与布局持久化（已落地）**：`golden-layout` 2.6，Vue Teleport `v-if` 挂到面板内 `dw-gl-mount`（不要先丢进 `display:none` 暂存，日志会不更新）；七个面板 `datasets` / `nodes` / `table` / `workflow` / `figure` / `properties` / `log`；工程 `ui-layout.docking` 可选，不 bump `PROJECT_FORMAT`。禁止弹出窗口。当前页签白底加粗 + 顶栏主色条，不要沿用库默认「激活也是灰」——左边数据集/节点并排时分不清。
 - 图表区内多 figure 分屏（上游 ADS 嵌套）— **未做**
 - Ribbon gallery 节点缩略图

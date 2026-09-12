@@ -356,9 +356,30 @@ watch(locale, () => {
   flex-direction: column;
 }
 .workbench :deep(.lm_header) {
-  background: #f5f7fa;
+  background: #eef1f6;
 }
-.workbench :deep(.lm_tab) {
+.workbench :deep(.lm_header .lm_tab) {
   font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #909399;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  margin-right: 0;
+}
+.workbench :deep(.lm_header .lm_tab + .lm_tab) {
+  box-shadow: inset 1px 0 0 #dcdfe6;
+}
+.workbench :deep(.lm_header .lm_tab:hover) {
+  color: #606266;
+  background: color-mix(in srgb, var(--dw-accent, #5280c1) 10%, transparent);
+}
+.workbench :deep(.lm_header .lm_tab.lm_active),
+.workbench :deep(.lm_header .lm_tab.lm_active:hover) {
+  color: #303133;
+  font-weight: 600;
+  background: #fff;
+  box-shadow: inset 0 2px 0 var(--dw-accent, #5280c1);
 }
 </style>
