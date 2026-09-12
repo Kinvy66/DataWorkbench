@@ -179,7 +179,6 @@ export function useRibbonSchema() {
               title: t('ribbon.operate'),
               contextual: true,
               contextualMode: 'selection',
-              contextualTitle: t('ribbon.contextDataFrame'),
               contextualColor: RIBBON_CONTEXT_COLOR.dataframe,
               groups: [
           {
@@ -352,7 +351,6 @@ export function useRibbonSchema() {
               title: t('ribbon.workflow'),
               contextual: true,
               contextualMode: 'selection',
-              contextualTitle: t('ribbon.contextWorkflow'),
               contextualColor: RIBBON_CONTEXT_COLOR.workflow,
               groups: [
           {
@@ -456,7 +454,6 @@ export function useRibbonSchema() {
               title: t('ribbon.chart'),
               contextual: true,
               contextualMode: 'selection',
-              contextualTitle: t('ribbon.contextChart'),
               contextualColor: RIBBON_CONTEXT_COLOR.chart,
               groups: [
           {

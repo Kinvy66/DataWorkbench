@@ -48,6 +48,7 @@ describe('ribbon schema', () => {
     expect(source).toContain("id: 'chartOperate'")
     expect(source).toContain('contextual: true')
     expect(source).toContain("contextualMode: 'selection'")
+    expect(source).not.toContain('contextualTitle')
     expect(source).toContain('ribbonContextTabId')
     expect(source).toContain("id: 'chart.newLine'")
     expect(source).toContain("id: 'chart.newScatter'")
