@@ -6,7 +6,6 @@ import { commandBus } from '@/commands/commandBus'
 import DwIcon from '@/icons/DwIcon.vue'
 import { APP_REPO_URL } from '@/help/urls'
 import { useAppUiStore } from '@/stores/appUi'
-import { qaLabEnabled } from '@/qa-lab'
 
 const { t } = useI18n()
 const ui = useAppUiStore()
@@ -35,7 +34,6 @@ function openRepo(): void {
       <DwIcon name="app/icon" :size="56" />
       <h3>{{ t('app.title') }}</h3>
       <p class="version">{{ t('about.version', { version: APP_VERSION }) }}</p>
-      <p v-if="qaLabEnabled()" class="muted">{{ t('about.training') }}</p>
       <p>{{ t('about.body') }}</p>
       <p class="muted">{{ t('about.copyright') }}</p>
       <p class="muted">{{ t('about.license') }}</p>

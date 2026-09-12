@@ -564,7 +564,6 @@ export default {
     body: 'A desktop workbench for experimental data: workflow, tables, and exportable charts.',
     copyright: 'Copyright © 2026 DataWorkbench contributors',
     license: 'Application source is MIT. Copied icons and vendored Python remain LGPL-3.0. See NOTICE.',
-    training: 'This is a practice build. Compare the in-app manual with what the software actually does.',
     close: 'Close'
   },
   help: {

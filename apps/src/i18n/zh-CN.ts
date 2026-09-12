@@ -562,7 +562,6 @@ export default {
     body: '面向实验数据的桌面分析台：工作流、表格与可导出图表。',
     copyright: 'Copyright © 2026 DataWorkbench contributors',
     license: '本软件源码为 MIT。拷贝的图标与 vendor 的 Python 仍为 LGPL-3.0。详见 NOTICE。',
-    training: '这是一份练习用安装包。请按帮助里的手册对照实际结果。',
     close: '关闭'
   },
   help: {
